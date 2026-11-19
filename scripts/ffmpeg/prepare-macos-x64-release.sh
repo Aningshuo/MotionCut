@@ -16,7 +16,7 @@ MOTIONCUT_BUILD_JOBS="${MOTIONCUT_BUILD_JOBS:-4}" bash "$recipe/build-macos.sh" 
 mkdir -p "$output/bin"
 for executable in ffmpeg ffprobe; do
   binary="$work/build/bin/$executable"
-  lipo -verify_arch x86_64 "$binary"
+  lipo "$binary" -verify_arch x86_64
   otool -L "$binary" | tee "$work/$executable-imports.txt"
   awk 'NR > 1 && $1 !~ /^\/(usr\/lib|System\/Library)\// { bad = 1 } END { exit bad }' "$work/$executable-imports.txt"
   vtool -show-build "$binary" > "$work/$executable-build.txt"

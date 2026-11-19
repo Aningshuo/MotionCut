@@ -80,7 +80,7 @@ jobs:
           export PATH=/usr/bin:/bin:/usr/sbin:/sbin
           cd dist/macos-intel-media
           for tool in ffmpeg ffprobe; do
-            lipo -verify_arch x86_64 "bin/$tool"
+            lipo "bin/$tool" -verify_arch x86_64
             "bin/$tool" -version
           done
           bin/ffmpeg -buildconf > "$RUNNER_TEMP/motioncut-ffmpeg-buildconf.txt" 2>&1
