@@ -1201,13 +1201,16 @@ export async function probeSubtitleBurnSupport(ffmpegPath = 'ffmpeg', run = DEFA
 }
 
 /**
- * `subtitles` 滤镜参数。路径用单引号包住，避免 `:` 被当成选项分隔符。
+ * FFmpeg parses filter chains before it parses filter options. Quote the
+ * whole filename for the chain and escape drive colons and quotes for the option.
  * @param {string} assPath
  * @returns {string}
  */
 export function subtitleFilterArg(assPath) {
-  const escaped = String(assPath).replace(/\\/g, '/').replace(/'/g, "\\'");
-  return `subtitles=filename='${escaped}'`;
+  const pathValue = String(assPath).replace(/\\/g, '/');
+  const optionValue = pathValue.replace(/[:']/g, '\\$&');
+  const filterValue = optionValue.replace(/'/g, "'\\''");
+  return `subtitles=filename='${filterValue}'`;
 }
 
 /**

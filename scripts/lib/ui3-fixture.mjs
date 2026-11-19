@@ -10,8 +10,10 @@
 import { execFileSync } from 'node:child_process';
 import { copyFile, mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-export const REPO = new URL('../..', import.meta.url).pathname;
+export const REPO = fileURLToPath(new URL('../..', import.meta.url));
+const fixtureEncoder = join(REPO, 'resources/bin/ffmpeg');
 
 const SCENE = (label, accent) => `<!doctype html>
 <html lang="zh-CN">
@@ -58,9 +60,10 @@ const SCENE = (label, accent) => `<!doctype html>
 /**
  * 建一份与 `ui-shots --profile=ui1` 相同的工程目录。
  * @param {string} work 临时目录
+ * @param {string} [ffmpeg] 生成夹具使用的可执行文件
  * @returns {Promise<{dir: string, projectsRoot: string}>}
  */
-export async function buildUi1Project(work) {
+export async function buildUi1Project(work, ffmpeg = fixtureEncoder) {
   const projectsRoot = join(work, 'projects');
   const dir = join(projectsRoot, 'ui1-fixture');
   await mkdir(join(dir, 'scenes'), { recursive: true });
@@ -69,12 +72,17 @@ export async function buildUi1Project(work) {
   await writeFile(join(dir, 'scenes', 'card-a.html'), SCENE('季度复盘', '#1f6feb'), 'utf8');
   await writeFile(join(dir, 'scenes', 'card-b.html'), SCENE('下一步', '#3fb950'), 'utf8');
 
-  const ffmpeg = join(REPO, 'resources/bin/ffmpeg');
   const ff = (args) => execFileSync(ffmpeg, ['-y', '-hide_banner', '-loglevel', 'error', ...args], { stdio: 'pipe' });
   ff(['-f', 'lavfi', '-i', 'color=c=0x1f6feb:s=320x180:d=9:r=24', '-pix_fmt', 'yuv420p', '-c:v', 'libx264', '-preset', 'ultrafast', join(dir, 'assets', 'take-01.mp4')]);
   ff(['-f', 'lavfi', '-i', 'color=c=0x3fb950:s=320x180:d=9:r=24', '-pix_fmt', 'yuv420p', '-c:v', 'libx264', '-preset', 'ultrafast', join(dir, 'assets', 'take-02.mp4')]);
   ff(['-f', 'lavfi', '-i', 'sine=frequency=440:duration=9', '-ac', '1', '-ar', '44100', join(dir, 'assets', 'voice.wav')]);
-  ff(['-f', 'lavfi', '-i', 'sine=frequency=220:duration=9', '-ac', '1', '-ar', '44100', '-b:a', '64k', join(dir, 'assets', 'bgm.mp3')]);
+  const bgm = join(dir, 'assets', 'bgm.mp3');
+  if (ffmpeg === fixtureEncoder) {
+    ff(['-f', 'lavfi', '-i', 'sine=frequency=220:duration=9', '-ac', '1', '-ar', '44100', '-b:a', '64k', bgm]);
+  } else {
+    // Bundled FFmpeg needs to decode MP3, so the packaging fixture must not also require an MP3 encoder.
+    ff(['-i', join(REPO, 'tests/fixtures/media/tone-1min-44k1-mono.mp3'), '-t', '9', '-c:a', 'copy', bgm]);
+  }
   ff(['-f', 'lavfi', '-i', 'sine=frequency=880:duration=1', '-ac', '1', '-ar', '44100', join(dir, 'assets', 'whoosh.wav')]);
 
   return { dir, projectsRoot };

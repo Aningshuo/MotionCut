@@ -1,0 +1,10 @@
+ffmpeg-8.1.3.tar.xz	https://ffmpeg.org/releases/ffmpeg-8.1.3.tar.xz
+x264-31e19f9.tar.gz	https://codeload.github.com/mirror/x264/tar.gz/31e19f92f00c7003fa115047ce50978bc98c3a0d
+x265-4.2.tar.gz	https://bitbucket.org/multicoreware/x265_git/downloads/x265_4.2.tar.gz
+libvpx-1.16.0.tar.gz	https://codeload.github.com/webmproject/libvpx/tar.gz/refs/tags/v1.16.0
+opus-1.6.1.tar.gz	https://downloads.xiph.org/releases/opus/opus-1.6.1.tar.gz
+freetype-2.14.3.tar.xz	https://download.savannah.gnu.org/releases/freetype/freetype-2.14.3.tar.xz
+harfbuzz-12.1.0.tar.gz	https://codeload.github.com/harfbuzz/harfbuzz/tar.gz/refs/tags/12.1.0
+fribidi-1.0.18.tar.xz	https://github.com/fribidi/fribidi/releases/download/v1.0.18/fribidi-1.0.18.tar.xz
+libass-0.17.5.tar.xz	https://github.com/libass/libass/releases/download/0.17.5/libass-0.17.5.tar.xz
+pkgconf-2.5.1.tar.xz	https://distfiles.ariadne.space/pkgconf/pkgconf-2.5.1.tar.xz

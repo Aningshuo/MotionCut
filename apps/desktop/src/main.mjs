@@ -14,6 +14,7 @@ import { createRequire } from 'node:module';
 import { basename, dirname, isAbsolute, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { bundledFfmpegPath } from './bundled-media.mjs';
 import { createViewManager, resolveProjectTab } from './views.mjs';
 import { APP_ID, APP_NAME, APP_USER_DATA_DIRECTORY, LEGACY_APP_NAME, detectLegacyUserData } from './identity.mjs';
 
@@ -370,7 +371,7 @@ function studioExtraEnv() {
   /** @type {Record<string, string>} */
   const extra = {};
   if (isPackaged) {
-    const bundledFfmpeg = join(process.resourcesPath, 'bin', 'ffmpeg');
+    const bundledFfmpeg = bundledFfmpegPath(process.resourcesPath);
     if (existsSync(bundledFfmpeg)) extra.OPENCUT_FFMPEG = bundledFfmpeg;
     extra.OPENCUT_SETTINGS = join(app.getPath('userData'), 'settings.json');
     /* R30-129：page 层取帧要 playwright 的 Chromium。包内自带的浏览器放在
@@ -752,7 +753,7 @@ async function runHeadless() {
     // 自检自己的「多久起来」（不含进程启动/签名校验）：A2 的 15s 判的是这个数。
     elapsedMs: Date.now() - startedAt,
     ui: 'unknown',
-    ffmpeg: process.env.OPENCUT_FFMPEG ?? (isPackaged ? join(process.resourcesPath, 'bin', 'ffmpeg') : ''),
+    ffmpeg: process.env.OPENCUT_FFMPEG ?? (isPackaged ? bundledFfmpegPath(process.resourcesPath) : ''),
     env: loaded.path,
     userData: app.getPath('userData'),
     packaged: isPackaged,

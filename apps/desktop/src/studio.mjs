@@ -11,6 +11,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { startStudio } from '../../../packages/studio/server/studio-server.mjs';
+import { addFfmpegDirectoryToPath } from './bundled-media.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(here, '..', '..', '..');
@@ -64,16 +65,11 @@ const { path: envPath, env } = loadEnv();
  * 为什么不是直接改写 ffmpegPath：render 的 `runFfmpeg` / `audio-mix` 各自有默认值，
  * 顺着 PATH 走是唯一不需要改只读包的接法。ffprobe 必须与 ffmpeg 同目录（打包脚本保证）。
  */
-function applyBundledFfmpeg() {
-  const bundled = String(process.env.OPENCUT_FFMPEG ?? '').trim();
-  if (bundled === '') return null;
-  const dir = dirname(bundled);
-  process.env.PATH = `${dir}:${process.env.PATH ?? ''}`;
-  process.stdout.write(`STUDIO_FFMPEG ${bundled}\n`);
-  return bundled;
+const bundledFfmpeg = String(process.env.OPENCUT_FFMPEG ?? '').trim();
+if (bundledFfmpeg !== '') {
+  addFfmpegDirectoryToPath(bundledFfmpeg, process.env);
+  process.stdout.write(`STUDIO_FFMPEG ${bundledFfmpeg}\n`);
 }
-
-applyBundledFfmpeg();
 
 try {
   const studio = await startStudio({

@@ -29,15 +29,17 @@
  * 或（本机，动态 ffprobe 会被自动收依赖）：
  *   node scripts/package-desktop.mjs
  *
- * ## M82 · `--mac-arm64`：交付产物（app + dmg）
+ * ## M82 · `--mac-arm64` / `--mac-x64`：交付产物（app + dmg）
  *
- * `node scripts/package-desktop.mjs --mac-arm64` 走同一条组装流水线，只换落点：
- *   dist/mac-arm64/MotionCut.app
- *   dist/MotionCut-<version>-arm64.dmg   （hdiutil UDZO，挂载后里面是 .app + Applications 链接）
+ * macOS 发布包走同一条组装流水线，按架构分开：
+ *   dist/mac-<arch>/MotionCut.app
+ *   dist/MotionCut-<version>-<arch>.dmg   （hdiutil UDZO，挂载后里面是 .app + Applications 链接）
  *
  * 额外硬判据（普通 `build:desktop` 不受影响）：
  * - 选中的 ffmpeg **必须带 `subtitles` 滤镜**（libass），否则字幕烧录在包里直接不可用；
  *   本机 Homebrew 8.1.2 没有这个滤镜，所以会自动落到仓库 R21 那份（`repo:R21`，记 sha256）。
+ * - Intel 发布包须用原生 x64 macOS，安装 x64 Electron 和 Playwright 浏览器，并通过
+ *   OPENCUT_FFMPEG / OPENCUT_FFPROBE 指定自行构建的 x64 工具。
  * - 签名仍是 ad-hoc（`codesign --force --deep --sign -`），不申请证书、不公证。
  */
 
@@ -63,7 +65,7 @@ import {
 } from 'node:fs';
 import { createServer } from 'node:net';
 import { homedir, tmpdir } from 'node:os';
-import { basename, dirname, join, resolve } from 'node:path';
+import { basename, dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
 import { ensureDir } from './lib/resolve-ffmpeg.mjs';
 import { fileURLToPath } from 'node:url';
 
@@ -72,8 +74,9 @@ import { APP_ID, APP_NAME, APP_PACKAGE_NAME } from '../apps/desktop/src/identity
 const REPO = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const BUILD = join(REPO, 'build');
 const DIST = join(REPO, 'dist');
-const MAC_ARM64 = process.argv.slice(2).includes('--mac-arm64');
-/** 默认落 `build/MotionCut.app`；`--mac-arm64` 时在 main() 里改成 `dist/mac-arm64/MotionCut.app`。 */
+const args = process.argv.slice(2);
+const releaseArch = args.includes('--mac-x64') ? 'x64' : args.includes('--mac-arm64') ? 'arm64' : undefined;
+/** 默认落 `build/MotionCut.app`，发布包落在 `dist/mac-<arch>/MotionCut.app`。 */
 let APP = join(BUILD, `${APP_NAME}.app`);
 const ELECTRON_APP = join(REPO, 'node_modules', 'electron', 'dist', 'Electron.app');
 const ELECTRON_VERSION_FILE = join(REPO, 'node_modules', 'electron', 'dist', 'version');
@@ -204,7 +207,7 @@ function inspectFfmpeg(file) {
  * 三者都必须带 `subtitles` 滤镜（libass），一个都没有就抛错——不许静默产出一个
  * 「能剪不能烧字幕」的包，也不许回落到任何开发机的 `.local-runs`。
  *
- * @param {{requireLibass?: boolean}} [options]
+ * @param {{requireLibass?: boolean, requireExplicit?: boolean}} [options]
  * @returns {{ffmpeg: string, ffprobe: string, source: string, version: string, subtitles: boolean, filterLine: string}}
  */
 function resolveTools(options = {}) {
@@ -216,10 +219,17 @@ function resolveTools(options = {}) {
   const candidates = [];
   const envFfmpeg = process.env.OPENCUT_FFMPEG ?? '';
   if (envFfmpeg !== '' && executable(envFfmpeg)) candidates.push({ path: resolve(envFfmpeg), source: 'OPENCUT_FFMPEG' });
-  const bundled = join(REPO, 'resources', 'bin', 'ffmpeg');
-  if (executable(bundled)) candidates.push({ path: bundled, source: 'resources/bin' });
-  const found = spawnSync('which', ['ffmpeg'], { encoding: 'utf8' });
-  if (found.status === 0 && found.stdout.trim() !== '') candidates.push({ path: found.stdout.trim(), source: 'PATH' });
+  const envFfprobe = process.env.OPENCUT_FFPROBE ?? '';
+  if (options.requireExplicit === true) {
+    if (!isAbsolute(envFfmpeg) || !executable(envFfmpeg) || !isAbsolute(envFfprobe) || !executable(envFfprobe)) {
+      throw new Error('Intel 发布包要求 OPENCUT_FFMPEG 和 OPENCUT_FFPROBE 指向自行构建的 x64 绝对路径。');
+    }
+  } else {
+    const bundled = join(REPO, 'resources', 'bin', 'ffmpeg');
+    if (executable(bundled)) candidates.push({ path: bundled, source: 'resources/bin' });
+    const found = spawnSync('which', ['ffmpeg'], { encoding: 'utf8' });
+    if (found.status === 0 && found.stdout.trim() !== '') candidates.push({ path: found.stdout.trim(), source: 'PATH' });
+  }
 
   /** @type {{path: string, source: string, info: ReturnType<typeof inspectFfmpeg>} | null} */
   let picked = null;
@@ -246,7 +256,7 @@ function resolveTools(options = {}) {
   }
 
   const ffmpegPath = picked.path;
-  let ffprobePath = process.env.OPENCUT_FFPROBE ?? '';
+  let ffprobePath = envFfprobe;
   if (ffprobePath === '' || !executable(ffprobePath)) {
     const sibling = join(dirname(ffmpegPath), 'ffprobe');
     if (executable(sibling)) ffprobePath = sibling;
@@ -260,7 +270,7 @@ function resolveTools(options = {}) {
     const probe = spawnSync('which', ['ffprobe'], { encoding: 'utf8' });
     if (probe.status === 0) ffprobePath = probe.stdout.trim();
   }
-  if (ffprobePath === '') {
+  if (ffprobePath === '' || !executable(ffprobePath)) {
     throw new Error('找不到 ffprobe：设 OPENCUT_FFPROBE=<绝对路径> 或把它放进 PATH（不许静默跳过）');
   }
   return {
@@ -367,6 +377,36 @@ function ditto(from, to) {
   if (result.status !== 0) throw new Error(`ditto 失败 ${from} → ${to}: ${result.stderr}`);
 }
 
+
+function requireIntelMachO(filename, label) {
+  const result = spawnSync('lipo', [filename, '-verify_arch', 'x86_64'], { encoding: 'utf8' });
+  if (result.status !== 0) {
+    throw new Error(`${label} 缺少 x86_64 架构：${filename}。请在 Intel 环境安装对应的依赖。`);
+  }
+}
+
+/** Keep test fixtures and workstation configuration out of the Intel release. */
+function copyIntelRuntimeTree(source, dest, tree) {
+  cpSync(source, dest, {
+    recursive: true,
+    verbatimSymlinks: true,
+    filter: (filename) => {
+      const entry = relative(source, filename);
+      if (entry === '') return true;
+      const parts = entry.split(sep);
+      if (tree === 'scripts') {
+        return entry === 'lib' || entry === join('lib', 'resolve-ffmpeg.mjs');
+      }
+      return !parts.some((part) =>
+        ['test', 'tests', 'fixtures', '.git', '.local-runs', '.secrets', '.npmrc', '.DS_Store'].includes(part)
+        || /^\.env(?:\.|$)/.test(part)
+        || /\.(?:test|spec)\.[mc]?[jt]sx?$/.test(part)
+        || /\.(?:key|p12|pfx)$/.test(part),
+      );
+    },
+  });
+}
+
 /**
  * M82：把已签名的 .app 压成 dmg（UDZO）。挂载后里面是 `MotionCut.app` + `Applications` 链接。
  * 用系统自带 `hdiutil`，不引第三方 dmg 工具。
@@ -451,13 +491,15 @@ async function waitExit(child, ms) {
  * 失败就抛错（顶层 catch → `process.exit(1)`），异常上挂的 `smoke` 会写进 package-report.json。
  *
  * @param {string} appPath 打出来的 .app
+ * @param {boolean} cleanPath 在系统 PATH 下验证自带的工具
  * @returns {Promise<any>}
  */
-async function runExportSmoke(appPath) {
+async function runExportSmoke(appPath, cleanPath) {
   const { buildUi1Project } = await import('./lib/ui3-fixture.mjs');
   const sleep = (ms) => new Promise((done) => globalThis.setTimeout(done, ms));
   const work = mkdtempSync(join(tmpdir(), 'opencut-pkg-smoke-'));
-  const fixture = await buildUi1Project(work);
+  const fixtureFfmpeg = cleanPath ? join(appPath, 'Contents', 'Resources', 'bin', 'ffmpeg') : undefined;
+  const fixture = await buildUi1Project(work, fixtureFfmpeg);
   const userData = join(work, 'userData');
   mkdirSync(userData, { recursive: true });
   const studioPort = await freePort();
@@ -514,6 +556,12 @@ async function runExportSmoke(appPath) {
   const childEnv = { ...process.env, OPENCUT_APP_DATA: join(work, 'appData'), OPENCUT_NO_SANDBOX: '1' };
   delete childEnv.ELECTRON_RUN_AS_NODE;
   delete childEnv.NODE_OPTIONS;
+  if (cleanPath) {
+    childEnv.PATH = '/usr/bin:/bin:/usr/sbin:/sbin';
+    delete childEnv.OPENCUT_FFMPEG;
+    delete childEnv.OPENCUT_FFPROBE;
+    delete childEnv.PLAYWRIGHT_BROWSERS_PATH;
+  }
   const child = spawn(bin, ['--opencut-serve', '--opencut-env-json', envPath], {
     env: childEnv,
     stdio: ['ignore', 'pipe', 'pipe'],
@@ -606,6 +654,24 @@ async function runExportSmoke(appPath) {
     if (!(job.state === 'done' && job.percent >= 1 && bytes > 0)) {
       throw fail(job.error?.code === undefined || job.error?.code === null ? `EXPORT_${String(job.state).toUpperCase()}` : String(job.error.code));
     }
+    if (cleanPath) {
+      const bundledBin = join(smokeApp, 'Contents', 'Resources', 'bin');
+      const probe = spawnSync(join(bundledBin, 'ffprobe'), [
+        '-v', 'error', '-show_entries', 'format=duration:stream=codec_type,codec_name', '-of', 'json', outPath,
+      ], { encoding: 'utf8', env: childEnv, timeout: 20_000 });
+      if (probe.status !== 0) throw fail('PACKAGED_FFPROBE_FAILED', { stderr: probe.stderr });
+      const metadata = JSON.parse(probe.stdout);
+      const duration = Number(metadata.format?.duration);
+      if (!metadata.streams?.some((stream) => stream.codec_type === 'video' && stream.codec_name === 'h264')
+        || !metadata.streams?.some((stream) => stream.codec_type === 'audio')
+        || !Number.isFinite(duration) || Math.abs(duration - 3) > 0.15) {
+        throw fail('EXPORT_PROBE_MISMATCH', { metadata });
+      }
+      const decode = spawnSync(join(bundledBin, 'ffmpeg'), [
+        '-nostdin', '-v', 'error', '-xerror', '-i', outPath, '-f', 'null', '-',
+      ], { encoding: 'utf8', env: childEnv, timeout: 20_000 });
+      if (decode.status !== 0) throw fail('EXPORT_DECODE_FAILED', { stderr: decode.stderr });
+    }
     facts.status = 'PASS';
     rmSync(work, { recursive: true, force: true });
     facts.workDir = '(cleaned)';
@@ -616,6 +682,18 @@ async function runExportSmoke(appPath) {
 }
 
 async function main() {
+  const isIntelRelease = releaseArch === 'x64';
+  const isRelease = releaseArch !== undefined;
+  const target = isRelease ? `mac-${releaseArch}` : 'dev-build';
+  if (isIntelRelease) {
+    if (args.includes('--mac-arm64')) throw new Error('一次只能选择一个 macOS 发布架构。');
+    const translated = process.platform === 'darwin' && process.arch === 'x64'
+      ? spawnSync('/usr/sbin/sysctl', ['-in', 'sysctl.proc_translated'], { encoding: 'utf8' }).stdout?.trim()
+      : undefined;
+    if (process.platform !== 'darwin' || process.arch !== 'x64' || translated === '1') {
+      throw new Error('macOS Intel 发布包须在原生 Intel Mac 上使用 x64 Node 构建和验证。');
+    }
+  }
   /* 0. 先验白名单（M95）：`packages/` 里被 import 的目录，必须都在 APP_TREES 里。
      漏一个 → 打出来的 App 一启动就 ERR_MODULE_NOT_FOUND，而源码树测试永远是绿的。
      这一步放在最前面：**别等 UI 构建完、骨架删完才发现**。 */
@@ -635,14 +713,19 @@ async function main() {
   const electronVersion = existsSync(ELECTRON_VERSION_FILE)
     ? readFileSync(ELECTRON_VERSION_FILE, 'utf8').trim()
     : 'unknown';
-  /** `--mac-arm64` 的落点是 dist/mac-arm64（交付产物）；默认仍是 build/（M48 的开发用产物）。 */
-  const outRoot = MAC_ARM64 ? join(DIST, 'mac-arm64') : BUILD;
+  const outRoot = isRelease ? join(DIST, target) : BUILD;
   APP = join(outRoot, `${APP_NAME}.app`);
 
   if (!existsSync(ELECTRON_APP)) {
     throw new Error(`没有 Electron 运行时：${ELECTRON_APP}（先 pnpm install）`);
   }
 
+  const intelTools = isIntelRelease ? resolveTools({ requireExplicit: true }) : null;
+  if (intelTools !== null) {
+    requireIntelMachO(join(ELECTRON_APP, 'Contents', 'MacOS', 'Electron'), 'Electron');
+    requireIntelMachO(intelTools.ffmpeg, 'FFmpeg');
+    requireIntelMachO(intelTools.ffprobe, 'ffprobe');
+  }
   log('构建 UI（vite build）');
   const ui = spawnSync(
     process.execPath,
@@ -652,13 +735,14 @@ async function main() {
   if (ui.status !== 0) throw new Error(`UI 构建失败 exit=${String(ui.status)}`);
 
   ensureDir(outRoot, { label: 'package out' });
-  if (MAC_ARM64) ensureDir(DIST, { label: 'package dist' });
+  if (isRelease) ensureDir(DIST, { label: 'package dist' });
 
   /* 复用已有 app 骨架：Electron 那 6000 多个文件不重拷、也不整树删除——
      宿主对「一次删上千个文件」有安全闸（safe-delete），整树删会被直接拒。
      只换会变的叶子：Resources/app（约 280 个文件）、Resources/bin（约 30 个）。 */
   const stamp = join(APP, 'Contents', 'Resources', '.opencut-electron-version');
-  const reusable = existsSync(stamp) && readFileSync(stamp, 'utf8').trim() === electronVersion;
+  const versionStamp = isIntelRelease ? `${electronVersion}-${releaseArch}` : electronVersion;
+  const reusable = existsSync(stamp) && readFileSync(stamp, 'utf8').trim() === versionStamp;
   if (reusable) {
     log(`复用已有 app 骨架（Electron ${electronVersion}）：只换 Resources/app、Resources/bin`);
     rmSync(join(APP, 'Contents', 'Resources', 'app'), { recursive: true, force: true });
@@ -666,7 +750,7 @@ async function main() {
   } else {
     if (existsSync(APP)) {
       // 不删：改名留证据（升级 Electron 属于停止条件，正常不会走到这里）。
-      const aside = join(MAC_ARM64 ? DIST : outRoot, `${basename(APP)}.old-${Date.now()}`);
+      const aside = join(isRelease ? DIST : outRoot, `${basename(APP)}.old-${Date.now()}`);
       renameSync(APP, aside);
       log(`旧 app 改名：${aside}（未删除，人工清理）`);
     }
@@ -694,7 +778,7 @@ async function main() {
     throw new Error(`Electron 可执行文件不存在：${fromExe}（app 骨架不完整）`);
   }
   // 记下骨架版本：下次同版本只换叶子，整树不重拷。
-  writeFileSync(stamp, `${electronVersion}\n`, 'utf8');
+  writeFileSync(stamp, `${versionStamp}\n`, 'utf8');
   log(`可执行文件：Contents/MacOS/${APP_NAME}`);
 
   const resources = join(APP, 'Contents', 'Resources');
@@ -711,12 +795,30 @@ async function main() {
     }
     const dest = join(appDir, relative);
     ensureDir(dirname(dest), { label: 'package copy' });
-    ditto(realpathSync(source), dest);
+    if (isIntelRelease) copyIntelRuntimeTree(realpathSync(source), dest, relative);
+    else ditto(realpathSync(source), dest);
     const counted = countTree(dest);
     files[relative] = counted;
     const min = MIN_FILES[relative] ?? 1;
     if (counted.files < min) {
       throw new Error(`${relative} 只有 ${counted.files} 个文件（至少要 ${min}）：UI 没构建或目录不对`);
+    }
+  }
+
+  if (isIntelRelease) {
+    for (const notice of [
+      'LICENSE',
+      'TRADEMARKS.md',
+      'THIRD_PARTY_NOTICES.md',
+      'packages/studio/ui/src/assets/INTER-OFL-1.1.txt',
+      'packages/studio/ui/src/assets/LUCIDE-LICENSE.txt',
+      'packages/studio/ui/src/assets/SIMPLE-ICONS-LICENSE.md',
+      'packages/studio/ui/src/assets/editor-icons/LICENSE.txt',
+      'packages/studio/ui/src/assets/creation-icons/LICENSE.txt',
+    ]) {
+      const dest = join(appDir, notice);
+      ensureDir(dirname(dest), { label: 'package notices' });
+      cpSync(join(REPO, notice), dest);
     }
   }
 
@@ -741,6 +843,9 @@ async function main() {
       `没有可随包的 ${shellName}：${shellSource}（先跑 npx playwright install chromium-headless-shell）`,
     );
   }
+  if (isIntelRelease) {
+    requireIntelMachO(join(shellSource, 'chrome-headless-shell-mac-x64', 'chrome-headless-shell'), 'Playwright headless Chromium');
+  }
   const browsersDir = join(appDir, 'playwright-browsers');
   ensureDir(browsersDir, { label: 'package playwright browsers' });
   ditto(shellSource, join(browsersDir, shellName));
@@ -748,7 +853,7 @@ async function main() {
   files[`playwright-browsers/${shellName}`] = shellTree;
   log(`随包浏览器：${shellName}（${shellTree.files} 个文件，${(shellTree.bytes / 1024 / 1024).toFixed(0)}MiB）`);
 
-  const tools = resolveTools({ requireLibass: MAC_ARM64 });
+  const tools = intelTools ?? resolveTools({ requireLibass: isRelease });
   log(`ffmpeg 源（${tools.source}）：${tools.ffmpeg}`);
   log(`ffmpeg 身份：${tools.version}`);
   log(`subtitles 滤镜（libass）：${tools.subtitles ? '有' : '无'}`);
@@ -804,14 +909,20 @@ async function main() {
     throw new Error(`codesign 失败：\n${signed.stdout}\n${signed.stderr}`);
   }
 
+  if (isIntelRelease) {
+    const verified = spawnSync('codesign', ['--verify', '--deep', '--strict', APP], { encoding: 'utf8' });
+    if (verified.status !== 0) throw new Error(`安装包签名验证失败：${verified.stderr || verified.error}`);
+  }
+
   /* M82：交付形态多一个 dmg（同一份已签名 .app 压进去，不重新签名）。 */
   const priorRelease = join(outRoot, 'Opencut Studio.app');
-  if (MAC_ARM64 && existsSync(priorRelease)) {
+  if (isRelease && existsSync(priorRelease)) {
     const aside = join(DIST, `${basename(priorRelease)}.old-${Date.now()}`);
     renameSync(priorRelease, aside);
     log(`旧品牌发布包保留在：${aside}`);
   }
-  const dmg = MAC_ARM64 ? makeDmg(outRoot, join(DIST, `${APP_NAME}-${version}-arm64.dmg`), version) : null;
+  const dmgPath = isRelease ? join(DIST, `${APP_NAME}-${version}-${releaseArch}.dmg`) : null;
+  const dmg = dmgPath !== null && !isIntelRelease ? makeDmg(outRoot, dmgPath, version) : null;
   if (dmg !== null) log(`dmg：${dmg.path}（${(dmg.bytes / 1024 / 1024).toFixed(1)}MiB）`);
 
   const binTree = countTree(binDir);
@@ -826,8 +937,8 @@ async function main() {
     product: APP_NAME,
     version,
     electron: electronVersion,
-    target: MAC_ARM64 ? 'mac-arm64' : 'dev-build',
-    arch: 'arm64',
+    target,
+    arch: releaseArch ?? process.arch,
     appPath: APP,
     files,
     /* M95：这次打包用的白名单，以及「被 import 的 packages 目录 vs 白名单」的差集。
@@ -869,15 +980,21 @@ async function main() {
     asar: false,
     builtAt: new Date().toISOString(),
   };
-  /** 报告不放进 dmg 源目录（`dist/mac-arm64` 里只留 .app + Applications 链接）。 */
-  const reportPath = MAC_ARM64 ? join(DIST, 'package-report.json') : join(BUILD, 'package-report.json');
+  /** 按架构分别记录报告，发布卷只保留 .app 和 Applications 链接。 */
+  const reportPath = isRelease
+    ? join(DIST, isIntelRelease ? 'package-report-x64.json' : 'package-report.json')
+    : join(BUILD, 'package-report.json');
   writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`, 'utf8');
 
   /* 2026-R180：打包的最后一步是**冒烟** —— 用这个包起一次临时 Studio，导 3 秒含 page 层。
      导不出来就 exit 1：宁可不产包，也不产一个「能开不能导」的包。 */
   log(`冒烟：用 ${APP} 起临时 Studio 导 3 秒含 page 层…`);
   try {
-    report.smoke = await runExportSmoke(APP);
+    report.smoke = await runExportSmoke(APP, isIntelRelease);
+    if (isIntelRelease) {
+      report.dmg = makeDmg(outRoot, dmgPath, version);
+      log(`dmg：${report.dmg.path}（${(report.dmg.bytes / 1024 / 1024).toFixed(1)}MiB）`);
+    }
     writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`, 'utf8');
     log(
       `冒烟 PASS：state=${String(report.smoke.fiveTuple.state)} percent=${String(report.smoke.fiveTuple.percent)} ` +

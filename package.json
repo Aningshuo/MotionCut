@@ -14,6 +14,7 @@
     "build:ui": "pnpm --dir packages/studio/ui build",
     "build:desktop": "node scripts/package-desktop.mjs",
     "package:mac:arm64": "node scripts/package-desktop.mjs --mac-arm64",
+    "package:mac:x64": "node scripts/package-desktop.mjs --mac-x64",
     "dev:ui": "pnpm --dir packages/studio/ui dev",
     "preview:ui": "pnpm --dir packages/studio/ui preview"
   },

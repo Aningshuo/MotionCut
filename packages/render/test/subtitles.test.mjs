@@ -273,6 +273,17 @@ test('P23：滤镜参数把路径包进单引号', () => {
   assert.equal(subtitleFilterArg('/tmp/a b/c.ass'), "subtitles=filename='/tmp/a b/c.ass'");
 });
 
+test('quotes a Windows drive and a literal quote through both FFmpeg filter parsers', () => {
+  assert.equal(
+    subtitleFilterArg(String.raw`C:\剪辑 项目\O'Brien,[v2].ass`),
+    String.raw`subtitles=filename='C\:/剪辑 项目/O\'\''Brien,[v2].ass'`,
+  );
+  assert.equal(
+    subtitleFilterArg(String.raw`\\server\share\剪辑 项目.ass`),
+    "subtitles=filename='//server/share/剪辑 项目.ass'",
+  );
+});
+
 test('P23：旁挂 vtt 写成成片时间（不是原样复制）', () => {
   const vtt = buildVttDocument({
     cues: [
