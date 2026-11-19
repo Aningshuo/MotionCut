@@ -12,7 +12,7 @@ CMake, Ninja, Meson and NASM. The tools installed in the GitHub runner are:
 
 ```sh
 pacman -S --needed base-devel mingw-w64-ucrt-x86_64-toolchain \
-  mingw-w64-ucrt-x86_64-{cmake,ninja,meson,nasm,pkgconf} curl zip
+  mingw-w64-ucrt-x86_64-{cmake,ninja,meson,nasm,pkgconf} curl perl zip
 ```
 
 Verify sources and build from the unpacked archive:

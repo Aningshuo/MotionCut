@@ -74,7 +74,13 @@ build_cmake() {
 
 build_cmake zlib "$work/src/zlib" -DZLIB_BUILD_SHARED=OFF -DZLIB_BUILD_STATIC=ON -DZLIB_BUILD_TESTING=OFF
 build_autoconf x264 --host=x86_64-w64-mingw32 --enable-static --disable-cli --disable-opencl
-build_cmake x265 "$work/src/x265/source" -DENABLE_SHARED=OFF -DENABLE_CLI=OFF -DENABLE_ASSEMBLY=OFF
+build_cmake x265 "$work/src/x265/source" -DENABLE_SHARED=OFF -DENABLE_CLI=OFF -DENABLE_ASSEMBLY=OFF \
+  -DCMAKE_CXX_FLAGS="-static -static-libgcc -static-libstdc++"
+# x265 copies the compiler detection link line into pkg-config metadata.
+# An explicit -lgcc_s bypasses the driver's -static-libgcc selection.
+sed -E -i 's/(^|[[:space:]])-lgcc_s(_seh-1)?([[:space:]]|$)/\1\3/g; s@[[:space:]][^[:space:]]*/libgcc_s(_seh-1)?(\.dll)?\.a([[:space:]]|$)@\3@g' \
+  "$prefix/lib/pkgconfig/x265.pc"
+grep '^Libs.private:' "$prefix/lib/pkgconfig/x265.pc"
 build_autoconf vpx --target=x86_64-win64-gcc --disable-examples \
   --disable-tools --disable-docs --disable-unit-tests
 build_cmake opus "$work/src/opus" -DOPUS_BUILD_TESTING=OFF -DOPUS_BUILD_PROGRAMS=OFF
@@ -93,12 +99,15 @@ ac_cv_header_iconv_h=no build_autoconf libass --enable-static --disable-shared \
 
 (
   cd "$work/src/ffmpeg"
-  ./configure --prefix="$prefix" --arch=x86_64 --target-os=mingw32 --cc=gcc --cxx=g++ \
+  if ! ./configure --prefix="$prefix" --arch=x86_64 --target-os=mingw32 --cc=gcc --cxx=g++ \
     --extra-version=motioncut --disable-autodetect --enable-zlib --disable-shared --enable-static \
     --enable-gpl --enable-libx264 --enable-libx265 --enable-libvpx --enable-libopus --enable-libass \
     --pkg-config-flags=--static --extra-cflags="-I$native_prefix/include" \
     --extra-ldflags="-L$native_prefix/lib -static -static-libgcc -static-libstdc++" --extra-libs=-lstdc++ \
-    --disable-ffplay --disable-doc --disable-debug
+    --disable-ffplay --disable-doc --disable-debug; then
+    if [[ -f ffbuild/config.log ]]; then tail -n 140 ffbuild/config.log >&2; fi
+    exit 1
+  fi
   make -j "$jobs" ffmpeg.exe ffprobe.exe
   cp ffmpeg.exe ffprobe.exe "$work/bin/"
 )
@@ -110,6 +119,7 @@ for tool in ffmpeg ffprobe; do
   binary="$work/bin/$tool.exe"
   objdump -f "$binary" | grep 'file format pei-x86-64'
   objdump -p "$binary" | awk '/DLL Name:/ { print tolower($3) }' | sort -u > "$work/$tool-imports.txt"
+  cat "$work/$tool-imports.txt"
   while IFS= read -r dll; do
     case "$dll" in
       api-ms-win-*.dll|ext-ms-win-*.dll) ;;
