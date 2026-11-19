@@ -820,6 +820,23 @@ async function main() {
       ensureDir(dirname(dest), { label: 'package notices' });
       cpSync(join(REPO, notice), dest);
     }
+    const mediaNotices = process.env.MOTIONCUT_MEDIA_NOTICES;
+    if (mediaNotices) {
+      if (!isAbsolute(mediaNotices) || !statSync(mediaNotices, { throwIfNoEntry: false })?.isDirectory()) {
+        throw new Error('MOTIONCUT_MEDIA_NOTICES 必须指向媒体许可证目录的绝对路径。');
+      }
+      for (const filename of ['MEDIA-NOTICE.md', 'COPYING.GPLv2']) {
+        if (!statSync(join(mediaNotices, filename), { throwIfNoEntry: false })?.isFile()) {
+          throw new Error(`媒体许可证目录缺少 ${filename}：${mediaNotices}`);
+        }
+      }
+      cpSync(mediaNotices, join(appDir, 'third-party-media-licenses'), { recursive: true });
+      const noticePath = join(appDir, 'THIRD_PARTY_NOTICES.md');
+      const notices = readFileSync(noticePath, 'utf8').split('\n')
+        .filter((line) => !line.startsWith('- 运行时使用独立安装的 FFmpeg 和 ffprobe'))
+        .join('\n').trimEnd();
+      writeFileSync(noticePath, notices + '\n- macOS Intel 安装包包含独立运行的 FFmpeg 和 ffprobe。授权声明、版权说明和对应源码见 [第三方媒体工具](third-party-media-licenses/MEDIA-NOTICE.md)。\n');
+    }
   }
 
   /* Playwright 的 npm 包只带协议，不带浏览器。安装到干净机器上时

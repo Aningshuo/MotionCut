@@ -19,16 +19,21 @@ The two executables are in `$work/bin`. The source archives, checksums and build
 
 ## Intel macOS
 
-Use a native Intel Mac or a runner such as `macos-15-intel` with x64 Node, Electron and Playwright. After building FFmpeg and ffprobe above, prepare the browser and create the Intel disk image:
+Use a native Intel Mac or a runner such as `macos-15-intel` with x64 Node, Electron and Playwright. Use the verified source archive directory above to build the media tools and collect their notices and corresponding source:
 
 ```sh
+media=$(mktemp -d /tmp/motioncut-intel-release.XXXXXX)
+bash scripts/ffmpeg/prepare-macos-x64-release.sh "$archives" "$media"
 pnpm install --frozen-lockfile
 pnpm exec electron --version
 pnpm exec playwright install chromium-headless-shell
-OPENCUT_FFMPEG="$work/bin/ffmpeg" OPENCUT_FFPROBE="$work/bin/ffprobe" pnpm package:mac:x64
+OPENCUT_FFMPEG="$media/bin/ffmpeg" \
+  OPENCUT_FFPROBE="$media/bin/ffprobe" \
+  MOTIONCUT_MEDIA_NOTICES="$media/notices" \
+  pnpm package:mac:x64
 ```
 
-Run an installed-app smoke test, including subtitle burn-in, before publishing. Distribute the exact corresponding source next to the disk image.
+Run an installed-app smoke test, including subtitle burn-in, before publishing. Distribute the corresponding source archive from `$media` next to the disk image.
 
 ## Windows
 

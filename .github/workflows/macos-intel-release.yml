@@ -1,0 +1,197 @@
+name: macOS Intel release
+
+on:
+  workflow_dispatch:
+    inputs:
+      media_only:
+        description: Build and validate the Intel media tools only
+        type: boolean
+        default: false
+      publish:
+        description: Upload the verified Intel disk image to the existing release
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: macos-intel-release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  RELEASE_TAG: v0.3.2-r2
+  INSTALLER: MotionCut-0.3.2-r2-macos-x64-bundled.dmg
+  MEDIA_SOURCE: MotionCut-FFmpeg-8.1.3-macos-x64-corresponding-source.tar.gz
+  CHECKSUMS: SHA256SUMS-macos-x64-bundled.txt
+
+jobs:
+  media:
+    name: Build portable Intel FFmpeg from pinned sources
+    runs-on: macos-15-intel
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Restore matching Intel FFmpeg build
+        id: media_cache
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: dist/macos-intel-media
+          key: motioncut-macos15-intel-v1-${{ hashFiles('scripts/ffmpeg/build-macos.sh', 'scripts/ffmpeg/prepare-macos-x64-release.sh', 'scripts/ffmpeg/SOURCE_SHA256SUMS', 'scripts/ffmpeg/SOURCE_URLS.tsv') }}
+      - name: Prepare native build tools
+        if: steps.media_cache.outputs.cache-hit != 'true'
+        shell: bash
+        env:
+          HOMEBREW_NO_AUTO_UPDATE: '1'
+        run: |
+          set -euo pipefail
+          test "$(uname -m)" = x86_64
+          xcrun --find clang
+          for tool in cmake meson ninja; do
+            if ! command -v "$tool" >/dev/null; then
+              brew install "$tool"
+            fi
+          done
+          brew_bin="$(brew --prefix)/bin"
+          if [[ ! -x "$brew_bin/nasm" ]]; then
+            brew install nasm
+          fi
+          "$brew_bin/nasm" -v
+          echo "$brew_bin" >> "$GITHUB_PATH"
+      - name: Compile and collect matching source
+        if: steps.media_cache.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          scratch=$(mktemp -d "$RUNNER_TEMP/motioncut-intel-input.XXXXXX")
+          trap 'rm -rf "$scratch"' EXIT
+          curl --fail --location --retry 3 \
+            "https://github.com/Aningshuo/MotionCut/releases/download/$RELEASE_TAG/MotionCut-FFmpeg-8.1.3-corresponding-source.tar.gz" \
+            -o "$scratch/inputs.tar.gz"
+          tar -xzf "$scratch/inputs.tar.gz" -C "$scratch"
+          bash scripts/ffmpeg/prepare-macos-x64-release.sh \
+            "$scratch/MotionCut-FFmpeg-8.1.3/archives" dist/macos-intel-media
+      - name: Verify native and portable FFmpeg binaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH=/usr/bin:/bin:/usr/sbin:/sbin
+          cd dist/macos-intel-media
+          for tool in ffmpeg ffprobe; do
+            lipo -verify_arch x86_64 "bin/$tool"
+            "bin/$tool" -version
+          done
+          bin/ffmpeg -buildconf > "$RUNNER_TEMP/motioncut-ffmpeg-buildconf.txt" 2>&1
+          grep -F -- '--enable-gpl' "$RUNNER_TEMP/motioncut-ffmpeg-buildconf.txt"
+          bin/ffmpeg -hide_banner -filters > "$RUNNER_TEMP/motioncut-ffmpeg-filters.txt"
+          grep -E '[[:space:]]subtitles[[:space:]]' "$RUNNER_TEMP/motioncut-ffmpeg-filters.txt"
+          bin/ffmpeg -hide_banner -decoders > "$RUNNER_TEMP/motioncut-ffmpeg-decoders.txt"
+          grep -E '[[:space:]]png[[:space:]]+PNG' "$RUNNER_TEMP/motioncut-ffmpeg-decoders.txt"
+          test -s "$MEDIA_SOURCE"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: macos-intel-media
+          path: dist/macos-intel-media/
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 7
+
+  installer:
+    name: Install Intel DMG and verify real exports
+    needs: media
+    if: "!inputs.media_only"
+    runs-on: macos-15-intel
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          architecture: x64
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: macos-intel-media
+          path: ${{ runner.temp }}/motioncut-intel-media
+      - name: Prepare native Electron and headless Chromium
+        shell: bash
+        env:
+          PLAYWRIGHT_BROWSERS_PATH: ${{ runner.temp }}/motioncut-playwright
+        run: |
+          set -euo pipefail
+          test "$(uname -m)" = x86_64
+          test "$(node -p 'process.arch')" = x64
+          npm install --global pnpm@9.15.9
+          pnpm install --frozen-lockfile
+          pnpm exec electron --version
+          pnpm exec playwright install chromium-headless-shell
+      - name: Build and sign the Intel disk image
+        shell: bash
+        env:
+          PLAYWRIGHT_BROWSERS_PATH: ${{ runner.temp }}/motioncut-playwright
+          MOTIONCUT_MEDIA_NOTICES: ${{ runner.temp }}/motioncut-intel-media/notices
+        run: |
+          set -euo pipefail
+          media="$RUNNER_TEMP/motioncut-intel-media/bin"
+          chmod +x "$media/ffmpeg" "$media/ffprobe"
+          OPENCUT_FFMPEG="$media/ffmpeg" OPENCUT_FFPROBE="$media/ffprobe" pnpm package:mac:x64
+          mv dist/MotionCut-0.3.2-r2-x64.dmg "dist/$INSTALLER"
+      - name: Verify real exports from the installed DMG
+        shell: bash
+        run: node scripts/macos/smoke-installed.mjs "dist/$INSTALLER"
+      - name: Collect only verified release files
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist/macos-intel-release-files
+          cp "dist/$INSTALLER" "$RUNNER_TEMP/motioncut-intel-media/$MEDIA_SOURCE" dist/macos-intel-release-files/
+          cd dist/macos-intel-release-files
+          shasum -a 256 "$INSTALLER" "$MEDIA_SOURCE" > "$CHECKSUMS"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: verified-macos-intel-release
+          path: dist/macos-intel-release-files/
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 7
+
+  publish:
+    name: Publish verified Intel assets
+    needs: installer
+    if: inputs.publish && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: verified-macos-intel-release
+          path: payload
+      - name: Verify and upload files to the existing tag
+        shell: bash
+        working-directory: payload
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          sha256sum -c "$CHECKSUMS"
+          for name in "$MEDIA_SOURCE" "$CHECKSUMS" "$INSTALLER"; do
+            expected="sha256:$(sha256sum "$name" | cut -d ' ' -f1)"
+            get_asset() {
+              gh api "repos/$GITHUB_REPOSITORY/releases/tags/$RELEASE_TAG" |
+                jq -r --arg name "$name" '.assets[] | select(.name == $name) | .digest'
+            }
+            uploaded=$(get_asset)
+            if [[ -z "$uploaded" ]]; then
+              gh release upload "$RELEASE_TAG" "$name" --repo "$GITHUB_REPOSITORY"
+              uploaded=$(get_asset)
+            fi
+            if [[ "$uploaded" != "$expected" ]]; then
+              echo "Remote digest mismatch for $name" >&2
+              exit 1
+            fi
+          done
