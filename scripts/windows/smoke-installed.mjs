@@ -13,6 +13,7 @@ import { subtitleFilterArg } from '../../packages/render/subtitles.mjs';
 import { buildUi1Project } from '../lib/ui3-fixture.mjs';
 
 const installerPath = process.argv[2];
+const previousInstallerPath = process.argv[3];
 const expectedSubtitle = '画面位置与中文字幕';
 const systemRoot = process.env.SystemRoot ?? 'C:\\Windows';
 const system32 = join(systemRoot, 'System32');
@@ -121,7 +122,7 @@ async function artifactPath(job, kind, project) {
 async function main() {
   assert.equal(process.platform, 'win32', 'Run the installer acceptance on native Windows');
   assert.equal(process.arch, 'x64', 'Run the installer acceptance using Windows x64 Node');
-  assert.ok(installerPath, 'Usage: node scripts/windows/smoke-installed.mjs <installer.exe>');
+  assert.ok(installerPath, 'Usage: node scripts/windows/smoke-installed.mjs <installer.exe> [previous-installer.exe]');
   const installer = resolve(installerPath);
   const work = await mkdtemp(join(tmpdir(), 'MotionCut 中文 安装 '));
   const installDir = join(work, '安装 位置');
@@ -150,9 +151,23 @@ async function main() {
     assert.equal(declined.status, 3, 'Installer must refuse a nonempty unrelated folder');
     assert.equal(await readFile(sentinel, 'utf8'), 'untouched');
     assert.ok(!existsSync(join(occupied, 'MotionCut.exe')));
-    run(installer, ['/S', `/D=${installDir}`], {
-      ...options, windowsVerbatimArguments: true, timeout: 180_000,
-    });
+    const installArgs = ['/S', `/D=${installDir}`];
+    const installOptions = { ...options, windowsVerbatimArguments: true, timeout: 180_000 };
+    if (previousInstallerPath) {
+      run(resolve(previousInstallerPath), installArgs, installOptions);
+      assert.ok(existsSync(app), 'The previous release did not install');
+    }
+    const appData = join(work, 'app-data');
+    const legacyDir = join(appData, 'OpenFilm');
+    const existingProfile = join(appData, 'Opencut Studio');
+    await mkdir(legacyDir, { recursive: true });
+    await mkdir(existingProfile, { recursive: true });
+    const legacySentinel = join(legacyDir, 'old-data.txt');
+    const profileSentinel = join(existingProfile, 'existing-data.txt');
+    await writeFile(legacySentinel, 'unrelated data');
+    await writeFile(profileSentinel, 'existing MotionCut data');
+    run(installer, installArgs, installOptions);
+    assert.equal(await readFile(profileSentinel, 'utf8'), 'existing MotionCut data');
 
     const ffmpeg = join(installDir, 'resources', 'bin', 'ffmpeg.exe');
     const ffprobe = join(installDir, 'resources', 'bin', 'ffprobe.exe');
@@ -175,7 +190,7 @@ async function main() {
     appProcess = spawn(app, [], {
       cwd: work,
       env: {
-        ...env, OPENCUT_ENV_JSON: envFile, OPENCUT_APP_DATA: join(work, 'app-data'),
+        ...env, OPENCUT_ENV_JSON: envFile, OPENCUT_APP_DATA: appData,
       },
       stdio: ['ignore', 'pipe', 'pipe'],
     });
@@ -208,8 +223,32 @@ async function main() {
     browser = await chromium.connectOverCDP(cdp, { timeout: 10_000 });
     const shellPage = browser.contexts().flatMap((context) => context.pages()).find((page) => page.url() === `${base}/?shell=1`);
     assert.ok(shellPage, 'Installed Electron window has no editor page');
-    await shellPage.getByRole('button', { name: '新建项目' }).waitFor({ state: 'visible', timeout: 15_000 });
+    const newProjectButton = shellPage.getByTestId('home-new-project');
+    await newProjectButton.click({ timeout: 15_000 });
     assert.ok(studioLog.includes('STUDIO_FFMPEG'), 'Installed Studio startup did not report using bundled FFmpeg');
+    assert.doesNotMatch(studioLog, /MAIN_LEGACY_(USERDATA|NOTICE)/);
+    const name = '测试1号 项目';
+    await shellPage.getByLabel('项目名称').fill(name);
+    const [createdResponse] = await Promise.all([
+      shellPage.waitForResponse((response) => response.request().method() === 'POST'
+        && new URL(response.url()).pathname === '/api/projects/create', { timeout: 15_000 }),
+      shellPage.getByRole('button', { name: '创建项目', exact: true }).click({ timeout: 15_000 }),
+    ]);
+    const created = await createdResponse.json();
+    assert.equal(createdResponse.status(), 201, JSON.stringify(created));
+    assert.equal(created.index?.ok, true);
+    assert.match(created.projectId, /^[a-f\d]{16}$/);
+    assert.equal(await realpath(created.dir), await realpath(join(fixture.projectsRoot, name)));
+    assert.match(await readFile(join(created.dir, 'film.html'), 'utf8'), /<section id="main"><\/section>/);
+    const tab = shellPage.locator(`[data-testid="tab"][data-project-id="${created.projectId}"][data-active="true"]`);
+    await tab.waitFor({ state: 'visible', timeout: 15_000 });
+    await tab.getByTestId('tab-close').click({ timeout: 15_000 });
+    await newProjectButton.waitFor({ state: 'visible', timeout: 15_000 });
+    const history = shellPage.locator(`[data-testid="shell-project"][data-project-id="${created.projectId}"]`);
+    await history.click({ timeout: 15_000 });
+    await tab.waitFor({ state: 'visible', timeout: 15_000 });
+    assert.equal(await readFile(legacySentinel, 'utf8'), 'unrelated data');
+    assert.equal(await readFile(profileSentinel, 'utf8'), 'existing MotionCut data');
 
     const { project } = await requestJson(`${base}/api/projects/open`, 200, { path: fixture.dir });
     assert.ok(typeof project?.projectId === 'string');
@@ -258,7 +297,11 @@ async function main() {
     assert.equal(original.length, rendered.length);
     const visiblePixels = rendered.reduce((count, value, index) => count + Number(value > 205 && (original[index] ?? value) < 175), 0);
     assert.ok(visiblePixels > 100, `Subtitle not visible in rendered frame: ${visiblePixels} brightened pixels`);
-    console.log(JSON.stringify({ result: 'PASS', installed: true, gui: true, mp4: true, subtitle: expectedSubtitle, visiblePixels, frames: burned.frames }));
+    console.log(JSON.stringify({
+      result: 'PASS', installed: true, inPlaceUpdate: Boolean(previousInstallerPath), gui: true,
+      createdProject: name, reopenedFromHistory: true, externalDataUntouched: true,
+      mp4: true, subtitle: expectedSubtitle, visiblePixels, frames: burned.frames,
+    }));
     passed = true;
   } catch (error) {
     if (studioLog) console.error(studioLog);

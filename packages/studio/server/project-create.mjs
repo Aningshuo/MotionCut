@@ -13,7 +13,7 @@
  *
  * 1. 校验（名字 / 模板 / 路径边界）**全部在碰磁盘之前**做完；
  * 2. 在**父目录**里建临时目录 `.name.tmp-<pid>-<rand>`，写 `film.html` → `fsync` 文件 →
- *    `fsync` 目录 → **rename** 成正式目录；中途任何失败都删掉临时目录，
+ *    在支持的平台 `fsync` 目录 → **rename** 成正式目录；中途任何失败都删掉临时目录，
  *    正式目录一个字节都不留（断言「目录不存在」是验收 A6 的判据）；
  * 3. rename 到已存在的目录会 `ENOTEMPTY`/`EEXIST`：**不覆盖**，映射成 `409 PROJECT_EXISTS`。
  *    并发同名靠这一层（OS 的原子 rename）+ 进程内的 pending 集合双保险；
@@ -182,7 +182,8 @@ const pending = new Set();
  * 原子写一个「只含 film.html 的目录」（M78 起 `createProject` 与 `sequences` 共用）。
  *
  * 顺序：校验/占用 → `mkdir` 父目录 → 临时目录 `.name.tmp-<pid>-<rand>` → 写 film.html →
- * fsync 文件 → fsync 目录 → （可选 probe）→ 回读 sha → **rename** → fsync 父目录 → 再回读。
+ * fsync 文件 → fsync 目录（Windows 跳过）→ （可选 probe）→ 回读 sha → **rename** →
+ * fsync 父目录（Windows 跳过）→ 再回读。
  * 未提交前任何失败都删临时目录；rename 撞名映射成 `409 PROJECT_EXISTS`（不覆盖）。
  *
  * @param {{
@@ -222,7 +223,7 @@ export async function writeFilmDirAtomic(input) {
 
     await fs.mkdir(tmpDir);
 
-    /* 文件：写 → fsync → 关；目录项：fsync 之后再 rename，掉电也不会留半个目录。 */
+    /* 文件：写 → fsync → 关；在支持目录 fsync 的平台先同步目录项再 rename。 */
     const filmPath = path.join(tmpDir, 'film.html');
     const handle = await fs.open(filmPath, 'wx');
     try {
@@ -231,12 +232,7 @@ export async function writeFilmDirAtomic(input) {
     } finally {
       await handle.close();
     }
-    const dirHandle = await fs.open(tmpDir, 'r');
-    try {
-      await dirHandle.sync();
-    } finally {
-      await dirHandle.close();
-    }
+    await syncProjectDirectory(tmpDir);
 
     /* 测试注入点：写完还没 rename 时抛错，验「不留半个目录」。生产路径不传。 */
     if (typeof input.probe === 'function') await input.probe({ tmpDir, targetDir, filmPath });
@@ -264,12 +260,7 @@ export async function writeFilmDirAtomic(input) {
     /** @type {string|null} */
     let parentSyncError = null;
     try {
-      const parentHandle = await fs.open(parent, 'r');
-      try {
-        await parentHandle.sync();
-      } finally {
-        await parentHandle.close();
-      }
+      await syncProjectDirectory(parent);
     } catch (error) {
       parentSyncError = String(/** @type {Error} */ (error)?.message ?? error);
     }
@@ -289,6 +280,18 @@ export async function writeFilmDirAtomic(input) {
     throw error;
   } finally {
     pending.delete(targetDir);
+  }
+}
+
+/** @param {string} dir */
+async function syncProjectDirectory(dir) {
+  // Windows 无法 fsync 通过 Node 打开的只读目录句柄。film.html 本身已同步。
+  if (process.platform === 'win32') return;
+  const handle = await fs.open(dir, 'r');
+  try {
+    await handle.sync();
+  } finally {
+    await handle.close();
   }
 }
 

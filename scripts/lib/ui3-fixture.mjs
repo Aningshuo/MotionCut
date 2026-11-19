@@ -44,7 +44,7 @@ const SCENE = (label, accent) => `<!doctype html>
       <div class="card" id="card-2"><h2>降噪</h2><span>字幕、动效、覆盖</span></div>
       <div class="card" id="card-3"><h2>收口</h2><span>导出、账本、回归</span></div>
     </div>
-    <footer id="foot">OpenFilm · ${label}</footer>
+    <footer id="foot">MotionCut · ${label}</footer>
   </div>
 <script>
   window.film = {

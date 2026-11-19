@@ -16,7 +16,7 @@ import { fileURLToPath } from 'node:url';
 
 import { bundledFfmpegPath } from './bundled-media.mjs';
 import { createViewManager, resolveProjectTab } from './views.mjs';
-import { APP_ID, APP_NAME, APP_USER_DATA_DIRECTORY, LEGACY_APP_NAME, detectLegacyUserData } from './identity.mjs';
+import { APP_ID, APP_NAME, APP_USER_DATA_DIRECTORY } from './identity.mjs';
 
 // Electron 主进程以 ESM 运行时，官方建议用 createRequire 取内置模块
 // （直接 `import { BrowserWindow } from 'electron'` 在部分签名/会话下会解析到 npm 包而不是内置模块）。
@@ -54,11 +54,10 @@ if (typeof app === 'undefined' || typeof BrowserWindow === 'undefined') {
 const isPackaged = app.isPackaged === true;
 
 /**
- * 验收/便携开关：把 macOS `appData` 指到临时目录。
+ * 验收/便携开关：把 Electron 的 `appData` 指到隔离目录。
  *
  * 必须在 `setName` / `getPath('userData')` 之前；`app.setPath` 要求目录已存在。
- * 不设则完全是系统默认（正常用户路径）。自动化冒烟用它把「旧目录检测」也放进临时目录，
- * 不去读用户真实的 `~/Library/Application Support`。
+ * 不设则使用系统默认目录。自动化验收通过这个开关隔离用户数据。
  */
 const appDataOverride = process.env.OPENCUT_APP_DATA;
 if (typeof appDataOverride === 'string' && appDataOverride !== '') {
@@ -207,24 +206,6 @@ if (loaded.env.userData !== undefined) {
 } else if (packagedUserData !== undefined) {
   mkdirSync(packagedUserData, { recursive: true });
   app.setPath('userData', packagedUserData);
-}
-
-/**
- * B08：旧 userData 目录**只读检测**。
- *
- * 只做一次 `existsSync`：不迁移、不删除、不写入旧目录（也不读里面的文件）。
- * 打包态才提示；开发态没有「旧身份」这回事。
- * @type {{ detected: boolean, path: string, sameAsCurrent: boolean }}
- */
-const legacyUserData = isPackaged
-  ? detectLegacyUserData({
-      appData: app.getPath('appData'),
-      userData: app.getPath('userData'),
-      exists: existsSync,
-    })
-  : { detected: false, path: '', sameAsCurrent: false };
-if (legacyUserData.detected) {
-  log(`MAIN_LEGACY_USERDATA_DETECTED path=${legacyUserData.path} action=read-only migration=none`);
 }
 
 // A7 验收要走 CDP 读真窗口：端口取 env.json 的 cdpPort（或 OPENCUT_CDP_PORT），只在显式配置时开。
@@ -790,37 +771,6 @@ async function runHeadless() {
   app.exit(0);
 }
 
-/**
- * 旧 userData 提示（B08）。
- *
- * 只说明「检测到 + 没动它」，**不提供一键迁移**：迁移要读旧目录、写新目录，
- * 那是另一批的事（任务书明确：不迁移、不删除、不写入）。
- * 自动化冒烟用 `OPENCUT_NO_LEGACY_NOTICE=1` 抑制弹窗（日志仍然会打）。
- * @param {string} legacyPath
- */
-function showLegacyUserDataNotice(legacyPath) {
-  if (process.env.OPENCUT_NO_LEGACY_NOTICE === '1') {
-    log('MAIN_LEGACY_NOTICE_SUPPRESSED reason=OPENCUT_NO_LEGACY_NOTICE');
-    return;
-  }
-  /** @type {import('electron').MessageBoxOptions} */
-  const options = {
-    type: 'info',
-    title: `${APP_NAME}：检测到旧版用户数据`,
-    message: `检测到旧版 ${LEGACY_APP_NAME} 的用户数据目录。`,
-    detail:
-      `旧目录：${legacyPath}\n` +
-      `本次使用：${app.getPath('userData')}\n\n` +
-      '本次只做了存在性检测：没有迁移、没有删除、没有写入旧目录。\n' +
-      '如需继续使用旧工程，请手动把工程复制到新目录；本应用不会代做。',
-    buttons: ['知道了'],
-    defaultId: 0,
-    noLink: true,
-  };
-  const shown = mainWindow === null ? dialog.showMessageBox(options) : dialog.showMessageBox(mainWindow, options);
-  void shown.catch((error) => log(`MAIN_LEGACY_NOTICE_FAILED ${String(/** @type {any} */ (error)?.message ?? error)}`));
-}
-
 app.whenReady().then(async () => {
   log('MAIN_READY');
   if (SELFTEST || SERVE_ONLY) {
@@ -832,7 +782,6 @@ app.whenReady().then(async () => {
   studioHealthy = health.ok;
   log(studioHealthy ? `STUDIO_HEALTH_OK pid=${String(health.pid)}` : 'STUDIO_HEALTH_FAILED');
   createWindow();
-  if (legacyUserData.detected) showLegacyUserDataNotice(legacyUserData.path);
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });

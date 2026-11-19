@@ -21,9 +21,11 @@ concurrency:
 
 env:
   RELEASE_TAG: v0.3.2-r2
-  INSTALLER: MotionCut-0.3.2-r2-windows-x64-setup.exe
+  INSTALLER: MotionCut-0.3.2-r2-windows-x64-hotfix1-setup.exe
+  PREVIOUS_INSTALLER: MotionCut-0.3.2-r2-windows-x64-setup.exe
+  PREVIOUS_INSTALLER_SHA256: 796c80de4ff79c2b225c5f937fe00cc689492899c087fbac4c76223b2706f2a9
   MEDIA_SOURCE: MotionCut-FFmpeg-8.1.3-windows-x64-corresponding-source.zip
-  WINDOWS_CHECKSUMS: SHA256SUMS-windows-x64.txt
+  WINDOWS_CHECKSUMS: SHA256SUMS-windows-x64-hotfix1.txt
 
 jobs:
   media:
@@ -144,9 +146,18 @@ jobs:
           $env:OPENCUT_FFPROBE = Join-Path $media 'bin/ffprobe.exe'
           $env:MOTIONCUT_MEDIA_NOTICES = Join-Path $media 'notices'
           node scripts/windows/package-desktop.mjs
+          if ($LASTEXITCODE -ne 0) { throw 'Installer packaging failed' }
+          Move-Item "dist/$env:PREVIOUS_INSTALLER" "dist/$env:INSTALLER"
       - name: Verify native installation and export
         shell: pwsh
-        run: node scripts/windows/smoke-installed.mjs "dist/$env:INSTALLER"
+        run: |
+          $previous = Join-Path $env:RUNNER_TEMP $env:PREVIOUS_INSTALLER
+          curl.exe --fail --location --retry 3 "https://github.com/$env:GITHUB_REPOSITORY/releases/download/$env:RELEASE_TAG/$env:PREVIOUS_INSTALLER" -o $previous
+          if ($LASTEXITCODE -ne 0) { throw 'Previous installer download failed' }
+          if ((Get-FileHash $previous -Algorithm SHA256).Hash.ToLowerInvariant() -ne $env:PREVIOUS_INSTALLER_SHA256) {
+            throw 'Previous installer digest changed'
+          }
+          node scripts/windows/smoke-installed.mjs "dist/$env:INSTALLER" $previous
       - name: Collect only verified release files
         shell: pwsh
         run: |
