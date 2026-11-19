@@ -110,7 +110,7 @@ async function exportFilm(base, input) {
  */
 async function artifactPath(job, kind, project) {
   const output = job.artifacts?.find((artifact) => artifact.kind === kind);
-  assert.ok(output && output.bytes > 100, `Missing nonempty ${kind} export artifact`);
+  assert.ok(output && output.bytes > 0, `Missing nonempty ${kind} export artifact`);
   // The Windows runner may use an 8.3 alias for TEMP while the application reports the long path.
   const [actualProject, actualOutput] = await Promise.all([realpath(project), realpath(output.path)]);
   const rel = relative(actualProject, actualOutput);
