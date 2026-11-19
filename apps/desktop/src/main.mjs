@@ -439,6 +439,11 @@ function createWindow() {
     show: false,
     backgroundColor: '#0b0b0c',
     title: APP_NAME,
+    ...(process.platform === 'darwin' ? {
+      titleBarStyle: 'hidden',
+      trafficLightPosition: { x: 12, y: 12 },
+      minWidth: 480,
+    } : {}),
     webPreferences: {
       contextIsolation: true,
       sandbox: true,

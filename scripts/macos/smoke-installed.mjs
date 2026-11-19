@@ -1,4 +1,4 @@
-/** Validate the actual Intel disk image in an isolated Applications directory. */
+/** Validate an actual macOS disk image in an isolated Applications directory. */
 import assert from 'node:assert/strict';
 import { spawn, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
@@ -118,6 +118,21 @@ async function checkedArtifact(job, kind, project) {
   return path;
 }
 
+/** @param {import('playwright').Page} page @param {string} selector */
+async function checkTitleBar(page, selector) {
+  const header = page.locator(`html.motioncut-mac-shell ${selector}`);
+  await header.waitFor({ state: 'visible', timeout: 15_000 });
+  const bounds = await header.evaluate((element) => ({
+    top: element.getBoundingClientRect().top,
+    leftInset: Number.parseFloat(getComputedStyle(element).paddingLeft),
+  }));
+  assert.equal(bounds.top, 0, 'The app header must start at the top of the content view');
+  assert.ok(bounds.leftInset >= 80, 'The app header must reserve space for the native window buttons');
+  const dragRegion = header.getByTestId('window-drag-region');
+  await dragRegion.waitFor({ state: 'visible', timeout: 15_000 });
+  assert.equal(await dragRegion.evaluate((element) => getComputedStyle(element).getPropertyValue('-webkit-app-region')), 'drag');
+}
+
 /** @param {number} pid @param {NodeJS.Signals} signal */
 function signalProcessGroup(pid, signal) {
   try {
@@ -129,9 +144,12 @@ function signalProcessGroup(pid, signal) {
 
 async function main() {
   assert.equal(process.platform, 'darwin', 'Test the disk image on macOS');
-  assert.equal(process.arch, 'x64', 'Use x64 Node to test the Intel disk image');
   const imageArgument = process.argv[2];
-  assert.ok(imageArgument, 'Usage: node scripts/macos/smoke-installed.mjs <installer.dmg>');
+  const arch = process.argv[3] ?? 'x64';
+  assert.ok(imageArgument && (arch === 'arm64' || arch === 'x64'),
+    'Usage: node scripts/macos/smoke-installed.mjs <installer.dmg> [arm64|x64]');
+  assert.equal(process.arch, arch, 'Use a matching native Node runtime');
+  const machArch = arch === 'x64' ? 'x86_64' : 'arm64';
   const image = resolve(imageArgument);
   const work = await realpath(await mkdtemp(join(tmpdir(), 'MotionCut 中文 安装 ')));
   const mountPoint = join(work, 'mounted');
@@ -153,7 +171,7 @@ async function main() {
   let studioLog = '';
   try {
     assert.notEqual(run('/usr/sbin/sysctl', ['-in', 'sysctl.proc_translated'], options).stdout.toString().trim(),
-      '1', 'Intel acceptance must run on native Intel macOS');
+      '1', 'The acceptance test requires a native macOS runtime');
     for (const tool of ['ffmpeg', 'ffprobe']) {
       const found = spawnSync('/usr/bin/which', [tool], options);
       assert.ifError(found.error);
@@ -169,7 +187,7 @@ async function main() {
 
     run('/usr/bin/codesign', ['--verify', '--deep', '--strict', installedApp], options);
     for (const binary of [app, ffmpeg, ffprobe]) {
-      run('/usr/bin/lipo', [binary, '-verify_arch', 'x86_64'], options);
+      run('/usr/bin/lipo', [binary, '-verify_arch', machArch], options);
     }
     run(ffmpeg, ['-hide_banner', '-version'], options);
     run(ffprobe, ['-hide_banner', '-version'], options);
@@ -180,14 +198,19 @@ async function main() {
     const ports = await allocatePorts();
     const base = `http://127.0.0.1:${ports.studioPort}`;
     const cdp = `http://127.0.0.1:${ports.cdpPort}`;
-    const studioHome = join(work, "字幕 工作 O'Brien,[x64]");
+    const studioHome = join(work, `字幕 工作 O'Brien,[${arch}]`);
     const userData = join(work, '用户 配置');
     const envFile = join(work, 'env.json');
+    const appData = join(work, 'app-data');
+    const legacy = join(appData, 'OpenFilm');
+    const legacySentinel = join(legacy, 'existing-profile.txt');
     await mkdir(userData);
+    await mkdir(legacy, { recursive: true });
+    await writeFile(legacySentinel, 'unrelated profile');
     await writeFile(envFile, JSON.stringify({ ...ports, userData, studioHome, projectsRoot: fixture.projectsRoot }), 'utf8');
     child = spawn(app, [], {
       cwd: work,
-      env: { ...env, OPENCUT_ENV_JSON: envFile, OPENCUT_APP_DATA: join(work, 'app-data') },
+      env: { ...env, OPENCUT_ENV_JSON: envFile, OPENCUT_APP_DATA: appData },
       detached: true,
       stdio: ['ignore', 'pipe', 'pipe'],
     });
@@ -223,10 +246,25 @@ async function main() {
     const page = browser.contexts().flatMap((context) => context.pages()).find((entry) => entry.url() === shellUrl);
     assert.ok(page, 'Installed Electron window has no compiled editor page');
     await page.getByRole('button', { name: '新建项目' }).waitFor({ state: 'visible', timeout: 15_000 });
+    await checkTitleBar(page, '.project-home-masthead');
     assert.ok(studioLog.includes(`STUDIO_FFMPEG ${ffmpeg}`), 'Studio startup did not select the installed FFmpeg');
+    assert.doesNotMatch(studioLog, /MAIN_LEGACY_(USERDATA|NOTICE)/);
 
     const { project } = await requestJson(`${base}/api/projects/open`, 200, { path: fixture.dir });
     assert.ok(typeof project?.projectId === 'string');
+    const opened = await page.evaluate((projectId) => /** @type {any} */ (window).opencut.tabs.open({ projectId }), project.projectId);
+    assert.equal(opened.ok, true, JSON.stringify(opened));
+    await waitFor(() => browser?.contexts().flatMap((context) => context.pages())
+      .some((entry) => new URL(entry.url()).searchParams.get('project') === project.projectId) === true,
+    'Installed app did not open the project editor');
+    const editor = browser.contexts().flatMap((context) => context.pages())
+      .find((entry) => new URL(entry.url()).searchParams.get('project') === project.projectId);
+    assert.ok(editor);
+    await checkTitleBar(editor, '.topbar');
+    await editor.getByTestId('project-home-link').click({ timeout: 15_000 });
+    await page.getByTestId('home-new-project').waitFor({ state: 'visible', timeout: 15_000 });
+    assert.equal(await readFile(legacySentinel, 'utf8'), 'unrelated profile');
+    assert.doesNotMatch(studioLog, /MAIN_LEGACY_(USERDATA|NOTICE)/);
     const ordinary = await exportFilm(base, { projectId: project.projectId, outPath: join(fixture.dir, '普通 导出.mp4') });
     const burned = await exportFilm(base, {
       projectId: project.projectId, outPath: join(fixture.dir, '字幕 烧录.mp4'),
@@ -256,7 +294,7 @@ async function main() {
     }
 
     // Check for actual Chinese glyphs and compare the installed app's rendered output to its master.
-    const assPath = join(studioHome, "字幕 O'Brien,[x64].ass");
+    const assPath = join(studioHome, `字幕 O'Brien,[${arch}].ass`);
     await writeFile(assPath, burned.assText, 'utf8');
     const glyphLog = run(ffmpeg, [
       '-nostdin', '-v', 'verbose', '-ss', '1.5', '-i', masterMp4,
@@ -274,7 +312,10 @@ async function main() {
     assert.equal(original.length, rendered.length);
     const visiblePixels = rendered.reduce((count, value, index) => count + Number(value > 205 && (original[index] ?? value) < 175), 0);
     assert.ok(visiblePixels > 100, `Subtitle did not change enough pixels in the rendered frame: ${visiblePixels}`);
-    console.log(JSON.stringify({ result: 'PASS', arch: process.arch, installed: true, gui: true, mp4: true, subtitle: expectedSubtitle, visiblePixels, frames: burned.frames }));
+    console.log(JSON.stringify({
+      result: 'PASS', arch, installed: true, gui: true, integratedTitleBar: true, legacyProfileUntouched: true,
+      mp4: true, subtitle: expectedSubtitle, visiblePixels, frames: burned.frames,
+    }));
   } catch (error) {
     if (studioLog) console.error(studioLog);
     throw error;

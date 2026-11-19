@@ -7,6 +7,14 @@
 
 const { contextBridge, ipcRenderer } = require('electron');
 
+if (process.platform === 'darwin') {
+  const markDesktopTitleBar = () => {
+    document.documentElement.classList.add('motioncut-mac-shell');
+  };
+  if (document.documentElement) markDesktopTitleBar();
+  else window.addEventListener('DOMContentLoaded', markDesktopTitleBar, { once: true });
+}
+
 const CHANNELS = Object.freeze({
   health: 'opencut:studio-health',
   events: 'opencut:event',

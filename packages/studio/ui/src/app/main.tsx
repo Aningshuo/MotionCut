@@ -13,6 +13,7 @@ import { App } from './App';
 import { installBridge, installProbe } from './bridge';
 import { ElectronShell } from './shell';
 import { initializeStudioTheme } from './studio-theme';
+import './mac-window-chrome.css';
 
 initializeStudioTheme();
 installBridge();

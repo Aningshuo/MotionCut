@@ -380,6 +380,7 @@ export function TopBar(props: TopBarProps): ReactNode {
         ? h('span', { className: 'topbar-alert', role: 'status', 'aria-label': saveText, title: saveTitle }, editorIcon(props.busy ? 'refresh' : 'unlink', 14))
         : null,
     ),
+    h('div', { className: 'window-drag-region', 'data-testid': 'window-drag-region', 'aria-hidden': true }),
     h(
       'div',
       { className: 'topbar-actions' },

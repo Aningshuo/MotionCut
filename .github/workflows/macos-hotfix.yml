@@ -1,0 +1,176 @@
+name: macOS window and startup hotfix
+
+on:
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: Upload both verified disk images to the existing release
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: macos-hotfix-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  RELEASE_TAG: v0.3.2-r2
+
+jobs:
+  installer:
+    name: Verify installed macOS ${{ matrix.arch }} disk image
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: arm64
+            machine: arm64
+            runner: macos-15
+            previous_sha: ade9cd0220641d54ba54f52737ff3ad6159e1afaeb4c9701259ade7fccfdf4f8
+            source: MotionCut-FFmpeg-8.1.3-corresponding-source.tar.gz
+            source_sha: df8d6c627a879f6f1c50129ffed8cb4fd23038bf4541ed1a8924685d6674182f
+          - arch: x64
+            machine: x86_64
+            runner: macos-15-intel
+            previous_sha: 9f4a211b687382978100648b2020654c90172fa7aa4d96b8997ab488678a8426
+            source: MotionCut-FFmpeg-8.1.3-macos-x64-corresponding-source.tar.gz
+            source_sha: 91a79432a0d7162e396c921e1205381e9dd61a0ed85aa8714d657e5d77cadcac
+    env:
+      ARCH: ${{ matrix.arch }}
+      MACHINE: ${{ matrix.machine }}
+      PREVIOUS_INSTALLER: MotionCut-0.3.2-r2-macos-${{ matrix.arch }}-bundled.dmg
+      INSTALLER: MotionCut-0.3.2-r2-macos-${{ matrix.arch }}-hotfix1-bundled.dmg
+      CHECKSUMS: SHA256SUMS-macos-${{ matrix.arch }}-hotfix1.txt
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          architecture: ${{ matrix.arch }}
+      - name: Verify and reuse published native media tools
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PREVIOUS_SHA: ${{ matrix.previous_sha }}
+          MEDIA_SOURCE: ${{ matrix.source }}
+          MEDIA_SOURCE_SHA: ${{ matrix.source_sha }}
+        run: |
+          set -euo pipefail
+          test "$(uname -m)" = "$MACHINE"
+          test "$(node -p 'process.arch')" = "$ARCH"
+          digest=$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$RELEASE_TAG" |
+            jq -er --arg name "$MEDIA_SOURCE" '.assets[] | select(.name == $name and .state == "uploaded") | .digest')
+          test "$digest" = "sha256:$MEDIA_SOURCE_SHA"
+
+          previous="$RUNNER_TEMP/$PREVIOUS_INSTALLER"
+          curl --fail --location --retry 3 \
+            "https://github.com/$GITHUB_REPOSITORY/releases/download/$RELEASE_TAG/$PREVIOUS_INSTALLER" -o "$previous"
+          printf '%s  %s\n' "$PREVIOUS_SHA" "$previous" | shasum -a 256 -c -
+          mount=$(mktemp -d "$RUNNER_TEMP/motioncut-mac-mounted.XXXXXX")
+          hdiutil attach "$previous" -readonly -nobrowse -noautoopen -mountpoint "$mount"
+          trap 'hdiutil detach "$mount" >/dev/null 2>&1 || true' EXIT
+          bundle="$mount/MotionCut.app"
+          codesign --verify --deep --strict "$bundle"
+          resources="$bundle/Contents/Resources"
+          media="$RUNNER_TEMP/motioncut-mac-media"
+          mkdir -p "$media/bin"
+          cp "$resources/bin/ffmpeg" "$resources/bin/ffprobe" "$media/bin/"
+          ditto "$resources/app/third-party-media-licenses" "$media/notices"
+          # The existing arm64 release has its media notice next to the licenses.
+          if [[ ! -s "$media/notices/MEDIA-NOTICE.md" ]]; then
+            cp "$resources/app/MEDIA-NOTICE.md" "$media/notices/"
+          fi
+          if [[ ! -s "$media/notices/COPYING.GPLv2" ]]; then
+            cp "$media/notices/ffmpeg/COPYING.GPLv2" "$media/notices/"
+          fi
+          grep -F "/$MEDIA_SOURCE" "$media/notices/MEDIA-NOTICE.md"
+          if [[ -f "$resources/MotionCut.icns" ]]; then
+            cp "$resources/MotionCut.icns" "$media/"
+            printf 'MOTIONCUT_MAC_ICON=%s/MotionCut.icns\n' "$media" >> "$GITHUB_ENV"
+          fi
+          hdiutil detach "$mount"
+          trap - EXIT
+          for tool in ffmpeg ffprobe; do
+            lipo "$media/bin/$tool" -verify_arch "$MACHINE"
+            env PATH=/usr/bin:/bin:/usr/sbin:/sbin "$media/bin/$tool" -version
+          done
+          filters=$("$media/bin/ffmpeg" -hide_banner -filters)
+          grep -E '[[:space:]]subtitles[[:space:]]' <<< "$filters"
+          printf 'OPENCUT_FFMPEG=%s/bin/ffmpeg\nOPENCUT_FFPROBE=%s/bin/ffprobe\nMOTIONCUT_MEDIA_NOTICES=%s/notices\n' \
+            "$media" "$media" "$media" >> "$GITHUB_ENV"
+          printf 'PLAYWRIGHT_BROWSERS_PATH=%s/motioncut-playwright\n' "$RUNNER_TEMP" >> "$GITHUB_ENV"
+      - name: Prepare native Electron and headless Chromium
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm install --global pnpm@9.15.9
+          pnpm install --frozen-lockfile
+          pnpm exec electron --version
+          pnpm exec playwright install chromium-headless-shell
+      - name: Package and verify the installed application
+        shell: bash
+        run: |
+          set -euo pipefail
+          pnpm "package:mac:$ARCH"
+          mv "dist/MotionCut-${RELEASE_TAG#v}-$ARCH.dmg" "dist/$INSTALLER"
+          node scripts/macos/smoke-installed.mjs "dist/$INSTALLER" "$ARCH"
+          mkdir -p dist/macos-hotfix
+          mv "dist/$INSTALLER" dist/macos-hotfix/
+          cd dist/macos-hotfix
+          shasum -a 256 "$INSTALLER" > "$CHECKSUMS"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: verified-macos-hotfix-${{ matrix.arch }}
+          path: dist/macos-hotfix/
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 7
+
+  publish:
+    name: Publish both verified disk images
+    needs: installer
+    if: inputs.publish && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          pattern: verified-macos-hotfix-*
+          merge-multiple: true
+          path: payload
+      - name: Verify and upload without replacing existing files
+        shell: bash
+        working-directory: payload
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          for arch in arm64 x64; do
+            checksum="SHA256SUMS-macos-$arch-hotfix1.txt"
+            installer="MotionCut-${RELEASE_TAG#v}-macos-$arch-hotfix1-bundled.dmg"
+            sha256sum -c "$checksum"
+            for name in "$checksum" "$installer"; do
+              expected="sha256:$(sha256sum "$name" | cut -d ' ' -f1)"
+              get_asset() {
+                gh api "repos/$GITHUB_REPOSITORY/releases/tags/$RELEASE_TAG" |
+                  jq -r --arg name "$name" '.assets[] | select(.name == $name) | .digest'
+              }
+              uploaded=$(get_asset)
+              if [[ -z "$uploaded" ]]; then
+                gh release upload "$RELEASE_TAG" "$name" --repo "$GITHUB_REPOSITORY"
+                uploaded=$(get_asset)
+              fi
+              if [[ "$uploaded" != "$expected" ]]; then
+                echo "Remote digest mismatch for $name" >&2
+                exit 1
+              fi
+            done
+          done

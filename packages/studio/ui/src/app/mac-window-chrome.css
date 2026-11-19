@@ -1,0 +1,37 @@
+.window-drag-region {
+  display: none;
+}
+
+/* Leave room for the native window buttons on both the home and editor views. */
+:root.motioncut-mac-shell .app > :is(.project-home-masthead, .topbar) {
+  padding-left: 84px;
+}
+
+:root.motioncut-mac-shell .app > .project-home-masthead {
+  min-height: 40px;
+  padding-right: 12px;
+  background: var(--surface-0, var(--panel));
+}
+
+:root.motioncut-mac-shell .app > .project-home-masthead .project-home-logo {
+  flex-shrink: 0;
+}
+
+:root.motioncut-mac-shell .app > .topbar .topbar-project {
+  flex: 0 1 auto;
+}
+
+/* Only the empty space handles window drag gestures. Buttons and tabs retain their hit regions. */
+:root.motioncut-mac-shell .app > :is(.project-home-masthead, .topbar) > .window-drag-region {
+  display: block;
+  align-self: stretch;
+  flex: 1 0 28px;
+  app-region: drag;
+}
+
+@media (max-width: 720px) {
+  /* Keep the window header reachable when the assistant fills the workspace. */
+  :root.motioncut-mac-shell .app > .agent-panel {
+    top: 40px;
+  }
+}

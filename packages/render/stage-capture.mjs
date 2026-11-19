@@ -238,6 +238,7 @@ export async function startStageCapture(opts) {
     vitePort: opts.vitePort ?? 0,
     contentPort: opts.contentPort ?? 0,
     projectsRoot: opts.projectsRoot ?? path.dirname(projectRoot),
+    recordProjectHistory: false,
     logger: () => {},
   });
   const isolatedId = snapshot ? `clip-${crypto.randomBytes(8).toString('hex')}` : '';

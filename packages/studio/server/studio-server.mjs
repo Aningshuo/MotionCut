@@ -136,6 +136,7 @@ const MEDIA_BODY_LIMIT = Math.ceil(MAX_UPLOAD_BYTES * 1.4) + 64 * 1024;
  *   eventHistoryLimit?: number,
  *   logger?: (line: string) => void,
  *   home?: string,
+ *   recordProjectHistory?: boolean,
  *   readApiPage?: (projectId: string, target: {kind: 'film'|'page', key: string, url: string}) => any,
  *   exportRunner?: Function,
  *   agentProvider?: { id: string, mock?: boolean, generate: (input: any) => Promise<any> },
@@ -1442,7 +1443,7 @@ export function createStudio(options) {
         return;
       }
       /* M56：打开成功才写「最近工程」；写索引失败不能把打开本身弄失败。 */
-      if (summary !== null) {
+      if (summary !== null && options.recordProjectHistory !== false) {
         await recordProjectOpen({ path: summary.path, name: summary.name }, { home: options.home }).catch(
           () => undefined,
         );

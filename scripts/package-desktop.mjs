@@ -38,8 +38,8 @@
  * 额外硬判据（普通 `build:desktop` 不受影响）：
  * - 选中的 ffmpeg **必须带 `subtitles` 滤镜**（libass），否则字幕烧录在包里直接不可用；
  *   本机 Homebrew 8.1.2 没有这个滤镜，所以会自动落到仓库 R21 那份（`repo:R21`，记 sha256）。
- * - Intel 发布包须用原生 x64 macOS，安装 x64 Electron 和 Playwright 浏览器，并通过
- *   OPENCUT_FFMPEG / OPENCUT_FFPROBE 指定自行构建的 x64 工具。
+ * - 发布包在相应架构的原生 macOS 上构建，并验证 Electron、Playwright 和媒体工具的架构。
+ *   Intel 构建通过 OPENCUT_FFMPEG / OPENCUT_FFPROBE 指定配套的 x64 工具。
  * - 签名仍是 ad-hoc（`codesign --force --deep --sign -`），不申请证书、不公证。
  */
 
@@ -378,15 +378,15 @@ function ditto(from, to) {
 }
 
 
-function requireIntelMachO(filename, label) {
-  const result = spawnSync('lipo', [filename, '-verify_arch', 'x86_64'], { encoding: 'utf8' });
+function requireMachO(filename, label, arch) {
+  const result = spawnSync('lipo', [filename, '-verify_arch', arch], { encoding: 'utf8' });
   if (result.status !== 0) {
-    throw new Error(`${label} 缺少 x86_64 架构：${filename}。请在 Intel 环境安装对应的依赖。`);
+    throw new Error(`${label} 缺少 ${arch} 架构：${filename}。请安装对应架构的依赖。`);
   }
 }
 
-/** Keep test fixtures and workstation configuration out of the Intel release. */
-function copyIntelRuntimeTree(source, dest, tree) {
+/** Keep test fixtures and workstation configuration out of the release. */
+function copyReleaseRuntimeTree(source, dest, tree) {
   cpSync(source, dest, {
     recursive: true,
     verbatimSymlinks: true,
@@ -685,13 +685,14 @@ async function main() {
   const isIntelRelease = releaseArch === 'x64';
   const isRelease = releaseArch !== undefined;
   const target = isRelease ? `mac-${releaseArch}` : 'dev-build';
-  if (isIntelRelease) {
-    if (args.includes('--mac-arm64')) throw new Error('一次只能选择一个 macOS 发布架构。');
-    const translated = process.platform === 'darwin' && process.arch === 'x64'
+  const machoArch = isIntelRelease ? 'x86_64' : 'arm64';
+  if (isRelease) {
+    if (isIntelRelease && args.includes('--mac-arm64')) throw new Error('一次只能选择一个 macOS 发布架构。');
+    const translated = process.platform === 'darwin' && isIntelRelease
       ? spawnSync('/usr/sbin/sysctl', ['-in', 'sysctl.proc_translated'], { encoding: 'utf8' }).stdout?.trim()
       : undefined;
-    if (process.platform !== 'darwin' || process.arch !== 'x64' || translated === '1') {
-      throw new Error('macOS Intel 发布包须在原生 Intel Mac 上使用 x64 Node 构建和验证。');
+    if (process.platform !== 'darwin' || process.arch !== releaseArch || translated === '1') {
+      throw new Error(`macOS ${releaseArch} 发布包须在对应架构的原生 macOS 上构建和验证。`);
     }
   }
   /* 0. 先验白名单（M95）：`packages/` 里被 import 的目录，必须都在 APP_TREES 里。
@@ -720,11 +721,11 @@ async function main() {
     throw new Error(`没有 Electron 运行时：${ELECTRON_APP}（先 pnpm install）`);
   }
 
-  const intelTools = isIntelRelease ? resolveTools({ requireExplicit: true }) : null;
-  if (intelTools !== null) {
-    requireIntelMachO(join(ELECTRON_APP, 'Contents', 'MacOS', 'Electron'), 'Electron');
-    requireIntelMachO(intelTools.ffmpeg, 'FFmpeg');
-    requireIntelMachO(intelTools.ffprobe, 'ffprobe');
+  const releaseTools = isRelease ? resolveTools({ requireExplicit: isIntelRelease }) : null;
+  if (releaseTools !== null) {
+    requireMachO(join(ELECTRON_APP, 'Contents', 'MacOS', 'Electron'), 'Electron', machoArch);
+    requireMachO(releaseTools.ffmpeg, 'FFmpeg', machoArch);
+    requireMachO(releaseTools.ffprobe, 'ffprobe', machoArch);
   }
   log('构建 UI（vite build）');
   const ui = spawnSync(
@@ -795,7 +796,7 @@ async function main() {
     }
     const dest = join(appDir, relative);
     ensureDir(dirname(dest), { label: 'package copy' });
-    if (isIntelRelease) copyIntelRuntimeTree(realpathSync(source), dest, relative);
+    if (isRelease) copyReleaseRuntimeTree(realpathSync(source), dest, relative);
     else ditto(realpathSync(source), dest);
     const counted = countTree(dest);
     files[relative] = counted;
@@ -805,7 +806,7 @@ async function main() {
     }
   }
 
-  if (isIntelRelease) {
+  if (isRelease) {
     for (const notice of [
       'LICENSE',
       'TRADEMARKS.md',
@@ -835,7 +836,15 @@ async function main() {
       const notices = readFileSync(noticePath, 'utf8').split('\n')
         .filter((line) => !line.startsWith('- 运行时使用独立安装的 FFmpeg 和 ffprobe'))
         .join('\n').trimEnd();
-      writeFileSync(noticePath, notices + '\n- macOS Intel 安装包包含独立运行的 FFmpeg 和 ffprobe。授权声明、版权说明和对应源码见 [第三方媒体工具](third-party-media-licenses/MEDIA-NOTICE.md)。\n');
+      writeFileSync(noticePath, notices + '\n- macOS 安装包包含独立运行的 FFmpeg 和 ffprobe。授权声明、版权说明和对应源码见 [第三方媒体工具](third-party-media-licenses/MEDIA-NOTICE.md)。\n');
+    }
+    const brandedIcon = process.env.MOTIONCUT_MAC_ICON;
+    if (brandedIcon) {
+      if (!isAbsolute(brandedIcon) || !statSync(brandedIcon, { throwIfNoEntry: false })?.isFile()) {
+        throw new Error('MOTIONCUT_MAC_ICON 必须指向 .icns 图标文件的绝对路径。');
+      }
+      cpSync(brandedIcon, join(resources, 'MotionCut.icns'));
+      plistSet(plist, 'CFBundleIconFile', 'MotionCut.icns');
     }
   }
 
@@ -860,8 +869,8 @@ async function main() {
       `没有可随包的 ${shellName}：${shellSource}（先跑 npx playwright install chromium-headless-shell）`,
     );
   }
-  if (isIntelRelease) {
-    requireIntelMachO(join(shellSource, 'chrome-headless-shell-mac-x64', 'chrome-headless-shell'), 'Playwright headless Chromium');
+  if (isRelease) {
+    requireMachO(join(shellSource, `chrome-headless-shell-mac-${releaseArch}`, 'chrome-headless-shell'), 'Playwright headless Chromium', machoArch);
   }
   const browsersDir = join(appDir, 'playwright-browsers');
   ensureDir(browsersDir, { label: 'package playwright browsers' });
@@ -870,7 +879,7 @@ async function main() {
   files[`playwright-browsers/${shellName}`] = shellTree;
   log(`随包浏览器：${shellName}（${shellTree.files} 个文件，${(shellTree.bytes / 1024 / 1024).toFixed(0)}MiB）`);
 
-  const tools = intelTools ?? resolveTools({ requireLibass: isRelease });
+  const tools = releaseTools ?? resolveTools({ requireLibass: false });
   log(`ffmpeg 源（${tools.source}）：${tools.ffmpeg}`);
   log(`ffmpeg 身份：${tools.version}`);
   log(`subtitles 滤镜（libass）：${tools.subtitles ? '有' : '无'}`);
@@ -926,7 +935,7 @@ async function main() {
     throw new Error(`codesign 失败：\n${signed.stdout}\n${signed.stderr}`);
   }
 
-  if (isIntelRelease) {
+  if (isRelease) {
     const verified = spawnSync('codesign', ['--verify', '--deep', '--strict', APP], { encoding: 'utf8' });
     if (verified.status !== 0) throw new Error(`安装包签名验证失败：${verified.stderr || verified.error}`);
   }
@@ -939,8 +948,6 @@ async function main() {
     log(`旧品牌发布包保留在：${aside}`);
   }
   const dmgPath = isRelease ? join(DIST, `${APP_NAME}-${version}-${releaseArch}.dmg`) : null;
-  const dmg = dmgPath !== null && !isIntelRelease ? makeDmg(outRoot, dmgPath, version) : null;
-  if (dmg !== null) log(`dmg：${dmg.path}（${(dmg.bytes / 1024 / 1024).toFixed(1)}MiB）`);
 
   const binTree = countTree(binDir);
   files['bin/ffmpeg'] = { files: 1, bytes: ffmpeg.bytes };
@@ -993,7 +1000,7 @@ async function main() {
     signed: true,
     signature: 'adhoc',
     notarized: false,
-    dmg,
+    dmg: null,
     asar: false,
     builtAt: new Date().toISOString(),
   };
@@ -1007,8 +1014,8 @@ async function main() {
      导不出来就 exit 1：宁可不产包，也不产一个「能开不能导」的包。 */
   log(`冒烟：用 ${APP} 起临时 Studio 导 3 秒含 page 层…`);
   try {
-    report.smoke = await runExportSmoke(APP, isIntelRelease);
-    if (isIntelRelease) {
+    report.smoke = await runExportSmoke(APP, isRelease);
+    if (dmgPath !== null) {
       report.dmg = makeDmg(outRoot, dmgPath, version);
       log(`dmg：${report.dmg.path}（${(report.dmg.bytes / 1024 / 1024).toFixed(1)}MiB）`);
     }
