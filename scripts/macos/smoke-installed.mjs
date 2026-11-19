@@ -253,6 +253,7 @@ async function main() {
     assert.ok(page, 'Installed Electron window has no compiled editor page');
     await page.getByRole('button', { name: '新建项目' }).waitFor({ state: 'visible', timeout: 15_000 });
     await checkTitleBar(page, '.project-home-masthead');
+    assert.equal((await page.locator('.project-home-masthead').innerText()).trim(), '', 'The empty home header should show only the logo');
     assert.ok(studioLog.includes(`STUDIO_FFMPEG ${ffmpeg}`), 'Studio startup did not select the installed FFmpeg');
     assert.doesNotMatch(studioLog, /MAIN_LEGACY_(USERDATA|NOTICE)/);
 

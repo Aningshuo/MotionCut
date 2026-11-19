@@ -149,7 +149,6 @@ export function ElectronShell(): ReactNode {
   return h('div', { className: 'app shell-app project-home' },
     h('header', { className: 'project-home-masthead' },
       motionCutMark('project-home-logo'),
-      h('span', null, 'MotionCut'),
       tabBar,
       h('div', { className: 'window-drag-region', 'data-testid': 'window-drag-region', 'aria-hidden': true })),
     h('main', { className: 'project-home-body', 'data-testid': 'shell-body' },
