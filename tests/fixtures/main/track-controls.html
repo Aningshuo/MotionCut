@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1280, height=720">
+<title>M38 夹具：画面轨 + 声音轨（轨道开关用）</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #000; }
+  section { position: relative; }
+  video { position: absolute; }
+</style>
+</head>
+<body>
+<!--
+  M38-TRACK-CONTROLS 的工程：两条轨各管一件事，开关的效果能单独看见。
+  - T0 画面：3s bars（隐藏后舞台应是黑的）
+  - T1 声音：4s 动态音（静音后电平表应归零）
+  媒体全部来自 tests/fixtures/media，逐字节可复现。
+-->
+<section id="picture">
+  <video id="tc-v1" src="assets/bars.mp4#t=0,3" at="0" style="left: 0px; top: 0px; width: 1280px; height: 720px"></video>
+</section>
+<section id="sound">
+  <audio id="tc-a1" src="assets/dyn.wav#t=0,4" at="0" volume="1"></audio>
+</section>
+</body>
+</html>

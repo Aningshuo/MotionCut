@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>A6 用的反例模板：墙钟动画（不受帧驱动）</title>
+<!--
+  这条模板**故意不接 --motion-t**：动画在跑（play-state 没暂停、没有负延迟），
+  画面由浏览器的时钟决定 → 导出不可复现。
+  M33 只做一件事：motion-wire 把 library.json 里的 deterministic:false 透传给面板，
+  让副线1 1.1.0 的「不受帧驱动」警示在 Studio 里真的能看到（A6 的截图）。
+-->
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #1a1206; }
+  .spin {
+    position: absolute; left: 50%; top: 50%; width: 260px; height: 260px; margin: -130px 0 0 -130px;
+    border-radius: 24px; background: #f59e0b;
+    animation: spin 900ms linear infinite;
+  }
+  @keyframes spin {
+    from { transform: rotate(0deg) scale(0.9); }
+    to   { transform: rotate(360deg) scale(0.9); }
+  }
+</style>
+</head>
+<body>
+<div class="spin"></div>
+</body>
+</html>

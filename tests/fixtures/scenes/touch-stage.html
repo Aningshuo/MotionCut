@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>触摸手势夹具 · S44</title>
+<style>
+  html, body { margin: 0; padding: 0; overflow: hidden; background: #05080f; touch-action: none; }
+  /* 舞台顶在 (0,0)、1280×720：client 坐标 == 舞台坐标（scale=1），算落点时不用换两次 */
+  #stage {
+    position: relative;
+    width: 1280px;
+    height: 720px;
+    overflow: hidden;
+    background:
+      radial-gradient(900px 520px at 78% 82%, #ffd9a0 0%, rgba(255,217,160,0) 62%),
+      linear-gradient(155deg, #0a1424 0%, #12294a 46%, #e8c894 100%);
+    font-family: system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+  }
+  .grid {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(120,170,255,0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(120,170,255,0.06) 1px, transparent 1px);
+    background-size: 64px 64px;
+  }
+  .block {
+    position: absolute;
+    background: rgba(120,170,255,0.16);
+    box-shadow: 0 0 0 1px rgba(120,170,255,0.4) inset;
+    color: #dbeafe;
+    font: 13px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
+    padding: 8px;
+    box-sizing: border-box;
+  }
+</style>
+</head>
+<body>
+  <div id="stage">
+    <div class="grid"></div>
+    <div class="block" id="card-a" data-at="#card-a" style="left:100px;top:80px;width:320px;height:200px">card-a</div>
+    <div class="block" id="card-b" data-at="#card-b" style="left:620px;top:300px;width:300px;height:180px">card-b</div>
+  </div>
+</body>
+</html>

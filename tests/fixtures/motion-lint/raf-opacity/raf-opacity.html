@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="motion-clock" content="--motion-t;unit=ms">
+<title>反例 · 看着正常但用 rAF 改 opacity</title>
+<!--
+  这是 B3 那个「看起来完全正常」的反例：meta 有、参数标注有、CSS 里也有一条
+  paused + 负 delay 的动画，肉眼完全看不出问题——真正的画面却来自下面那段 rAF。
+-->
+<link rel="stylesheet" href="./raf-opacity.css">
+</head>
+<body>
+<div class="toast" data-role="root">
+  <i class="pulse" data-motion-param="period" data-motion-type="number" data-motion-min="300" data-motion-max="2000" data-motion-default="900" data-motion-label="周期"></i>
+  <span class="label">新消息</span>
+</div>
+<script>
+  /* 「入场淡入」——它每帧写 style.opacity，导出按 t 取帧时抓到的是当时恰好走到哪儿 */
+  const label = document.querySelector('.label');
+  const start = performance.now();
+  function tick() {
+    const elapsed = performance.now() - start;
+    label.style.opacity = String(0.2 + 0.8 * Math.min(1, (elapsed % 900) / 900));
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+</script>
+</body>
+</html>

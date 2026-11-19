@@ -1,0 +1,12 @@
+.editor-tooltip[role='tooltip'] {
+  position: fixed;
+  width: max-content;
+  max-width: min(240px, calc(100vw - 16px));
+  padding: 5px 8px;
+  border: 1px solid var(--line-soft);
+  box-shadow: 0 3px 10px rgb(0 0 0 / 22%);
+  color: var(--text);
+  line-height: 1.45;
+  white-space: normal;
+  pointer-events: none;
+}

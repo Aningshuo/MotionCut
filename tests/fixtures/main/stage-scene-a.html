@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: #0f1720; font-family: -apple-system, "PingFang SC", Arial, sans-serif; }
+  .stage { position: relative; width: 100%; height: 100%; }
+  .panel { position: absolute; left: 90px; top: 80px; width: 1100px; height: 560px; padding: 54px; background: #f7f5ee; border-radius: 26px; box-shadow: 0 12px 50px rgba(0,0,0,0.45); }
+  .tag { display: inline-block; font-size: 20px; letter-spacing: 0.12em; color: #fff; background: #246c62; border-radius: 999px; padding: 8px 18px; }
+  h1 { margin: 20px 0 6px; font-size: 72px; color: #16332f; }
+  p { margin: 0 0 26px; font-size: 26px; color: #5b6560; }
+  .chart { display: flex; align-items: flex-end; gap: 34px; height: 210px; }
+  .bar { width: 170px; background: linear-gradient(180deg, #3f9c8d, #246c62); border-radius: 12px 12px 0 0; }
+  .bar.two { opacity: 0.72; }
+  .bar.three { opacity: 0.46; }
+  .clock { position: absolute; right: 60px; top: 54px; font: 26px/1 ui-monospace, Menlo, monospace; color: #6c7a74; }
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="panel" id="panel">
+    <span class="tag" id="tag">SCENE A</span>
+    <h1 id="title">第一段网页</h1>
+    <p id="subtitle">柱子高度由 film.frame(t) 决定</p>
+    <div class="chart" id="chart">
+      <div class="bar one" id="bar-one"></div>
+      <div class="bar two" id="bar-two"></div>
+      <div class="bar three" id="bar-three"></div>
+    </div>
+    <div class="clock" id="clock"></div>
+  </div>
+</div>
+<script type="module">
+  const bars = [document.querySelector('#bar-one'), document.querySelector('#bar-two'), document.querySelector('#bar-three')];
+  const clock = document.querySelector('#clock');
+  let calls = 0;
+  window.film = {
+    duration: 4,
+    ready() { return Promise.resolve(); },
+    frame(t) {
+      calls += 1;
+      const q = Math.max(0, Math.min(1, Number(t) / 4));
+      bars.forEach((el, i) => { el.style.height = (30 + (i + 1) * 36 + 110 * q) + 'px'; });
+      clock.textContent = 't=' + Number(t).toFixed(2);
+      return Promise.resolve();
+    },
+    get calls() { return calls; }
+  };
+</script>
+</body>
+</html>

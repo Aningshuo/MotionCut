@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>broken resource</title>
+<style>
+  html, body { margin: 0; width: 640px; height: 360px; background: #161018; color: #fff; overflow: hidden; }
+  #pic { position: absolute; left: 40px; top: 40px; width: 320px; height: 180px; background: #2a1c2e; }
+</style>
+</head>
+<body>
+  <img id="pic" src="/tests/fixtures/scenes/media/definitely-missing.png" alt="">
+  <p id="msg" style="position:absolute;left:40px;top:260px">资源加载中…</p>
+<script>
+(() => {
+  'use strict';
+  const img = document.getElementById('pic');
+  const msg = document.getElementById('msg');
+
+  window.film = {
+    meta: { width: 640, height: 360, duration: 2 },
+    ready() {
+      return new Promise((resolve, reject) => {
+        const fail = () => reject(new Error('image failed to load: ' + new URL(img.src).pathname));
+        if (img.complete) {
+          if (img.naturalWidth > 0) resolve();
+          else fail();
+          return;
+        }
+        img.addEventListener('load', resolve, { once: true });
+        img.addEventListener('error', fail, { once: true });
+      });
+    },
+    async frame(t) {
+      msg.textContent = 't=' + Number(t).toFixed(3);
+      document.body.dataset.filmFrame = String(t);
+    }
+  };
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="utf-8"><title>frame throws</title>
+<style>html,body{margin:0;width:640px;height:360px;background:#1a1020;color:#fff}</style>
+</head>
+<body>
+<canvas id="cv" width="640" height="360"></canvas>
+<script>
+(() => {
+  'use strict';
+  window.film = {
+    meta: { width: 640, height: 360, duration: 2 },
+    async ready() { document.body.dataset.filmReady = '1'; },
+    async frame(t) {
+      throw new Error('scene exploded while drawing t=' + t);
+    }
+  };
+})();
+</script>
+</body>
+</html>

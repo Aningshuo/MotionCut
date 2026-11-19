@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>波形验收舞台 · S35</title>
+<!--
+  S35 波形验收的**纯布局页**：这里没有一行绘制逻辑。
+  所有画面都由测试通过 `page.evaluate()` 调 `loadPeaks` / `drawWaveform` 画进来，
+  这样截图证明的是模块本身，而不是夹具里另写的一套。
+-->
+<style>
+  html, body { margin: 0; padding: 0; background: #0b1220; color: #e2e8f0; font: 13px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  .wrap { padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+  h2 { margin: 0; font-size: 14px; font-weight: 600; color: #94a3b8; letter-spacing: 0.04em; }
+  .grid { display: grid; grid-template-columns: 148px repeat(3, 360px); gap: 8px 10px; align-items: center; }
+  .cell { position: relative; }
+  .cell canvas { display: block; width: 100%; border-radius: 6px; background: #0f172a; box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.22); }
+  .tag { color: #94a3b8; font-size: 12px; }
+  .tag b { color: #e2e8f0; font-weight: 600; }
+  .wide { display: flex; flex-direction: column; gap: 6px; }
+  .wide canvas { display: block; border-radius: 6px; background: #0f172a; box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.22); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <!-- A1：三种素材 × 三种状态 -->
+  <div class="grid" data-grid="a1">
+    <div class="tag"><b>素材 / 状态</b></div>
+    <div class="tag">正常（volume=1）</div>
+    <div class="tag">静音（muted）</div>
+    <div class="tag">超满幅（volume=2）</div>
+    <div class="tag" data-label="tone"><b>短 wav</b><br>1kHz 3s 立体声</div>
+    <div class="cell"><canvas data-mat="tone" data-state="normal" width="360" height="64"></canvas></div>
+    <div class="cell"><canvas data-mat="tone" data-state="muted" width="360" height="64"></canvas></div>
+    <div class="cell"><canvas data-mat="tone" data-state="over" width="360" height="64"></canvas></div>
+
+    <div class="tag" data-label="mp3"><b>1 分钟 mp3</b><br>44.1kHz 单声道</div>
+    <div class="cell"><canvas data-mat="mp3" data-state="normal" width="360" height="64"></canvas></div>
+    <div class="cell"><canvas data-mat="mp3" data-state="muted" width="360" height="64"></canvas></div>
+    <div class="cell"><canvas data-mat="mp3" data-state="over" width="360" height="64"></canvas></div>
+
+    <div class="tag" data-label="stereo"><b>双声道不同内容</b><br>L 440Hz / R 1760Hz</div>
+    <div class="cell"><canvas data-mat="stereo" data-state="normal" width="360" height="64"></canvas></div>
+    <div class="cell"><canvas data-mat="stereo" data-state="muted" width="360" height="64"></canvas></div>
+    <div class="cell"><canvas data-mat="stereo" data-state="over" width="360" height="64"></canvas></div>
+  </div>
+
+  <!-- A2：全幅 vs 25% 子区间（同一素材、同一高度） -->
+  <div class="wide">
+    <div class="tag"><b>A2 子区间</b>　上：全幅（clipStart=0 clipEnd=duration）　中：25% 子区间　下：同一区间直接解码裁剪文件</div>
+    <canvas data-wide="full" width="1200" height="96"></canvas>
+    <canvas data-wide="quarter" width="1200" height="96"></canvas>
+    <canvas data-wide="quarter-ref" width="1200" height="96"></canvas>
+    <canvas data-wide="half" width="1200" height="96"></canvas>
+    <canvas data-wide="half-ref" width="1200" height="96"></canvas>
+  </div>
+
+  <!-- A3：1200px 缓存命中重绘 -->
+  <div class="wide">
+    <div class="tag"><b>A3 缓存命中重绘</b>　1200×120，播放头在 1.5s</div>
+    <canvas data-perf width="1200" height="120"></canvas>
+  </div>
+
+  <!-- A5：失败占位 -->
+  <div class="wide">
+    <div class="tag"><b>A5 失败占位</b>　上：损坏文件（DECODE_FAILED）　下：不支持的容器（UNSUPPORTED_FORMAT）</div>
+    <canvas data-error="decode" width="600" height="96"></canvas>
+    <canvas data-error="format" width="600" height="96"></canvas>
+  </div>
+</div>
+</body>
+</html>

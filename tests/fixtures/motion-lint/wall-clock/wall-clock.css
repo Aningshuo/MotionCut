@@ -1,0 +1,6 @@
+.card { width: calc(var(--size, 20) * 1px); height: calc(var(--size, 20) * 1px); background: #0f172a; position: relative; }
+.dot {
+  width: 12px; height: 12px; border-radius: 50%; background: #38bdf8;
+  animation: ring 1200ms linear infinite;
+}
+@keyframes ring { from { transform: scale(.4); opacity: .3; } to { transform: scale(1); opacity: 1; } }

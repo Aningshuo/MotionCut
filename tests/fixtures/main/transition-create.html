@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1280, height=720">
+<title>M28 夹具：三个「候选切点」，只有一个是可加转场的硬切</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #000; }
+  section { position: relative; }
+  video { position: absolute; }
+</style>
+</head>
+<body>
+<!--
+  A1 要看的是「哪些位置出『加转场』按钮」，A2 还要看总时长 10s → 9.5s，所以硬切放在片尾：
+    V1 c-c [0,2.5) → c-d [1.5,5)   已经有 1.0s 重叠 + fade        → 不出（那是调长）
+    V1 c-a [6,8)   → c-b [8,10)    硬切（首尾相接、无重叠）      → 唯一可加
+    V2 c-e [8,9.4)                 和 c-a→c-b 的起点重合（且比 9.5 短），
+                                   但不同轨，不是切点              → 不出
+  素材沿用 M25 的中性灰无损（A6 的像素判据与 M25 同一套）。
+-->
+<section id="v1">
+  <video id="c-c" src="assets/a-light.mp4#t=0,2.5" at="0" muted style="left: 0px; top: 0px; width: 1280px; height: 720px"></video>
+  <video id="c-d" src="assets/b-dark.mp4#t=0.5,3" at="1.5" muted overrides='[{"fade":[1,0]}]' style="left: 0px; top: 0px; width: 1280px; height: 720px"></video>
+  <video id="c-a" src="assets/a-light.mp4#t=0,2" at="6" muted style="left: 0px; top: 0px; width: 1280px; height: 720px"></video>
+  <video id="c-b" src="assets/b-dark.mp4#t=0,2" at="8" muted style="left: 0px; top: 0px; width: 1280px; height: 720px"></video>
+</section>
+<section id="v2">
+  <video id="c-e" src="assets/b-dark.mp4#t=0,1.4" at="8" muted style="left: 0px; top: 0px; width: 640px; height: 360px"></video>
+</section>
+</body>
+</html>

@@ -1,0 +1,49 @@
+{
+  "version": 1,
+  "entries": [
+    {
+      "id": "motion_6e9bcc272242",
+      "name": "accent-card",
+      "kind": "saved",
+      "sourcePath": "scenes/accent-card.html",
+      "sourceHash": "4d7bd9056b65d0395c852c066cd8ca51871f346f893c415a1c485a3a7fef283c",
+      "assets": [],
+      "params": {
+        "accent": {
+          "type": "color",
+          "label": "主色",
+          "default": "#17202c"
+        }
+      },
+      "deterministic": true,
+      "version": 1,
+      "createdAt": "2026-11-10T01:22:42.456Z",
+      "history": [
+        {
+          "sourceHash": "4d7bd9056b65d0395c852c066cd8ca51871f346f893c415a1c485a3a7fef283c",
+          "version": 1,
+          "snapshot": "motion/versions/motion_6e9bcc272242/4d7bd9056b65.html"
+        }
+      ]
+    },
+    {
+      "id": "motion_d57a80376ee7",
+      "name": "taken-name",
+      "kind": "saved",
+      "sourcePath": "scenes/taken-name.html",
+      "sourceHash": "e19c18cbf09a36b358426cb67a317260a752504e8d374e3fe6369ad5094ba57a",
+      "assets": [],
+      "params": {},
+      "deterministic": true,
+      "version": 1,
+      "createdAt": "2026-11-10T01:22:42.601Z",
+      "history": [
+        {
+          "sourceHash": "e19c18cbf09a36b358426cb67a317260a752504e8d374e3fe6369ad5094ba57a",
+          "version": 1,
+          "snapshot": "motion/versions/motion_d57a80376ee7/e19c18cbf09a.html"
+        }
+      ]
+    }
+  ]
+}

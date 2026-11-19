@@ -1,0 +1,83 @@
+{
+  "format": "opencut-contracts-manifest/3",
+  "contractVersion": "1.2.0",
+  "packageRevision": 5,
+  "owner": "BRAIN",
+  "hashRule": "sha256(json.dumps(files, sort_keys=True, ensure_ascii=False))",
+  "files": [
+    {
+      "path": "README.md",
+      "bytes": 7220,
+      "sha256": "785866c6aa6d0dd2502c006d4fa840976edf02aae1f947c9cf066519e4c29e60"
+    },
+    {
+      "path": "film-doc.ts",
+      "bytes": 11261,
+      "sha256": "a618e6e35dbf562fa46a24ac7e4494945eeda95a64f14c9581770a44a1019e3f"
+    },
+    {
+      "path": "edit-ops.ts",
+      "bytes": 4003,
+      "sha256": "2450ff6b6eaf70be635ab144a8f8a3e7c9e93c6c98bacc7c9b2979844579449d"
+    },
+    {
+      "path": "frame.ts",
+      "bytes": 2984,
+      "sha256": "ae7af98d6183ad168b3d1ffd9126d2a0018e752cdf8cce634d6bf75070be5b2b"
+    },
+    {
+      "path": "layers.ts",
+      "bytes": 4285,
+      "sha256": "73be2bca35845f6020f05b0dc6afb57a548d75fa8ea3caf48e8f942a3857c7fe"
+    },
+    {
+      "path": "agent.ts",
+      "bytes": 3274,
+      "sha256": "ac0fa236ca421a0b71e043f97bd105478822a9a167ceac827729961887771639"
+    },
+    {
+      "path": "render.ts",
+      "bytes": 4153,
+      "sha256": "d6c2ac285b53edb0a7fa85670cf9ba408ec9df50831d85ced995dcc363b04e5f"
+    },
+    {
+      "path": "history.ts",
+      "bytes": 2773,
+      "sha256": "4ac691540a206efacbc4ba0b1a9367e69cfec7da10f915bd56f435fc2ee5f5be"
+    },
+    {
+      "path": "events.ts",
+      "bytes": 4101,
+      "sha256": "246ed1b1993f8ac0fdb3e3f87bb072ea196a9527fd6af4b98abe67fef3cb5485"
+    },
+    {
+      "path": "stage.ts",
+      "bytes": 3861,
+      "sha256": "5de57ade495da784d1d90dfb42b7a408df5a780e0d29bbee74a83da67433bb21"
+    },
+    {
+      "path": "fixtures/film-v12.html",
+      "bytes": 1458,
+      "sha256": "cbb1c9eace56ad0a4e9445597446d8a7a36506e3e57e88f5ce1c7733d18d16a9"
+    },
+    {
+      "path": "fixtures/cases.json",
+      "bytes": 4083,
+      "sha256": "a7a1db57965a71853c0a9e11e21071ccc8524ab97648161503bd94ddcea92228"
+    }
+  ],
+  "legacy": [
+    {
+      "path": "fixtures/film-min.html",
+      "bytes": 1948,
+      "sha256": "cd76da4d2b8e5967522a8f028a422e87b243b8da93676e1833f85ed0ea511b44",
+      "reason": "v1.1 data-* 方言，与计划/参考不一致；只作历史证据，不得作为样例或规范",
+      "removedIn": "1.2.0-r3 (R4.1 pre-dispatch)",
+      "removedBy": "BRAIN (single owner)",
+      "replacement": "fixtures/film-v12.html",
+      "negativeUseInstead": "fixtures/cases.json FILM-ERR-03 (inline legacy string)",
+      "evidence": "coordination/openfilm-complete-r2/rounds/R4/evidence/REMOVED-film-min.html"
+    }
+  ],
+  "manifestHash": "1bac6e1ab491b2355a32c898c6b329848fc51a481a144b87d4252fa4761545a3"
+}

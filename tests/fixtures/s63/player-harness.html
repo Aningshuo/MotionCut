@@ -1,0 +1,491 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>S63 · 播放时钟 + 真媒体 取证页</title>
+<!--
+  S63 取证页（不是产品界面）。
+
+  为什么要有这一页：`packages/studio/ui/src/player/clock.mjs` 是纯逻辑（不碰 DOM），
+  产品里还没有任何面板把它接到 `<video>`/`<audio>` 上（App.tsx 无播放器组件）。
+  所以「音画同步」只能在这一页里用**真媒体 + 真 rAF + 真时钟**跑出来：
+  音频元素当主时钟（clock 的 audioClock），视频按时钟位置校正，偏差用
+  `measureAvDrift()`（产品里的同一个函数）算成帧。
+
+  判据全部落在 `window.__s63` 的返回值上，脚本侧不猜。
+-->
+<style>
+  html, body { margin: 0; background: #05070d; color: #cbd5e1; font: 13px/1.5 system-ui, -apple-system, "PingFang SC", Arial, sans-serif; }
+  #wrap { display: flex; gap: 16px; padding: 16px; }
+  video { width: 640px; height: 360px; background: #000; border-radius: 8px; }
+  #hud { min-width: 320px; }
+  #hud code { color: #7dd3fc; }
+</style>
+</head>
+<body>
+<div id="wrap">
+  <video id="v" muted playsinline preload="auto"></video>
+  <div id="hud">
+    <div>clock: <code id="state">idle</code> · <code id="pos">0.000</code>s · frame <code id="frame">0</code></div>
+    <div>audio: <code id="at">0.000</code>s · video: <code id="vt">0.000</code>s</div>
+    <div>presented: <code id="pt">—</code>s · drift <code id="dr">—</code> 帧</div>
+    <div>corrections: <code id="corr">0</code> · ended: <code id="ended">0</code></div>
+  </div>
+</div>
+<audio id="a" preload="auto"></audio>
+<script type="module">
+import { createPlaybackClock, measureAvDrift, canTransition, TRANSITIONS } from '/packages/studio/ui/src/player/clock.mjs';
+
+const FPS = { num: 30, den: 1 };
+const video = document.getElementById('v');
+const audio = document.getElementById('a');
+
+/** 记录到的状态迁移与每帧采样（脚本侧读走）。 */
+const events = [];
+const samples = [];
+let clock = null;
+let corrections = 0;
+const correctionTimes = [];
+let lastCorrectionAt = 0;
+let startAlign = null;
+let rateCorrections = 0;
+let syncState = 'idle';
+/** rAF 循环里抛出的异常会被浏览器吞成 pageerror 而循环就此停掉——
+    把异常记下来，免得「时钟停在 playing」这种症状查不到原因。 */
+let loopError = null;
+let ticks = 0;
+let lastTickState = null;
+let endedCount = 0;
+let rafId = 0;
+let presented = null;
+let lastSampleAt = 0;
+/** 成对采样：**呈现那一帧的 mediaTime** 与**同一刻的音频时间**。
+    不能用「rAF 时的 audio.currentTime」比「上一次呈现的 mediaTime」——那会把
+    1 帧的显示延迟算成漂移，量出来恒为 -1~-2 帧。 */
+const pairs = [];
+
+const text = (id, value) => { document.getElementById(id).textContent = String(value); };
+
+function paint() {
+  const pos = clock ? clock.position() : 0;
+  text('state', clock?.state ?? 'idle');
+  text('pos', pos.toFixed(3));
+  text('frame', clock?.frame() ?? 0);
+  text('at', audio.currentTime.toFixed(3));
+  text('vt', video.currentTime.toFixed(3));
+  text('pt', presented === null ? '—' : presented.toFixed(3));
+  const drift = measureAvDrift({ audioAt: audio.currentTime, videoAt: presented ?? video.currentTime, fps: FPS });
+  text('dr', drift.driftFrames.toFixed(2));
+  text('corr', corrections);
+  text('ended', endedCount);
+}
+
+/**
+ * 可达性：轮询（8ms）会跳过转瞬即逝的中间态（如 seek 的 idle→seeking→paused 只看到
+ * idle→paused）。所以判定用「≤2 跳可达」，同时把**直接**是否合法记进 `direct`，
+ * 既不会把采样漏帧当成非法迁移，也不隐藏原始信息。
+ */
+function reachable(from, to, maxHops = 2) {
+  if (from === to) return true;
+  const seen = new Set([from]);
+  let frontier = [from];
+  for (let hop = 1; hop <= maxHops; hop += 1) {
+    const next = [];
+    for (const state of frontier) {
+      for (const candidate of TRANSITIONS[state] ?? []) {
+        if (candidate === to) return true;
+        if (!seen.has(candidate)) { seen.add(candidate); next.push(candidate); }
+      }
+    }
+    frontier = next;
+  }
+  return false;
+}
+
+/** 每一次 clock 状态变化都记下来，供 A2/A6 判「无非法转换」。 */
+function watchStates() {
+  const known = new Set();
+  const timer = setInterval(() => {
+    if (!clock) return;
+    if (known.has(clock.state)) return;
+    const from = events.length === 0 ? 'idle' : events.at(-1).to;
+    if (events.length === 0 && clock.state === 'idle') { known.add('idle'); return; }
+    events.push({
+      from,
+      to: clock.state,
+      legal: reachable(from, clock.state),
+      direct: canTransition(from, clock.state),
+      at: Number(audio.currentTime.toFixed(3))
+    });
+    known.add(clock.state);
+  }, 8);
+  return () => clearInterval(timer);
+}
+
+/**
+ * 等到**真正呈现目标时刻那一帧**：seek 完成事件之后，合成器可能还会再给一次旧帧的回调，
+ * 所以连续收几次 rVFC，取 mediaTime 与目标最近的那次。
+ */
+function nearestFrame(target, avoid = null, timeoutMs = 1500) {
+  return new Promise((resolve) => {
+    let best = null;
+    const started = performance.now();
+    const done = (value) => resolve(value);
+    const timer = setTimeout(() => done(best), timeoutMs);
+    const onFrame = (_now, meta) => {
+      const changed = avoid === null || Math.abs(meta.mediaTime - avoid) > 1e-6;
+      const delta = Math.abs(meta.mediaTime - target);
+      if (changed && (best === null || delta < best.delta)) best = { mediaTime: meta.mediaTime, delta };
+      /* 命中：画面已经换成目标那一帧（毫秒级精度即可，Chromium 的 mediaTime 只到 ms）。 */
+      if (best !== null && best.delta <= 0.002) { clearTimeout(timer); done(best); return; }
+      if (performance.now() - started > timeoutMs) { clearTimeout(timer); done(best); return; }
+      video.requestVideoFrameCallback(onFrame);
+    };
+    video.requestVideoFrameCallback(onFrame);
+  });
+}
+
+/**
+ * 起播/恢复时的一次性对齐：让 video.currentTime 与 audio.currentTime 落在同一个时间点。
+ *
+ * 为什么要对齐：`video.play()` 的 Promise 返回时元素时钟往往还慢 20–40ms（解码器起步），
+ * 这 30ms 在 30fps 下就是 0.9 帧，会一直带着走完整个播放。
+ * 判据用**元素时钟差**（任务书 A1/A6 的口径），不用呈现帧：暂停态下浏览器不保证每次 seek
+ * 都呈现新帧，拿 rVFC 的 mediaTime 当判据会把呈现策略算成时钟误差。
+ *
+ * 播放中不做反复 seek（每次 seek 都重启解码、越追越远），只在起播/恢复时对齐这一次。
+ */
+async function alignVideoToAudio(attempts = 4) {
+  const fps = FPS.num / FPS.den;
+  const toleranceFrames = 0.25;
+  const measure = () => (video.currentTime - audio.currentTime) * fps;
+  for (let i = 0; i < attempts; i += 1) {
+    const delta = measure();
+    if (Math.abs(delta) <= toleranceFrames) {
+      return { aligned: true, attempts: i + 1, offsetFrames: Number(delta.toFixed(3)) };
+    }
+    video.currentTime = audio.currentTime;
+    await new Promise((resolve) => {
+      video.addEventListener('seeked', resolve, { once: true });
+      setTimeout(resolve, 400);
+    });
+  }
+  const delta = measure();
+  return { aligned: Math.abs(delta) <= toleranceFrames, attempts, offsetFrames: Number(delta.toFixed(3)) };
+}
+
+/**
+ * 音画闭环：用 playbackRate 微调把视频拉回主时钟，**不用 seek**。
+ *
+ * 为什么不用 seek：播放中每 seek 一次，VP9 都要从上一个关键帧重解（本片 GOP=30），
+ * 越校越偏——实测 seek 式校正把偏差从 1.3 帧推到 2 帧以上。
+ * 视频元素是 muted（声音走 audio 元素），改 playbackRate 不影响到听到的声音。
+ *
+ * 迟滞：偏差 >0.6 帧开始微调（±6%），回到 0.25 帧内恢复 1.0x。
+ * 0.6 → 0.25 需要约 0.3s，落在「恢复后 1s 内收敛」的窗口里。
+ */
+function syncTick() {
+  const fps = FPS.num / FPS.den;
+  /* 跟**音频元素**（主时钟）比，而不是跟 clock.position()：clock 是墙钟外推，
+     起播/恢复时有 120ms 的 head start 不体现在它身上（实测差 3 帧）。 */
+  const delta = (video.currentTime - audio.currentTime) * fps;
+  if (syncState !== 'fast' && syncState !== 'slow' && Math.abs(delta) > 0.6) {
+    /* 两档增益：偏差 >1.2 帧用 ±12%（恢复瞬间的起始偏差约 1.4 帧，6% 要 1.2s 才收敛，
+       超出「1s 内回到 ≤1 帧」的窗口），小偏差用 ±6% 免得看得见抖动。 */
+    const gain = Math.abs(delta) > 1.2 ? 0.12 : 0.06;
+    video.playbackRate = delta < 0 ? 1 + gain : 1 - gain;
+    syncState = delta < 0 ? 'fast' : 'slow';
+    rateCorrections += 1;
+  } else if ((syncState === 'fast' || syncState === 'slow') && Math.abs(delta) < 0.25) {
+    video.playbackRate = 1;
+    syncState = 'idle';
+  }
+  const ticked = clock.tick();
+  lastTickState = { state: clock.state, t: Number(ticked.t.toFixed(6)), frame: ticked.frame };
+  paint();
+  ticks += 1;
+  return delta;
+}
+
+window.__s63 = {
+  async load(src) {
+    video.src = src;
+    audio.src = src;
+    await Promise.all([
+      new Promise((resolve, reject) => {
+        video.addEventListener('loadeddata', resolve, { once: true });
+        video.addEventListener('error', () => reject(new Error(`video error ${video.error?.code}`)), { once: true });
+        setTimeout(() => reject(new Error('video loadeddata timeout')), 15000);
+      }),
+      new Promise((resolve, reject) => {
+        audio.addEventListener('loadeddata', resolve, { once: true });
+        audio.addEventListener('error', () => reject(new Error(`audio error ${audio.error?.code}`)), { once: true });
+        setTimeout(() => reject(new Error('audio loadeddata timeout')), 15000);
+      })
+    ]);
+    clock = createPlaybackClock({
+      fps: FPS,
+      duration: video.duration,
+      audioClock: { get currentTime() { return audio.currentTime; } },
+      now: () => performance.now() / 1000,
+      frameProvider: {
+        request: async () => ({ ok: true })
+      }
+    });
+    clock.open();
+    watchStates();
+    video.addEventListener('ended', () => { endedCount += 1; });
+    video.requestVideoFrameCallback(function onFrame(now, meta) {
+      presented = meta.mediaTime;
+      /* 关键：rVFC 回调是在**这一帧已经呈现之后**才跑的，回调里读到的 audio.currentTime
+         已经比「这一帧上屏的那一刻」晚了将近一帧——直接相减会得到一个恒定的 -1 帧偏置，
+         看起来像同步坏了，其实是测量口径。
+         用 `meta.expectedDisplayTime`（同一条 performance.now() 时间轴）把它折回去：
+         该帧上屏时的音频位置 = 当前音频位置 + (上屏时刻 - 现在)。 */
+      const audioAtDisplay = audio.currentTime + (meta.expectedDisplayTime - now) / 1000;
+      const drift = measureAvDrift({ audioAt: audioAtDisplay, videoAt: meta.mediaTime, fps: FPS });
+      pairs.push({
+        mediaTime: Number(meta.mediaTime.toFixed(4)),
+        audioAt: Number(audioAtDisplay.toFixed(4)),
+        audioAtCallback: Number(audio.currentTime.toFixed(4)),
+        driftFrames: Number(drift.driftFrames.toFixed(4))
+      });
+      if (pairs.length > 6000) pairs.splice(0, pairs.length - 6000);
+      video.requestVideoFrameCallback(onFrame);
+    });
+    return { duration: video.duration, width: video.videoWidth, height: video.videoHeight, readyState: video.readyState };
+  },
+
+  async start(rate = 1) {
+    clock.setRate(rate);
+    /* 启动次序：**音频先走，视频在主时钟的时刻加入**。
+       反过来先启视频会看到 1~2 帧的启动瞬态（解码比音频输出快），那不是同步误差。 */
+    await audio.play();
+    await new Promise((resolve) => setTimeout(resolve, 120));
+    video.currentTime = audio.currentTime;
+    await new Promise((resolve) => {
+      video.addEventListener('seeked', resolve, { once: true });
+      setTimeout(resolve, 500);
+    });
+    await video.play();
+    /* 第一次对齐在 play() 之前，第二次在 play() 之后：视频元素时钟的起步延迟只有
+       真正开始播之后才量得到（实测约 30ms ≈ 0.9 帧）。 */
+    await alignVideoToAudio();
+    const align = await alignVideoToAudio();
+    startAlign = align;
+    /* 顺序很关键：**先 play() 再 seek()**。
+       clock 的时基就是 audio.currentTime（clockNow 读 audioClock），play() 会把锚点时钟
+       重置成「现在」，但 anchorSeconds 还停在播放头旧位置——先 seek 再 play 等于把
+       seek 的结果又抹掉一次（实测位置恒比音频慢 ~34ms，永远到不了 duration，
+       状态机因此卡在 playing、不触发 ended）。 */
+    clock.play();
+    await clock.seek(audio.currentTime);
+    const startedAt = performance.now();
+    const loop = () => {
+      const pos = clock.position();
+      try {
+        syncTick();
+      } catch (error) {
+        loopError = String(error?.message ?? error);
+        return;
+      }
+      const now = performance.now();
+      if (now - lastSampleAt >= 100) {
+        lastSampleAt = now;
+        samples.push({
+          at: Number(((now - startedAt) / 1000).toFixed(3)),
+          audioTime: Number(audio.currentTime.toFixed(4)),
+          videoTime: Number(video.currentTime.toFixed(4)),
+          clockPos: Number(pos.toFixed(4)),
+          presented: presented === null ? null : Number(presented.toFixed(4)),
+          state: clock.state
+        });
+      }
+      rafId = requestAnimationFrame(loop);
+    };
+    rafId = requestAnimationFrame(loop);
+    return { state: clock.state };
+  },
+
+  async pause() {
+    clock.pause();
+    audio.pause();
+    video.pause();
+    video.playbackRate = 1;
+    syncState = 'idle';
+    cancelAnimationFrame(rafId);
+    paint();
+    return { state: clock.state, audio: audio.currentTime, video: video.currentTime, clock: clock.position() };
+  },
+
+  async resume() {
+    /* 恢复与起播同一套次序：音频先走 → 视频在主时钟时刻加入 → 一起播。
+       不要在播放中用 seek 追（VP9 每次 seek 都重启解码，越追越远）。 */
+    await audio.play();
+    await new Promise((resolve) => setTimeout(resolve, 120));
+    video.currentTime = audio.currentTime;
+    await new Promise((resolve) => {
+      video.addEventListener('seeked', resolve, { once: true });
+      setTimeout(resolve, 500);
+    });
+    await video.play();
+    await alignVideoToAudio();
+    const align = await alignVideoToAudio();
+    startAlign = align;
+    clock.play();
+    await clock.seek(audio.currentTime);
+    const loop = () => {
+      try {
+        syncTick();
+      } catch (error) {
+        loopError = String(error?.message ?? error);
+        return;
+      }
+      rafId = requestAnimationFrame(loop);
+    };
+    rafId = requestAnimationFrame(loop);
+    return { state: clock.state };
+  },
+
+  /** 暂停态下把视频钉到某时刻，读「真正呈现的那一帧」的时间戳（rVFC）。
+   *  暂停态下浏览器不一定为每次 seek 呈现新帧，所以拿不到时**播一帧再停**强制呈现。 */
+  async seekAndPresent(t) {
+    clock.seek(t);
+    video.pause();
+    audio.pause();
+    video.currentTime = t;
+    /* 音频也要一起 seek：clock 是主时钟，只挪视频会让「下一帧的音频位置」对不上，
+       起播时 start() 又会把视频拉回音频的旧位置（A5 曾因此从 0 重播）。 */
+    audio.currentTime = t;
+    const seekedAt = performance.now();
+    await Promise.all([
+      new Promise((resolve) => {
+        video.addEventListener('seeked', resolve, { once: true });
+        setTimeout(resolve, 3000);
+      }),
+      new Promise((resolve) => {
+        audio.addEventListener('seeked', resolve, { once: true });
+        setTimeout(resolve, 3000);
+      })
+    ]);
+    let best = await nearestFrame(t, presented, 400);
+    let forced = false;
+    if (best === null || best.delta > 0.002) {
+      /* 播一帧：从 t 开始播，第一个 rVFC 回调就是 t 这一帧。 */
+      forced = true;
+      await video.play().catch(() => {});
+      const meta = await new Promise((resolve) => {
+        let done = false;
+        const timer = setTimeout(() => { if (!done) { done = true; resolve(null); } }, 1200);
+        video.requestVideoFrameCallback((_now, m) => { if (!done) { done = true; clearTimeout(timer); resolve(m); } });
+      });
+      video.pause();
+      if (meta !== null) best = { mediaTime: meta.mediaTime, delta: Math.abs(meta.mediaTime - t) };
+    }
+    if (best !== null) presented = best.mediaTime;
+    paint();
+    return {
+      target: t,
+      currentTime: Number(video.currentTime.toFixed(6)),
+      presented: best === null ? null : Number(best.mediaTime.toFixed(6)),
+      forcedPlay: forced,
+      seekMs: Number((performance.now() - seekedAt).toFixed(1)),
+      state: clock.state,
+      clockPos: Number(clock.position().toFixed(6))
+    };
+  },
+
+  /** 逐帧步进：正数向前、负数向后；每步都读一次呈现帧时间戳。 */
+  async step(n) {
+    const fps = FPS.num / FPS.den;
+    const before = clock.frame();
+    const rows = [];
+    for (let i = 0; i < Math.abs(n); i += 1) {
+      const result = clock.step(Math.sign(n));
+      const t = result.t;
+      video.currentTime = t;
+      await new Promise((resolve) => {
+        video.addEventListener('seeked', resolve, { once: true });
+        setTimeout(resolve, 2000);
+      });
+      const best = await nearestFrame(t, presented);
+      if (best !== null) presented = best.mediaTime;
+      rows.push({
+        frame: result.frame,
+        t: Number(t.toFixed(6)),
+        presented: best === null ? null : Number(best.mediaTime.toFixed(6)),
+        stepError: Number(Math.abs(t - (result.frame * 1) / fps).toFixed(9)),
+        seekDelta: Number((video.currentTime - t).toFixed(6))
+      });
+    }
+    return { from: before, to: clock.frame(), rows, fps };
+  },
+
+  /** 等**下一帧真正呈现**再取成对样本：直接读「最后一对」可能拿到卡顿前的旧值。 */
+  sampleNextPair(timeoutMs = 300) {
+    const from = pairs.length;
+    const started = performance.now();
+    return new Promise((resolve) => {
+      const tick = () => {
+        if (pairs.length > from) { resolve(pairs.at(-1)); return; }
+        if (performance.now() - started > timeoutMs) { resolve(pairs.at(-1) ?? null); return; }
+        requestAnimationFrame(tick);
+      };
+      tick();
+    });
+  },
+
+  metrics() {
+    const drift = measureAvDrift({ audioAt: audio.currentTime, videoAt: presented ?? video.currentTime, fps: FPS });
+    return {
+      state: clock?.state ?? 'idle',
+      clockPos: clock ? Number(clock.position().toFixed(4)) : 0,
+      audioTime: Number(audio.currentTime.toFixed(4)),
+      videoTime: Number(video.currentTime.toFixed(4)),
+      presented: presented === null ? null : Number(presented.toFixed(4)),
+      driftFrames: Number(drift.driftFrames.toFixed(4)),
+      corrections,
+      rateCorrections,
+      loopError,
+      ticks,
+      lastTickState,
+      videoPlaybackRate: video.playbackRate,
+      endedCount,
+      videoPaused: video.paused,
+      audioPaused: audio.paused,
+      videoSeeking: video.seeking,
+      readyState: video.readyState,
+      driftAtLastPair: pairs.length === 0 ? null : pairs.at(-1).driftFrames,
+      startAlign,
+      samples: samples.slice(),
+      pairs: pairs.slice(),
+      correctionTimes: correctionTimes.slice(),
+      events: events.slice()
+    };
+  },
+
+  resetSamples() { samples.length = 0; pairs.length = 0; },
+
+  async waitFor(predicate, timeoutMs) {
+    const started = performance.now();
+    while (performance.now() - started < timeoutMs) {
+      if (predicate(this.metrics())) return true;
+      await new Promise((resolve) => setTimeout(resolve, 20));
+    }
+    return false;
+  },
+
+  async stop() {
+    cancelAnimationFrame(rafId);
+    try { clock?.pause(); } catch { /* 已停 */ }
+    audio.pause();
+    video.pause();
+    paint();
+    return this.metrics();
+  }
+};
+
+document.title = 'S63 harness ready';
+</script>
+</body>
+</html>

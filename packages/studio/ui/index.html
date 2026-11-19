@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!--
+  media-src 放开 loopback：Agent 消息里的音频走**内容 origin**（另一个端口）播放（S76）。
+  与已有的 connect-src / frame-src 同一口径——只允许 127.0.0.1，不是任意源。
+  不放宽的话 `<audio src="http://127.0.0.1:<contentPort>/...">` 会被 CSP 直接拦掉，
+  且**不会发出任何请求**（MediaError 4 / networkState 3），表现像「文件坏了」。
+-->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob: http://127.0.0.1:*; font-src 'self' data:; connect-src 'self' ws://127.0.0.1:* http://127.0.0.1:*; frame-src http://127.0.0.1:*">
+<link rel="icon" type="image/png" href="/src/app/motioncut-icon.png">
+<title>MotionCut</title>
+</head>
+<body>
+<div id="root"></div>
+<script type="module" src="/src/app/main.tsx"></script>
+</body>
+</html>

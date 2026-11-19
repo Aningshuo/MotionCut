@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1280, height=720">
+<title>M27 夹具：一个网页片段 + 工程内动效库</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #000; }
+  section { position: relative; }
+</style>
+</head>
+<body>
+<!--
+  B1–B5 的宿主夹具：片段 m-card 的 src 指向 scenes/card.html，场景根节点带
+  data-instance="m-card"——动效参数就落在这个选择器上（没有就退到 body）。
+  同目录 motion/library.json 有两条：motion_pop（可用）、motion_gone（源缺失）。
+-->
+<section id="v1">
+  <iframe id="m-card" src="scenes/card.html#t=0,6" at="0" size="1280x720" style="left: 0px; top: 0px; width: 1280px; height: 720px"></iframe>
+</section>
+</body>
+</html>

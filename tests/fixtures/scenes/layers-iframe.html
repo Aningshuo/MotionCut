@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>iframe 层边界</title>
+<style>
+  html, body { margin: 0; width: 800px; height: 450px; background: #0b1020; }
+  #frame { position: absolute; left: 20px; top: 20px; width: 760px; height: 410px; border: 2px solid #2b3a5c; }
+</style>
+</head>
+<body>
+  <h1 id="outside" style="position:absolute;left:20px;top:0;color:#fff;font:20px system-ui">外层标题</h1>
+  <iframe id="frame" src="/tests/fixtures/scenes/cn-nested.html" title="layer frame"></iframe>
+</body>
+</html>

@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1280, height=720">
+<title>S42 夹具：等距分布提示 / 旋转 AABB 吸附 / 多选吸回去</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #05070a; }
+</style>
+</head>
+<body>
+<!--
+  每个片段独占一个 <section>：Studio 按 section 分轨，同轨多片段会在时间线上重叠、
+  点选被上层挡住（S42 踩过）。所有片段 at="0"，这样播放头在 0 时它们**同时**可见，
+  画布上才有完整的四连排/三连排可供吸附与截图。
+-->
+<section id="track-d-a">
+  <iframe id="d-a" src="scenes/scene-frame-a.html#t=0,8" at="0" size="1280x720"
+          style="left: 40px; top: 80px; width: 200px; height: 120px"></iframe>
+</section>
+<section id="track-d-b">
+  <iframe id="d-b" src="scenes/scene-frame-a.html#t=0,8" at="0" size="1280x720"
+          style="left: 264px; top: 80px; width: 200px; height: 120px"></iframe>
+</section>
+<section id="track-d-c">
+  <iframe id="d-c" src="scenes/scene-frame-a.html#t=0,8" at="0" size="1280x720"
+          style="left: 488px; top: 80px; width: 200px; height: 120px"></iframe>
+</section>
+<section id="track-d-d">
+  <iframe id="d-d" src="scenes/scene-frame-a.html#t=0,8" at="0" size="1280x720"
+          style="left: 712px; top: 80px; width: 200px; height: 120px"></iframe>
+</section>
+
+<!-- 一排四个但不等距（84 / 24 / 24）：只有两段相等 → 不该出现 = Npx = -->
+<section id="track-n-a">
+  <iframe id="n-a" src="scenes/scene-frame-a.html#t=0,8" at="0" size="1280x720"
+          style="left: 40px; top: 240px; width: 160px; height: 100px"></iframe>
+</section>
+<section id="track-n-b">
+  <iframe id="n-b" src="scenes/scene-frame-a.html#t=0,8" at="0" size="1280x720"
+          style="left: 284px; top: 240px; width: 160px; height: 100px"></iframe>
+</section>
+<section id="track-n-c">
+  <iframe id="n-c" src="scenes/scene-frame-a.html#t=0,8" at="0" size="1280x720"
+          style="left: 468px; top: 240px; width: 160px; height: 100px"></iframe>
+</section>
+<section id="track-n-d">
+  <iframe id="n-d" src="scenes/scene-frame-a.html#t=0,8" at="0" size="1280x720"
+          style="left: 652px; top: 240px; width: 160px; height: 100px"></iframe>
+</section>
+
+<!-- 旋转 45°：缩放吸 AABB（补偿量按 cos45 投影回局部轴） -->
+<section id="track-r-a">
+  <iframe id="r-a" src="scenes/scene-frame-a.html#t=0,8" at="0" size="1280x720"
+          style="left: 820px; top: 200px; width: 200px; height: 120px; rotate: 45deg"></iframe>
+</section>
+<section id="track-r-t">
+  <iframe id="r-t" src="scenes/scene-frame-a.html#t=0,8" at="0" size="1280x720"
+          style="left: 1120px; top: 150px; width: 100px; height: 300px"></iframe>
+</section>
+
+<!-- 多选吸回去：m-a + m-b 贴在一起，拖到 m-t 左缘 5px 内要被吸成净空 0 -->
+<section id="track-m-a">
+  <iframe id="m-a" src="scenes/scene-frame-a.html#t=0,8" at="0" size="1280x720"
+          style="left: 40px; top: 440px; width: 120px; height: 80px"></iframe>
+</section>
+<section id="track-m-b">
+  <iframe id="m-b" src="scenes/scene-frame-a.html#t=0,8" at="0" size="1280x720"
+          style="left: 160px; top: 440px; width: 120px; height: 80px"></iframe>
+</section>
+<section id="track-m-t">
+  <iframe id="m-t" src="scenes/scene-frame-a.html#t=0,8" at="0" size="1280x720"
+          style="left: 620px; top: 440px; width: 100px; height: 80px"></iframe>
+</section>
+</body>
+</html>

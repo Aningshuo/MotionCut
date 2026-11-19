@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1280, height=720">
+<title>M34 夹具：波形（正常 / 静音 / 超满幅 / 裁剪 / 变速）</title>
+<!--
+  M34 的时间线波形夹具。素材（脚本复制进 assets/）：
+    dyn.wav  4s 动态：前 2s 振幅 0.0316（≈ −30dB），后 2s 0.5（≈ −6dB）
+    hot.wav  3s 高电平：峰值 −4.1dBFS（volume=2 时会超满幅 → 警示色帽带）
+
+  五个声音片段各覆盖一种情况：
+    w-normal  整段（前弱后强）        —— 基线，也是「形状」参照
+    w-muted   muted，画平线           —— 与 volume=0 一样是「这段还在」
+    w-hot     volume=2 → 超满幅       —— overflowColumns > 0
+    w-trim    #t=2,4 → 只取响的那半   —— 裁剪后波形要对得上
+    w-speed   speed=2 → 时间线一半宽  —— 变速只改宽度，不改源区间
+-->
+<style>
+  html, body { margin: 0; height: 100%; background: #000; }
+</style>
+</head>
+<body>
+<section id="picture">
+  <video id="pic" src="assets/pic.mp4#t=0,4" at="0" muted></video>
+</section>
+<section id="sound">
+  <audio id="w-normal" src="assets/dyn.wav#t=0,4" at="0"></audio>
+  <audio id="w-muted" src="assets/dyn.wav#t=0,2" at="4.6" muted volume="0.6"></audio>
+  <audio id="w-hot" src="assets/hot.wav#t=0,3" at="7" volume="2"></audio>
+  <audio id="w-trim" src="assets/dyn.wav#t=2,4" at="10.4"></audio>
+  <audio id="w-speed" src="assets/dyn.wav#t=0,4" at="13" speed="2"></audio>
+</section>
+</body>
+</html>

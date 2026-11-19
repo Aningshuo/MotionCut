@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>R25 场景 A：横向进度条</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: #101c26; font-family: -apple-system, "PingFang SC", Arial, sans-serif; }
+  .wrap { position: relative; width: 100%; height: 100%; }
+  .panel { position: absolute; left: 6%; top: 16%; width: 88%; height: 68%; padding: 5% 6%; background: #f4f1e8; border-radius: 24px; }
+  .tag { display: inline-block; font-size: 18px; letter-spacing: 0.12em; color: #fff; background: #1f6d61; border-radius: 999px; padding: 8px 18px; }
+  h1 { margin: 3% 0 1.5%; font-size: 64px; color: #14332e; }
+  p { margin: 0 0 3%; font-size: 24px; color: #566059; }
+  .track { position: relative; height: 22px; background: #d8d4c6; border-radius: 999px; overflow: hidden; }
+  .fill { position: absolute; left: 0; top: 0; height: 100%; width: 0; background: linear-gradient(90deg, #2b8a78, #1f6d61); }
+  .clock { position: absolute; right: 6%; top: 4%; font: 22px/1 ui-monospace, Menlo, monospace; color: #6d7a73; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="panel">
+    <span class="tag">SCENE A</span>
+    <h1 id="title">第一段网页</h1>
+    <p id="subtitle">进度条由 film.frame(t) 驱动</p>
+    <div class="track"><div class="fill" id="fill"></div></div>
+    <div class="clock" id="clock">t=0.00</div>
+  </div>
+</div>
+<script>
+  // 同步 frame()：舞台的调用点会自己包 Promise（stage-capture 里也包了一层）。
+  // 全程只改 inline style 与 textContent，不依赖任何外部资源，取帧可重复。
+  var fill = document.getElementById('fill');
+  var clock = document.getElementById('clock');
+  var title = document.getElementById('title');
+  window.film = {
+    duration: 4,
+    frame: function (t) {
+      var q = Math.max(0, Math.min(1, Number(t) / 4));
+      fill.style.width = (q * 100).toFixed(2) + '%';
+      clock.textContent = 't=' + Number(t).toFixed(2);
+      title.style.opacity = String(0.55 + 0.45 * q);
+    }
+  };
+</script>
+</body>
+</html>

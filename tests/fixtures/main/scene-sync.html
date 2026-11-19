@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<style>
+  html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: #101828; }
+  h1 { position: absolute; left: 70px; top: 70px; margin: 0; font: 700 44px/1.2 "PingFang SC", sans-serif; color: #cfe3ff; }
+  .track { position: absolute; left: 70px; top: 180px; width: 640px; height: 16px; background: #24324a; border-radius: 8px; }
+  #sync-progress { height: 16px; width: 0; background: #4f8cff; border-radius: 8px; }
+</style>
+</head>
+<body>
+<h1 id="sync-title">同步 frame(t) · 返回 undefined</h1>
+<div class="track"><div id="sync-progress"></div></div>
+<script>
+  // M13-A4：frame() 是同步的、没有 return（undefined）。舞台不许 .then 它。
+  var bar = document.getElementById('sync-progress');
+  window.film = {
+    duration: 4,
+    frame(t) {
+      var q = Math.max(0, Math.min(1, t / 2));
+      bar.style.width = Math.round(640 * q) + 'px';
+    }
+  };
+</script>
+</body>
+</html>

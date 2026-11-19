@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>字幕覆盖层 · 缩放容器验收夹具 · S39</title>
+<style>
+  html, body { margin: 0; padding: 0; background: #060b16; }
+  /* 取景框：视觉上裁一块，缩放后的舞台溢出也不影响截图 */
+  #crop {
+    position: relative;
+    width: 1440px;
+    height: 900px;
+    overflow: hidden;
+    background: #04070d;
+  }
+  /*
+   * 缩放容器：**祖先带 transform 就是本夹具要复现的条件**。
+   * 覆盖层挂在 #stage（它的子树）里，于是 measureEl 的 getBoundingClientRect()
+   * 会被这一层的 scale 放大 → 旧量法（直接读 rect.height）在 N>1 时误判溢出。
+   */
+  #wrap {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 1280px;
+    height: 720px;
+    transform: scale(1);
+    transform-origin: 0 0;
+    will-change: transform;
+  }
+  /* 舞台：真画面（渐变 + 图形 + 文字），不是纯色块 */
+  #stage {
+    position: relative;
+    width: 1280px;
+    height: 720px;
+    overflow: hidden;
+    background:
+      radial-gradient(1200px 600px at 20% -10%, #1f3a6e 0%, rgba(31,58,110,0) 60%),
+      linear-gradient(160deg, #0b1a33 0%, #102a4c 45%, #0a1b2f 100%);
+    font-family: system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+  }
+  .grid {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(120,170,255,0.07) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(120,170,255,0.07) 1px, transparent 1px);
+    background-size: 64px 64px;
+  }
+  .orb { position: absolute; border-radius: 50%; filter: blur(0.5px); }
+  .orb.a { left: 90px; top: 120px; width: 220px; height: 220px;
+    background: radial-gradient(circle at 35% 30%, #7fd1ff, #2b6cff 55%, rgba(43,108,255,0) 72%); }
+  .orb.b { right: 120px; top: 200px; width: 160px; height: 160px;
+    background: radial-gradient(circle at 40% 35%, #ffd28a, #ff7a45 60%, rgba(255,122,69,0) 75%); }
+  .title {
+    position: absolute; left: 90px; top: 250px;
+    font-size: 64px; font-weight: 700; letter-spacing: 2px;
+    color: #eaf2ff; text-shadow: 0 6px 30px rgba(0,0,0,0.55);
+  }
+  .cap {
+    position: absolute; right: 60px; bottom: 40px;
+    font: 16px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
+    color: rgba(200,220,255,0.55);
+  }
+</style>
+</head>
+<body>
+  <div id="crop">
+    <div id="wrap">
+      <div id="stage">
+        <div class="grid"></div>
+        <div class="orb a"></div>
+        <div class="orb b"></div>
+        <div class="title">缩放容器验收</div>
+        <div class="cap">S39 · 1280×720 in transform: scale(N)</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

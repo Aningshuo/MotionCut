@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1280, height=720">
+<title>合同样例 v1.2.0：正确方言</title>
+<style>
+  html,body{margin:0;height:100%;background:#000}
+  section{position:relative}
+</style>
+</head>
+<body>
+<!--
+  这是 v1.2.0 的规范样例，与计划包 synthetic-film-sample 和参考实现同一方言：
+  - 轨道 = 普通 <section>，第一个在最上层；不写 data-track。
+  - 片段 = iframe/video/img/audio；id/src/at 直接写，不写 data-src/data-at。
+  - 源入出点写在 src 的 #t=in,out 里；没有 time 属性。
+  - 淡入淡出 = 片段自有覆盖（overrides 里没有 at 的那一条）。
+  - 层覆盖写在 overrides（JSON 数组），带 at 选择器。
+-->
+<section>
+  <iframe id="card-a" src="scenes/card-a.html#t=0,4" at="0"></iframe>
+  <iframe id="card-b" src="scenes/card-b.html#t=0,4" at="4"></iframe>
+</section>
+<section>
+  <video id="take-01" src="assets/take-01.mp4#t=0,8.5" at="0" volume="0.9" style="object-fit: cover"></video>
+  <video id="take-02" src="assets/take-02.mp4#t=2,8" at="8.5" muted></video>
+</section>
+<section>
+  <audio id="voice" src="assets/voice.wav#t=0,8" at="0" volume="1"></audio>
+  <audio id="bgm" src="assets/bgm.mp3" at="0" volume="0.25" overrides='[{"fade":[1,2]}]'></audio>
+</section>
+<section muted hidden>
+  <audio id="sfx" src="assets/whoosh.wav#t=0,0.8" at="3.2"></audio>
+</section>
+</body>
+</html>

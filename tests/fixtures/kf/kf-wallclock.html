@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>K 系列夹具 · 墙钟写法（必须红）</title>
+<!--
+  （历史夹具）原本给 R18 的 `--subject=fixture` 用；该档已被取代，现无脚本引用。
+  内容是「墙钟写法」：动画自己走（没有 paused、没有负延迟读 --motion-t）。
+  同一套 K02/K03 断言喂给它必须红；如果它也绿，说明判据没测到墙钟推进。
+  视觉与 kf-correct.html 的 .kf-target 完全一致，只有时间口径不同。
+-->
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #070b14; }
+  .stage { position: relative; width: 100%; height: 100%; background: #070b14; }
+  .kf-target {
+    position: absolute; left: 50%; top: 50%; width: 120px; height: 120px;
+    margin: -60px 0 0 -60px; border-radius: 18px; background: #3b82f6;
+    animation: kf-demo 1200ms linear infinite;
+  }
+  @keyframes kf-demo {
+    0% { transform: scale(0.62) translateX(-44px); opacity: 0.55; }
+    50% { transform: scale(1) translateX(0); opacity: 1; }
+    100% { transform: scale(0.62) translateX(44px); opacity: 0.55; }
+  }
+</style>
+</head>
+<body>
+<div class="stage" data-role="root">
+  <div class="kf-target" data-kf="wallclock"></div>
+</div>
+</body>
+</html>

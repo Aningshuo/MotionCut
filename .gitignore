@@ -1,0 +1,23 @@
+# 冻结计划包不进版本库（只读输入，保持原样）
+/plans/
+# 执行隔离工作树
+/.worktrees/
+# 依赖与产物
+node_modules/
+dist/
+out/
+release/
+# 打包产物（M48：build/Opencut Studio.app 不入库）
+build/
+*.log
+.DS_Store
+# 应用与工具缓存
+.pnpm-store/
+.turbo/
+
+# 三线私有运行资料（端口/Electron userData/Chrome profile/测试工程/输出）
+.local-runs/
+
+.secrets/
+.env
+.env.*

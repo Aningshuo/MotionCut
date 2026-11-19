@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>sub1 svg scene</title>
+<style>
+  html, body { margin: 0; padding: 0; width: 640px; height: 360px; overflow: hidden; background: #101826; }
+</style>
+</head>
+<body>
+<svg id="stage" width="640" height="360" viewBox="0 0 640 360" xmlns="http://www.w3.org/2000/svg">
+  <rect x="0" y="0" width="640" height="360" fill="#101826"/>
+  <g id="ringGroup" transform="rotate(0 200 180)">
+    <circle cx="200" cy="180" r="90" fill="none" stroke="#20304d" stroke-width="18"/>
+    <circle id="ring" cx="200" cy="180" r="90" fill="none" stroke="#39d0a6" stroke-width="18"
+            stroke-linecap="round" stroke-dasharray="565.4867" stroke-dashoffset="565.4867"
+            transform="rotate(-90 200 180)"/>
+  </g>
+  <g id="bars">
+    <rect id="b1" x="360" y="250" width="46" height="30" rx="6" fill="#e8552d"/>
+    <rect id="b2" x="416" y="250" width="46" height="30" rx="6" fill="#e8b02d"/>
+    <rect id="b3" x="472" y="250" width="46" height="30" rx="6" fill="#2d8ce8"/>
+  </g>
+  <text id="label" x="360" y="120" fill="#f5f7ff" font-family="system-ui, sans-serif" font-size="30" font-weight="700">t=0.000</text>
+</svg>
+<script>
+(() => {
+  'use strict';
+  const C = 2 * Math.PI * 90;
+  const ring = document.getElementById('ring');
+  const group = document.getElementById('ringGroup');
+  const label = document.getElementById('label');
+  const bars = ['b1', 'b2', 'b3'].map((id) => document.getElementById(id));
+
+  window.film = {
+    meta: { width: 640, height: 360, duration: 2 },
+    async ready() {
+      if (document.fonts && document.fonts.ready) await document.fonts.ready;
+      document.body.dataset.filmReady = '1';
+    },
+    async frame(t) {
+      const tt = Math.max(0, Math.min(t, 2));
+      ring.setAttribute('stroke-dashoffset', String(C * (1 - tt / 2)));
+      group.setAttribute('transform', 'rotate(' + (tt * 45).toFixed(3) + ' 200 180)');
+
+      bars.forEach((el, i) => {
+        const h = 30 + Math.round((tt / 2) * (40 + i * 25));
+        el.setAttribute('height', String(h));
+        el.setAttribute('y', String(280 - h));
+      });
+      label.textContent = 't=' + tt.toFixed(3);
+      document.body.dataset.filmFrame = String(t);
+    }
+  };
+})();
+</script>
+</body>
+</html>

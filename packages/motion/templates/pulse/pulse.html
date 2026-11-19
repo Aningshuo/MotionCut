@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="motion-clock" content="--motion-t;unit=ms">
+<title>pulse · 脉冲圆点</title>
+<!--
+  S29 种子模板 1/3 · kind=animation
+  参数全部落在根节点的 CSS 自定义属性上（params.mjs 的默认 apply），文本参数落在 .pulse-label。
+  资产：pulse.css（样式表）+ dot.svg（左下角图标），都用相对路径，**没有网络资源**。
+
+  S31：动画不再按墙钟走。相位只由 `--motion-t`（毫秒）决定（暂停 + 负延迟，见 pulse.css），
+  宿主每帧把 `film.frame(t)` 的 t 写进来即可定格；`renderInstanceAt()` 是宿主侧的现成入口。
+-->
+<link rel="stylesheet" href="./pulse.css">
+</head>
+<body>
+<!--
+  参数标注（S32 / SC-010）：一处一条，discoverControls() 按这些属性生成 params。
+  一个元素只能挂一个 data-motion-param，所以 css-var 类参数集中在这个不渲染的声明区里；
+  文本参数直接标在被改的那个元素上（选择器从 id/class 推）。
+  这些标注必须与 seed.mjs 里手写的 schema 逐字段相等——安装时会自检，漂移就装不上。
+-->
+<div class="motion-decls" data-motion-decls hidden>
+  <i data-motion-param="duration" data-motion-type="number" data-motion-min="200" data-motion-max="4000" data-motion-step="100" data-motion-default="1200" data-motion-label="周期（ms）"></i>
+  <i data-motion-param="easing" data-motion-type="enum" data-motion-options="ease-out,ease-in,linear" data-motion-default="ease-out" data-motion-label="缓动"></i>
+  <i data-motion-param="color" data-motion-type="color" data-motion-default="#3b82f6" data-motion-label="主色"></i>
+  <i data-motion-param="badge" data-motion-type="boolean" data-motion-default="true" data-motion-label="显示角标"></i>
+</div>
+<div class="motion-pulse" data-role="root">
+  <img class="pulse-dot" src="./dot.svg" alt="" width="28" height="28">
+  <div class="pulse-core" data-role="core"></div>
+  <span class="pulse-label" data-role="label" data-motion-param="label" data-motion-type="string" data-motion-apply="text" data-motion-maxlength="24" data-motion-label="文字">脉冲</span>
+  <span class="pulse-badge" data-role="badge">● 录制中</span>
+</div>
+</body>
+</html>

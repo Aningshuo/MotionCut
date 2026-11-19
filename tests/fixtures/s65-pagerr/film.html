@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1280, height=720">
+<title>S65 夹具：film.html 里真抛一个页面错误（验 pageErrors 顶部提示）</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #05070a; }
+</style>
+<script>
+  /* 故意抛错：/api/layers 的 pageErrors 会带上它，面板顶部必须提示。
+     body 里不允许 <script>（film-doc 会报 UNKNOWN_ELEMENT），所以放在 head。 */
+  throw new Error('S65 fixture pageerror: 页面脚本炸了');
+</script>
+</head>
+<body>
+<section id="pages">
+  <iframe id="page-main" src="page.html#t=0,12" at="0" size="1280x720"
+          style="left: 0px; top: 0px; width: 1280px; height: 720px; border: 0"></iframe>
+</section>
+</body>
+</html>

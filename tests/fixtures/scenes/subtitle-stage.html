@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>字幕覆盖层验收舞台 · S23</title>
+<style>
+  html, body { margin: 0; padding: 0; background: #060b16; }
+  /* 舞台：真画面（渐变 + 图形 + 文字），不是纯色块 */
+  #stage {
+    position: relative;
+    width: 1280px;
+    height: 720px;
+    overflow: hidden;
+    background:
+      radial-gradient(1200px 600px at 20% -10%, #1f3a6e 0%, rgba(31,58,110,0) 60%),
+      linear-gradient(160deg, #0b1a33 0%, #102a4c 45%, #0a1b2f 100%);
+    font-family: system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+  }
+  .grid {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(120,170,255,0.07) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(120,170,255,0.07) 1px, transparent 1px);
+    background-size: 64px 64px;
+  }
+  .orb {
+    position: absolute; border-radius: 50%;
+    filter: blur(0.5px);
+  }
+  .orb.a { left: 90px; top: 120px; width: 220px; height: 220px;
+    background: radial-gradient(circle at 35% 30%, #7fd1ff, #2b6cff 55%, rgba(43,108,255,0) 72%); }
+  .orb.b { right: 120px; top: 200px; width: 160px; height: 160px;
+    background: radial-gradient(circle at 40% 35%, #ffd28a, #ff7a45 60%, rgba(255,122,69,0) 75%); }
+  .title {
+    position: absolute; left: 90px; top: 250px;
+    font-size: 64px; font-weight: 700; letter-spacing: 2px;
+    color: #eaf2ff; text-shadow: 0 6px 30px rgba(0,0,0,0.55);
+  }
+  .sub {
+    position: absolute; left: 94px; top: 348px;
+    font-size: 26px; color: #9fc2ff; letter-spacing: 1px;
+  }
+  .cap {
+    position: absolute; right: 60px; bottom: 40px;
+    font: 16px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
+    color: rgba(200,220,255,0.55);
+  }
+  /* A6 用：铺满舞台的透明探针（z-index 在画面之上、字幕之下），用来验“点得到底下的东西” */
+  #probe { position: absolute; inset: 0; z-index: 1; }
+</style>
+</head>
+<body>
+  <div id="stage">
+    <div class="grid"></div>
+    <div class="orb a"></div>
+    <div class="orb b"></div>
+    <div class="title">字幕渲染验收</div>
+    <div class="sub">real picture · 不是纯色块</div>
+    <div class="cap">SUB1 · S23 · 1280×720</div>
+    <div id="probe" data-probe="stage-under-subtitle"></div>
+  </div>
+</body>
+</html>

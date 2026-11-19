@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="utf-8"><title>frame hangs</title>
+<style>html,body{margin:0;width:640px;height:360px;background:#0f1a12;color:#fff}</style>
+</head>
+<body>
+<div id="box" style="position:absolute;left:40px;top:40px;width:100px;height:100px;background:#3fd07a"></div>
+<script>
+(() => {
+  'use strict';
+  window.film = {
+    meta: { width: 640, height: 360, duration: 2 },
+    async ready() { document.body.dataset.filmReady = '1'; },
+    async frame() {
+      // 永不 resolve：用于 FRAME_TIMEOUT 与 AbortSignal 取消。
+      await new Promise(() => {});
+    }
+  };
+})();
+</script>
+</body>
+</html>

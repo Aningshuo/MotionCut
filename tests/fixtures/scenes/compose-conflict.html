@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>变换合成冲突夹具 · 祖先 transform × 自身 transform-origin</title>
+<style>
+  html, body { margin: 0; width: 640px; height: 360px; background: #0b1020; color: #eef2ff;
+    font-family: system-ui, "PingFang SC", sans-serif; overflow: hidden; }
+  /* 祖先自带 transform：已建立新的包含块 */
+  #parent { position: absolute; left: 20px; top: 20px; width: 260px; height: 260px;
+    background: #17223b; transform: rotate(6deg); }
+  /* 自身把变换原点挪到左上角：旋转支点不再与视觉中心一致 */
+  #corner { position: absolute; left: 30px; top: 30px; width: 90px; height: 90px;
+    background: #ff2d55; transform-origin: 0 0; }
+  /* 对照组：同样祖先有 transform，但原点在中心 */
+  #center { position: absolute; left: 140px; top: 140px; width: 90px; height: 90px;
+    background: #3ddc97; }
+  /* 真·表达不了：祖先带透视 + 绕 Y 轴旋转（matrix3d） */
+  #persp { position: absolute; left: 300px; top: 30px; width: 200px; height: 200px;
+    background: #1d2b4a; transform: perspective(600px) rotateY(20deg); }
+  #deep { position: absolute; left: 20px; top: 20px; width: 80px; height: 80px;
+    background: #ffd166; }
+</style>
+</head>
+<body>
+  <div id="parent">
+    <div id="corner"></div>
+    <div id="center"></div>
+  </div>
+  <div id="persp"><div id="deep"></div></div>
+<script>
+(() => {
+  'use strict';
+  window.film = {
+    meta: { width: 640, height: 360, duration: 2 },
+    async ready() {
+      document.body.dataset.filmReady = '1';
+    },
+    async frame(t) {
+      document.body.dataset.filmFrame = String(t);
+    }
+  };
+})();
+</script>
+</body>
+</html>

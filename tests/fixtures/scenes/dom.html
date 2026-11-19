@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>sub1 dom scene</title>
+<style>
+  html, body { margin: 0; padding: 0; width: 640px; height: 360px; overflow: hidden; background: #0b1020; }
+  body { font-family: system-ui, -apple-system, "Helvetica Neue", sans-serif; }
+  #bar {
+    position: absolute; left: 40px; top: 64px; width: 120px; height: 64px;
+    background: #e8552d; border-radius: 10px; will-change: transform;
+  }
+  #dot {
+    position: absolute; left: 40px; top: 190px; width: 26px; height: 26px;
+    border-radius: 50%; background: #27c7a8;
+  }
+  #title {
+    position: absolute; left: 40px; top: 250px; color: #f5f7ff;
+    font-size: 28px; font-weight: 700; letter-spacing: 1px;
+  }
+  #track {
+    position: absolute; left: 40px; top: 64px; width: 560px; height: 64px;
+    border: 2px solid #2a3358; border-radius: 12px; box-sizing: border-box;
+  }
+</style>
+</head>
+<body>
+  <div id="track"></div>
+  <div id="bar"></div>
+  <div id="dot"></div>
+  <div id="title">t=0.000</div>
+<script>
+(() => {
+  'use strict';
+  const bar = document.getElementById('bar');
+  const dot = document.getElementById('dot');
+  const title = document.getElementById('title');
+
+  // WAAPI 动画（暂停态）：只由 t 驱动，主机 settle 会再次对齐到 t。
+  const slide = bar.animate(
+    [{ transform: 'translateX(0px)' }, { transform: 'translateX(404px)' }],
+    { duration: 2000, fill: 'both', easing: 'linear' }
+  );
+  slide.pause();
+  slide.currentTime = 0;
+
+  window.film = {
+    meta: { width: 640, height: 360, duration: 2 },
+    async ready() {
+      if (document.fonts && document.fonts.ready) await document.fonts.ready;
+      document.body.dataset.filmReady = '1';
+    },
+    async frame(t) {
+      const ms = Math.max(0, Math.min(t, 2)) * 1000;
+      slide.currentTime = ms;
+      // 与 t 直接相关、可逐帧复算的几何量，不复用上一帧状态。
+      dot.style.left = (40 + (t / 2) * 520) + 'px';
+      const wiggle = Math.round(Math.sin(t) * 6);
+      dot.style.top = (190 + wiggle) + 'px';
+      title.textContent = 't=' + t.toFixed(3);
+      const hue = 200 + Math.round(t * 40);
+      dot.style.background = 'hsl(' + hue + ', 70%, 52%)';
+      document.body.dataset.filmFrame = String(t);
+    }
+  };
+})();
+</script>
+</body>
+</html>

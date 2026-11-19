@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="motion-clock" content="--motion-t;unit=ms">
+<title>badge · 提示卡</title>
+<!--
+  S29 种子模板 2/3 · kind=component
+  参数：title(string→文本) / size(number→font-size) / accent(color) / align(enum→justify-content)
+  enum 用的是合法 CSS 关键字（flex-start|center|flex-end），不需要 JS 映射。
+  资产：badge.css + badge-mark.svg（相对路径，无网络）。
+
+  S31：弹入改为按 `--motion-t`（毫秒）定格（暂停 + 负延迟），不再自己播。
+-->
+<link rel="stylesheet" href="./badge.css">
+</head>
+<body>
+<div class="motion-badge" data-role="root">
+  <img class="badge-mark" src="./badge-mark.svg" alt="" width="40" height="40">
+  <div class="badge-copy">
+    <span class="badge-title" data-role="title" data-motion-param="title" data-motion-type="string" data-motion-apply="text" data-motion-maxlength="40" data-motion-label="标题">新版本已就绪</span>
+    <span class="badge-sub" data-role="sub">组件模板 · 可改标题 / 字号 / 主色 / 对齐</span>
+  </div>
+</div>
+<!-- 参数标注（S32 / SC-010）：css-var 类集中在这个不渲染的声明区；必须与 seed.mjs 手写 schema 逐字段相等。 -->
+<div class="motion-decls" data-motion-decls hidden>
+  <i data-motion-param="size" data-motion-type="number" data-motion-min="12" data-motion-max="28" data-motion-step="1" data-motion-integer="true" data-motion-default="18" data-motion-label="标题字号"></i>
+  <i data-motion-param="accent" data-motion-type="color" data-motion-default="#22d3ee" data-motion-label="主色"></i>
+  <i data-motion-param="align" data-motion-type="enum" data-motion-options="flex-start,center,flex-end" data-motion-default="flex-start" data-motion-label="对齐"></i>
+</div>
+</body>
+</html>

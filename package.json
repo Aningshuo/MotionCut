@@ -1,0 +1,37 @@
+{
+  "name": "opencut",
+  "version": "0.3.2-r2",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@9.15.9",
+  "engines": {
+    "node": ">=22.18"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.base.json --noEmit",
+    "test": "node --test packages/*/test/*.test.mjs packages/studio/server/test/*.test.mjs packages/studio/ui/src/*/*.test.mjs packages/studio/ui/src/components/*/*.test.mjs apps/desktop/test/*.test.mjs && node --test --test-concurrency=1 packages/layers/*.test.mjs packages/film-core/*.test.mjs packages/motion/*.test.mjs packages/scene-runtime/*.test.mjs",
+    "dev:desktop": "electron apps/desktop/src/main.mjs",
+    "build:ui": "pnpm --dir packages/studio/ui build",
+    "build:desktop": "node scripts/package-desktop.mjs",
+    "package:mac:arm64": "node scripts/package-desktop.mjs --mac-arm64",
+    "dev:ui": "pnpm --dir packages/studio/ui dev",
+    "preview:ui": "pnpm --dir packages/studio/ui preview"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.5",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^5.2.0",
+    "electron": "44.10.2",
+    "playwright": "1.65.0",
+    "react": "19.1.10",
+    "react-dom": "19.1.10",
+    "tailwindcss": "4.3.4",
+    "typescript": "5.9.3",
+    "vite": "7.3.7"
+  },
+  "dependencies": {
+    "@agentclientprotocol/codex-acp": "2.5.0"
+  },
+  "license": "MIT"
+}

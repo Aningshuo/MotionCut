@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1280, height=720">
+<title>M40 字幕样式夹具：静帧画面（逐像素稳定）+ 一条被完全遮住的视频（只为挂伴生字幕）</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #000; }
+  section { position: relative; }
+  video, img { position: absolute; }
+</style>
+</head>
+<body>
+<!--
+  M40 的工程。**两条轨的先后是刻意的**：
+
+  1. `<section id="v1">` 放静帧 `<img>`：舞台按轨道序号给 z-index（越靠前的轨越上面），
+     所以它在最上层，可见画面 100% 是这张静帧——A4/A6 要拿「同一帧的截图 sha」
+     判逐像素相同，视频每帧都带帧计数器，拿它做基准必然不等（夹具噪声，不是产品差异）。
+  2. `<section id="v2">` 放一条 `muted` 的视频：Studio 的字幕候选取「第一个 kind=video
+     的片段」，没有视频就不会去加载伴生字幕；`assets/bars.vtt` 就是它的伴生文件。
+     它被上面的静帧完全盖住，只负责「让字幕有主」。
+
+  舞台 1280×720，所以默认字号 = 720 × 4.5% = 32.4px、描边 = 32.4 × 12% = 3.89px、
+  底部安全区 = 720 × 8% = 57.6px —— 与任务书 A2 的数值一一对应。
+-->
+<section id="v1">
+  <img id="st-bg" src="assets/bg.png#t=0,3" at="0" style="left: 0px; top: 0px; width: 1280px; height: 720px">
+</section>
+<section id="v2">
+  <video id="st-video" src="assets/bars.mp4#t=0,3" at="0" muted style="left: 0px; top: 0px; width: 1280px; height: 720px"></video>
+</section>
+</body>
+</html>

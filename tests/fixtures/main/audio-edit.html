@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1280, height=720">
+<title>M31 音频编辑夹具：4 条 3s 声音（0.8 / 0.4 / 0.8 / 默认）+ 1 条画面</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #000; }
+</style>
+</head>
+<body>
+<section id="picture">
+  <video id="pic" src="assets/pic.mp4#t=0,3" at="0" muted></video>
+</section>
+<section id="sound">
+  <audio id="snd-a" src="assets/tone.wav#t=0,3" at="0" volume="0.8"></audio>
+  <audio id="snd-b" src="assets/tone.wav#t=0,3" at="3" volume="0.4"></audio>
+  <audio id="snd-c" src="assets/tone.wav#t=0,3" at="6" volume="0.8"></audio>
+  <audio id="snd-d" src="assets/tone.wav#t=0,3" at="9"></audio>
+</section>
+</body>
+</html>

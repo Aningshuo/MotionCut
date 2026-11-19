@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>检查器夹具 · 文本层与锁定层</title>
+<style>
+  html, body { margin: 0; width: 800px; height: 450px; background: #0f1420; color: #eef2ff;
+    font-family: system-ui, "PingFang SC", "Microsoft YaHei", sans-serif; }
+  #stage { position: absolute; inset: 0; }
+  #headline { position: absolute; left: 40px; top: 48px; margin: 0; font-size: 34px; line-height: 1.2;
+    color: #eef2ff; -webkit-text-stroke: 0px currentColor; white-space: nowrap; }
+  #badge { position: absolute; left: 40px; top: 140px; padding: 8px 14px; font-size: 18px;
+    background: #25304a; border-radius: 8px; }
+  #card { position: absolute; left: 40px; top: 220px; width: 320px; height: 120px;
+    background: #1a2336; border: 1px solid #25304a; border-radius: 10px; }
+</style>
+</head>
+<body>
+  <main id="stage">
+    <h1 id="headline" data-name="标题">6.5s</h1>
+    <div id="badge" data-name="锁定标记" data-lock="true">LOCKED</div>
+    <div id="card" data-name="卡片"><p style="margin:12px">卡片说明文字</p></div>
+  </main>
+</body>
+</html>

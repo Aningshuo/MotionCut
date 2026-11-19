@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1280, height=720">
+<!-- S83 夹具：页面的 CSP 不放 'unsafe-eval'。检查器运行时是 new win.Function(源码)，
+     这类页面拿不到 runner —— 以前会静默跳过覆盖，现在必须让这一帧 ok:false。 -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; script-src 'self' 'unsafe-inline'">
+<title>S83 夹具：CSP 禁止 eval 的页面（覆盖运行时装不上）</title>
+<style>
+  html, body { margin: 0; width: 1280px; height: 720px; background: #0b0f16; color: #e8edf5; }
+  #title { position: absolute; left: 96px; top: 72px; width: 720px; height: 76px; font-size: 44px; color: #ffffff; font-weight: 700; }
+  #subtitle { position: absolute; left: 98px; top: 160px; width: 620px; height: 34px; font-size: 20px; color: #9fb3c8; }
+  #card {
+    position: absolute; left: 96px; top: 232px; width: 420px; height: 220px;
+    background: #17202c; border-radius: 18px; transform: rotate(0deg);
+    clip-path: inset(0px 0px 0px 0px);
+  }
+  #badge {
+    position: absolute; left: 548px; top: 232px; width: 168px; height: 44px;
+    background: #1f6feb; color: #ffffff; font-size: 18px; border-radius: 22px;
+    transform: rotate(-4deg);
+  }
+  #photo { position: absolute; left: 548px; top: 300px; width: 300px; height: 152px; }
+  #caption { position: absolute; left: 96px; top: 500px; width: 520px; height: 30px; font-size: 16px; color: #6b7c93; }
+  #footer { position: absolute; left: 96px; top: 600px; width: 640px; height: 28px; font-size: 14px; color: #48576b; }
+</style>
+</head>
+<body>
+  <h1 id="title">开场标题</h1>
+  <p id="subtitle">副标题：六类字段都在这页里</p>
+  <div id="card"></div>
+  <span id="badge">NEW</span>
+  <img id="photo" src="photo.svg" alt="示例图">
+  <p id="caption">说明文字（排印/外观可编辑）</p>
+  <p id="footer">锁定层：用来验证 editable:false 与 tooltip</p>
+<script>
+  /* 场景页契约：舞台要有 window.film.frame(t) 才能画这一帧（`#t=0,12` 给时长）。
+     页面是静态的，frame() 只记录当前时间点，不改 DOM。 */
+  window.film = {
+    duration: 12,
+    frame(t) {
+      window.__frameAt = t;
+      return true;
+    }
+  };
+</script>
+</body>
+</html>

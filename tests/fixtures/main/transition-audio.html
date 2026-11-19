@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1280, height=720">
+<title>M28 夹具：带音轨的两段（440Hz / 880Hz），用来验声音交叉</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #000; }
+  section { position: relative; }
+  video { position: absolute; }
+</style>
+</head>
+<body>
+<!--
+  A5 要的是「转场重叠区两路声音同时存在」：
+    画面 s-a [0,3)  → s-b [3,6)  硬切
+    声音 与画面**逐字段镜像**（同 bareSrc、同 at、同 #t=in）——companionAudioOf 才认。
+  加 0.5s 转场之后：s-b at=2.5、fade[0]=0.5；声音 s-a fade[1]=0.5、s-b at=2.5 + fade[0]=0.5。
+  重叠区 [2.5,3.0] 里 440Hz 与 880Hz 应同时存在，RMS 只按线性包络应有的幅度变化。
+-->
+<section id="v1">
+  <video id="s-a" src="assets/tone440.mp4#t=0,3" at="0" muted style="left: 0px; top: 0px; width: 1280px; height: 720px"></video>
+  <video id="s-b" src="assets/tone880.mp4#t=0,3" at="3" muted style="left: 0px; top: 0px; width: 1280px; height: 720px"></video>
+</section>
+<section id="a1">
+  <audio id="s-a-snd" src="assets/tone440.mp4#t=0,3" at="0"></audio>
+  <audio id="s-b-snd" src="assets/tone880.mp4#t=0,3" at="3"></audio>
+</section>
+</body>
+</html>

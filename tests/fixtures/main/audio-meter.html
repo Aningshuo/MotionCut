@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1280, height=720">
+<title>M32 电平夹具：动态（−33 → −9 dBFS）+ 过载（volume 2.0）+ 静音片段 + 13s 尾巴</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #000; }
+</style>
+</head>
+<body>
+<section id="picture">
+  <video id="pic" src="assets/pic.mp4#t=0,3" at="0" muted></video>
+</section>
+<section id="sound">
+  <audio id="snd-dyn" src="assets/dyn.wav#t=0,4" at="0" volume="1"></audio>
+  <audio id="snd-hot" src="assets/hot.wav#t=0,3" at="4" volume="2"></audio>
+  <audio id="snd-mute" src="assets/dyn.wav#t=0,2" at="7" volume="0.6" muted></audio>
+  <audio id="snd-tail" src="assets/dyn.wav#t=0,4" at="9" volume="1"></audio>
+</section>
+</body>
+</html>

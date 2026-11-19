@@ -1,0 +1,82 @@
+/*
+ * badge · 提示卡（S29 种子模板 · S31 加入可 seek 的弹入）
+ * 参数 → --size(裸数字×1px) / --accent / --align(合法 CSS 关键字) + 标题文本
+ *
+ * ## 时间口径（S31）
+ *
+ * 入场动画是**一次性**的（1 次迭代 + fill both），相位同样只由 `--motion-t` 决定：
+ * `animation-play-state: paused` + `animation-delay: -t`。
+ * 没设 `--motion-t` 时取 100000ms（远大于 520ms）→ 落在动画结束后的填充态 = 终态，
+ * 这样未接时间轴的预览不会是一片空白（入场类模板的 0 帧本来就该是「还没出现」）。
+ * 墙钟检查：`node packages/motion/wall-clock-check.mjs`。
+ */
+html, body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: #0b1020;
+}
+
+.motion-badge {
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  /* enum 直接是合法 CSS 关键字（flex-start|center|flex-end）→ 不用 JS 映射，也不写死 */
+  justify-content: var(--align, flex-start);
+  align-items: center;
+  gap: 14px;
+  padding: 24px 28px;
+  background: linear-gradient(135deg, #131c31 0%, #0b1020 100%);
+  color: #e5e7eb;
+  font-family: system-ui, -apple-system, "PingFang SC", Arial, sans-serif;
+  overflow: hidden;
+}
+
+.badge-mark {
+  flex: 0 0 auto;
+  filter: drop-shadow(0 0 12px color-mix(in srgb, var(--accent, #22d3ee) 45%, transparent));
+  transform-origin: 50% 50%;
+  animation: badge-pop 520ms cubic-bezier(0.2, 0.8, 0.2, 1) 1 both;
+  /* 顺序要紧：animation 简写会重置 delay / play-state，这两行必须在它之后。 */
+  animation-play-state: paused;
+  animation-delay: calc(-1 * var(--motion-t, 100000) * 1ms);
+}
+
+@keyframes badge-pop {
+  from { transform: scale(0.72) rotate(-8deg); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+
+.badge-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  animation: badge-slide 520ms cubic-bezier(0.2, 0.8, 0.2, 1) 1 both;
+  animation-play-state: paused;
+  animation-delay: calc(-1 * var(--motion-t, 100000) * 1ms);
+}
+
+@keyframes badge-slide {
+  from { transform: translate3d(12px, 0, 0); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+
+.badge-title {
+  font-size: calc(var(--size, 18) * 1px);
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  color: var(--accent, #22d3ee);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.badge-sub {
+  font-size: 11px;
+  color: #94a3b8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

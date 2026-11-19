@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="motion-clock" content="--motion-t;unit=ms">
+<title>反例 · 时钟变量名对不上</title>
+<!-- 反面素材：meta 声明 --motion-t，CSS 里读的却是 --t（宿主写前者，画面不动） -->
+<link rel="stylesheet" href="./unit-mismatch.css">
+</head>
+<body>
+<div class="card" data-role="root">
+  <span class="dot"></span>
+</div>
+</body>
+</html>

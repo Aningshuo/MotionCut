@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1280, height=720">
+<title>M43 夹具：触摸手势（拖动 / 裁剪 / 滚动 / 锁定轨）</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #000; }
+  section { position: relative; }
+  video { position: absolute; }
+</style>
+</head>
+<body>
+<!--
+  M43-TIMELINE-GESTURE-WIRE 的工程：一条 20s 画面轨 + 一条锁定轨。
+
+  - T0 画面：g-1(0–2) / g-2(at 3, 2s) / g-3(at 6, 1.5s) / g-6(at 12, 3s) / g-7(at 17, 3s)
+    * g-2 左邻居 g-1 的右缘正好在 2.0s —— 65px 拖动（64px/s）落在 1.984s，
+      6px 吸附阈值（0.094s）内，落点必须是 2.0（A2）。
+    * g-3 只有 1.5s 源区间 —— 右手柄拖 32px（=0.5s）后 end 必须正好 2.0（A3）。
+    * 整条 20s ≈ 1304px，比时间线滚动容器宽，空白横拖才能真的滚（A7）。
+  - T1 画面：整条轨 `locked` —— 触摸拖动必须和鼠标一样在本地被拒（A8）。
+  媒体全部来自 tests/fixtures/media，逐字节可复现。
+-->
+<section id="picture">
+  <video id="g-1" src="assets/bars.mp4#t=0,2" at="0" style="left: 0px; top: 0px; width: 1280px; height: 720px"></video>
+  <video id="g-2" src="assets/light.mp4#t=0,2" at="3" style="left: 0px; top: 0px; width: 1280px; height: 720px"></video>
+  <video id="g-3" src="assets/dark.mp4#t=0,1.5" at="6" style="left: 0px; top: 0px; width: 1280px; height: 720px"></video>
+  <video id="g-6" src="assets/bars.mp4#t=0,3" at="12" style="left: 0px; top: 0px; width: 1280px; height: 720px"></video>
+  <video id="g-7" src="assets/light.mp4#t=0,3" at="17" style="left: 0px; top: 0px; width: 1280px; height: 720px"></video>
+</section>
+<section id="locked-track" locked>
+  <video id="g-5" src="assets/insert.mp4#t=0,2" at="0" style="left: 0px; top: 0px; width: 1280px; height: 720px"></video>
+</section>
+</body>
+</html>

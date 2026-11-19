@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>时间线手势夹具（S46）</title>
+<style>
+  html, body { margin: 0; width: 1100px; height: 460px; background: #eef1f5; font: 12px/1.4 -apple-system, "PingFang SC", sans-serif; }
+  #timeline { position: absolute; left: 30px; top: 60px; width: 980px; height: 300px; background: #fff; border: 1px solid #c8d0da; overflow: hidden; }
+  #ruler { position: absolute; left: 0; top: 0; width: 100%; height: 24px; background: #f5f7fa; border-bottom: 1px solid #dde3ea; }
+  .tick { position: absolute; top: 0; height: 24px; border-left: 1px solid #cfd7e0; }
+  .tick span { position: absolute; left: 3px; top: 4px; color: #7b8794; font-size: 10px; }
+  #lanes { position: absolute; left: 0; top: 24px; width: 100%; height: 276px; }
+  .lane { position: absolute; left: 0; width: 100%; height: 80px; border-bottom: 1px dashed #e6ebf1; }
+  .clip { position: absolute; box-sizing: border-box; background: #d7e6ff; border: 1px solid #6f9bdd; border-radius: 4px; color: #123a6b; font-size: 11px; padding: 6px 12px; overflow: hidden; }
+  .clip[data-selected="true"] { background: #ffe9c7; border-color: #d99a2b; }
+  .clip span { pointer-events: none; }
+  /* 视觉手柄：10px 宽，热区由 timeline-gesture.mjs 自己盖 44×44 透明块 */
+  .handle { position: absolute; top: 0; width: 10px; height: 100%; background: rgba(0, 0, 0, 0.18); pointer-events: none; }
+  .handle.start { left: 0; }
+  .handle.end { right: 0; }
+  #hud { position: absolute; left: 30px; top: 380px; color: #4a5663; font: 12px/1.5 ui-monospace, Menlo, monospace; }
+</style>
+</head>
+<body>
+<div id="timeline" data-timeline>
+  <div id="ruler"></div>
+  <div id="lanes"></div>
+</div>
+<div id="hud">…</div>
+<script>
+  /**
+   * 时间线桩宿主（S46）。
+   *
+   * 「磁盘」只有一个写入口：`applyOps`。手势层调 `onCommit(ops)` 才会走到这里；
+   * 取消路径不调 commit，所以 `diskOps` 必须停在 0 —— 这就是 A6 的判据。
+   *
+   * 片段的几何**只**由 `clips + view` 算（与产品模块同一条公式），DOM 是它的投影：
+   * 这样「手势算错了」和「宿主画错了」不会混在一起。
+   */
+  const STAGE = { w: 1100, h: 460 };
+  const BASE_CLIPS = [
+    { id: 'a', at: 0, time: [0, 2], track: 0 },
+    { id: 'b', at: 3, time: [0, 2], track: 0 },
+    { id: 'c', at: 6, time: [0, 1.5], track: 0 },
+    { id: 'd', at: 9, time: [0, 2], track: 0 }
+  ];
+  const BASE_VIEW = { pxPerSecond: 60, scrollLeft: 0, trackHeight: 80 };
+
+  const host = {
+    clips: BASE_CLIPS.map((clip) => ({ ...clip, time: [...clip.time] })),
+    view: { ...BASE_VIEW },
+    ops: [],
+    diskOps: 0,
+    diskClips: null,
+    previews: [],
+    cancels: 0,
+    selects: [],
+    selected: null,
+    render() {
+      const lanes = document.getElementById('lanes');
+      lanes.innerHTML = '';
+      for (let i = 0; i < 3; i += 1) {
+        const lane = document.createElement('div');
+        lane.className = 'lane';
+        lane.style.top = `${i * host.view.trackHeight}px`;
+        lane.setAttribute('data-lane', String(i));
+        lanes.appendChild(lane);
+      }
+      for (const clip of host.clips) {
+        const duration = (clip.time[1] - clip.time[0]) / (clip.speed > 0 ? clip.speed : 1);
+        const el = document.createElement('div');
+        el.className = 'clip';
+        el.setAttribute('data-clip-id', clip.id);
+        el.setAttribute('data-selected', host.selected === clip.id ? 'true' : 'false');
+        el.style.left = `${clip.at * host.view.pxPerSecond - host.view.scrollLeft}px`;
+        el.style.top = `${clip.track * host.view.trackHeight}px`;
+        el.style.width = `${Math.max(1, duration * host.view.pxPerSecond)}px`;
+        el.style.height = `${host.view.trackHeight}px`;
+        el.innerHTML = `<span>${clip.id} · ${clip.at.toFixed(2)}s</span><div class="handle start"></div><div class="handle end"></div>`;
+        lanes.appendChild(el);
+      }
+      /* 标尺 */
+      const ruler = document.getElementById('ruler');
+      ruler.innerHTML = '';
+      const maxSec = Math.ceil((host.view.scrollLeft + 980) / host.view.pxPerSecond);
+      for (let sec = 0; sec <= maxSec; sec += 1) {
+        const x = sec * host.view.pxPerSecond - host.view.scrollLeft;
+        if (x < 0 || x > 980) continue;
+        const tick = document.createElement('div');
+        tick.className = 'tick';
+        tick.style.left = `${x}px`;
+        tick.innerHTML = `<span>${sec}s</span>`;
+        ruler.appendChild(tick);
+      }
+      document.getElementById('hud').textContent =
+        `pps=${host.view.pxPerSecond} scroll=${host.view.scrollLeft} selected=${host.selected ?? '-'} ` +
+        `ops=${host.diskOps} cancels=${host.cancels}`;
+    },
+    /** 唯一落盘点：手势层调 onCommit 才会走到这里（等价于宿主发 /ops 写盘） */
+    applyOps(ops) {
+      for (const op of ops) {
+        if (op.op !== 'props') continue;
+        for (const edit of op.edits) {
+          const clip = host.clips.find((item) => item.id === edit.clip);
+          if (!clip) continue;
+          if (edit.prop === 'at') clip.at = edit.value;
+          else if (edit.prop === 'start') clip.time[0] = edit.value;
+          else if (edit.prop === 'end') clip.time[1] = edit.value;
+          host.ops.push({ ...edit });
+          host.diskOps += 1;
+        }
+      }
+      host.diskClips = host.clips.map((clip) => ({ ...clip, time: [...clip.time] }));
+      host.render();
+      window.__gesture?.refresh();
+    },
+    applyPreview(placed) {
+      host.previews.push(placed);
+      for (const [id, rect] of Object.entries(placed)) {
+        const el = document.querySelector(`[data-clip-id="${id}"]`);
+        if (!el) continue;
+        el.style.left = `${rect.start * host.view.pxPerSecond - host.view.scrollLeft}px`;
+        el.style.width = `${Math.max(1, (rect.end - rect.start) * host.view.pxPerSecond)}px`;
+        /* 标签跟着预览走（否则截图里「位置在 2s、文字还写 3.00s」，看的人会以为算错了）；
+           注意 host.clips 不动 —— 预览不是写盘。 */
+        const label = el.querySelector('span');
+        if (label) label.textContent = `${id} · ${rect.start.toFixed(2)}s`;
+      }
+      document.getElementById('hud').textContent =
+        `pps=${host.view.pxPerSecond} scroll=${host.view.scrollLeft} selected=${host.selected ?? '-'} ` +
+        `ops=${host.diskOps} cancels=${host.cancels}`;
+    },
+    setScroll(scrollLeft) {
+      host.view.scrollLeft = Math.max(0, scrollLeft);
+      host.render();
+      window.__gesture?.refresh();
+    },
+    setZoom(view) {
+      host.view.pxPerSecond = view.pxPerSecond;
+      host.view.scrollLeft = view.scrollLeft;
+      host.render();
+      window.__gesture?.refresh();
+    },
+    select(id) {
+      host.selected = id;
+      host.selects.push(id);
+      host.render();
+      window.__gesture?.refresh();
+    },
+    reset() {
+      host.clips = BASE_CLIPS.map((clip) => ({ ...clip, time: [...clip.time] }));
+      host.view = { ...BASE_VIEW };
+      host.ops = [];
+      host.diskOps = 0;
+      host.diskClips = null;
+      host.previews = [];
+      host.cancels = 0;
+      host.selects = [];
+      host.selected = null;
+      host.render();
+      window.__gesture?.refresh();
+    },
+    snapshot() {
+      const rect = document.getElementById('timeline').getBoundingClientRect();
+      const clips = {};
+      for (const el of document.querySelectorAll('[data-clip-id]')) {
+        clips[el.getAttribute('data-clip-id')] = {
+          left: Number.parseFloat(el.style.left) || 0,
+          width: Number.parseFloat(el.style.width) || 0,
+          selected: el.getAttribute('data-selected') === 'true'
+        };
+      }
+      return {
+        view: { ...host.view },
+        clips: host.clips.map((clip) => ({ ...clip, time: [...clip.time] })),
+        clipsAt: host.clips.map((clip) => clip.at),
+        dom: clips,
+        selected: host.selected,
+        selects: [...host.selects],
+        log: { ops: host.ops, diskOps: host.diskOps, previews: host.previews.length, cancels: host.cancels },
+        viewport: { x: rect.x, y: rect.y, w: rect.width, h: rect.height },
+        hitRects: [...document.querySelectorAll('[data-tl-hit]')].map((el) => {
+          const r = el.getBoundingClientRect();
+          return { clip: el.getAttribute('data-tl-clip'), edge: el.getAttribute('data-tl-hit'), x: r.x, y: r.y, w: r.width, h: r.height };
+        }),
+        hud: document.getElementById('hud').textContent
+      };
+    }
+  };
+
+  window.__tl = host;
+  window.__stage = STAGE;
+  host.render();
+</script>
+</body>
+</html>

@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>动效取帧夹具 · 提示卡（单片段 at=0，铺满 1280×720）</title>
+<!--
+  S33 取帧夹具：单个 badge 片段铺满舞台，at=0
+  clip 用 film.html 已有的表达——<iframe> + at 属性（contracts/film-doc.ts 的 Clip.at），
+  data-instance 就是 instantiate() 产出的实例根挂载点。
+  这个页面**不含动效逻辑**：相位全靠 SceneHost.frame(t) 写进来的 --motion-t。
+-->
+<style>
+  html, body { margin: 0; padding: 0; background: #0f1729; }
+  section { position: relative; display: block; width: 1280px; height: 720px; overflow: hidden; }
+  iframe { position: absolute; border: 0; display: block; background: #070b14; }
+</style>
+</head>
+<body>
+<section>
+  <iframe id="clip" data-instance="clip-badge" src="../../../packages/motion/templates/badge/badge.html" at="0" scrolling="no" style="left:0;top:0;width:1280px;height:720px"></iframe>
+</section>
+<script>
+(() => {
+  'use strict';
+  // SceneHost 要求 window.film.frame(t) 存在；摆放与相位都不在这里做。
+  window.film = {
+    meta: { width: 1280, height: 720, duration: 3 },
+    async ready() { document.body.dataset.filmReady = '1'; },
+    async frame(t) { document.body.dataset.filmFrame = String(t); }
+  };
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1280, height=720">
+<title>S40 夹具：画布数字标签（多选间距 / 旋转缩放）</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #05070a; }
+</style>
+</head>
+<body>
+<!-- 一排四个片段：相邻间隙都是 80px（A→B→C→D），用来验「多选间距取整组外接框」 -->
+<section id="row-1">
+  <iframe id="lbl-a" src="scenes/scene-frame-a.html#t=0,8" at="0" size="1280x720"
+          style="left: 80px; top: 100px; width: 240px; height: 135px"></iframe>
+</section>
+<section id="row-2">
+  <iframe id="lbl-b" src="scenes/scene-frame-a.html#t=0,8" at="0" size="1280x720"
+          style="left: 400px; top: 100px; width: 240px; height: 135px"></iframe>
+</section>
+<section id="row-3">
+  <iframe id="lbl-c" src="scenes/scene-frame-portrait.html#t=0,8" at="0" size="1080x1920"
+          style="left: 720px; top: 100px; width: 240px; height: 135px"></iframe>
+</section>
+<section id="row-4">
+  <iframe id="lbl-d" src="scenes/scene-frame-a.html#t=0,8" at="0" size="1280x720"
+          style="left: 1040px; top: 100px; width: 160px; height: 135px"></iframe>
+</section>
+<!-- 旋转 45° 的片段：缩放时不做吸附，手柄/参考线也不许给出「会吸」的暗示 -->
+<section id="row-r">
+  <iframe id="lbl-r" src="scenes/scene-frame-a.html#t=0,8" at="0" size="1280x720"
+          style="left: 200px; top: 420px; width: 200px; height: 120px; rotate: 45deg"></iframe>
+</section>
+</body>
+</html>

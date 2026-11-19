@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>R25 A7：frame(t) 抛错的场景</title>
+<style>
+  html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: #201010; color: #f0d8d8; font-family: -apple-system, Arial, sans-serif; }
+  h1 { position: absolute; left: 6%; top: 10%; margin: 0; font-size: 56px; }
+</style>
+</head>
+<body>
+<h1 id="title">这个场景在 frame() 里抛错</h1>
+<script>
+  var calls = 0;
+  window.film = {
+    duration: 2,
+    frame: function (t) {
+      calls += 1;
+      // 第 3 帧开始炸：证明错误是在**取帧阶段**被抓住的，不是 boot 噪声
+      if (calls >= 3) throw new Error('scene boom at t=' + t);
+      document.getElementById('title').style.opacity = String(0.4 + 0.3 * Math.min(1, t / 2));
+    }
+  };
+</script>
+</body>
+</html>

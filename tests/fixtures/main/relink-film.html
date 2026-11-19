@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1280, height=720">
+<title>M26 夹具：5 段素材被移走（move-a…e）+ 1 段还在（keep）</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #000; }
+  section { position: relative; }
+  video { position: absolute; }
+</style>
+</head>
+<body>
+<!--
+  验收用：assets/ 里只留 keep.mp4；move-a…move-e 都由脚本故意不复制（= 被用户移走）。
+  每段都带 #t=0,2 与自己的 at —— 重链必须原样保住这两个值。
+-->
+<section id="v1">
+  <video id="r-a" src="assets/move-a.mp4#t=0,2" at="0" muted style="left: 0px; top: 0px; width: 1280px; height: 720px"></video>
+  <video id="r-b" src="assets/move-b.mp4#t=0,2" at="2" muted style="left: 0px; top: 0px; width: 1280px; height: 720px"></video>
+  <video id="r-c" src="assets/move-c.mp4#t=0,2" at="4" muted style="left: 0px; top: 0px; width: 1280px; height: 720px"></video>
+  <video id="r-d" src="assets/move-d.mp4#t=0,2" at="6" muted style="left: 0px; top: 0px; width: 1280px; height: 720px"></video>
+  <video id="r-e" src="assets/move-e.mp4#t=0,2" at="8" muted style="left: 0px; top: 0px; width: 1280px; height: 720px"></video>
+  <video id="r-keep" src="assets/keep.mp4#t=0,2" at="10" muted style="left: 0px; top: 0px; width: 1280px; height: 720px"></video>
+</section>
+</body>
+</html>

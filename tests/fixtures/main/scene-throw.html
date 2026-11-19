@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<style>
+  html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: #3a1d1d; }
+  .panel { position: absolute; left: 60px; top: 60px; width: 340px; height: 200px; background: #e8d9d9; border-radius: 16px; }
+  h1 { margin: 24px; font: 700 32px/1.2 "PingFang SC", sans-serif; color: #7a2b2b; }
+</style>
+</head>
+<body>
+<div class="panel"><h1 id="threw-title">这个场景的 frame() 会抛错</h1></div>
+<script>
+  // M13-A3：frame() 直接 throw —— 舞台必须报 FRAME_THREW，不能冒充 NO_FILM，也不能拖死整帧。
+  window.film = {
+    duration: 4,
+    frame(t) {
+      throw new Error('场景自己的 frame 炸了 t=' + t);
+    }
+  };
+</script>
+</body>
+</html>

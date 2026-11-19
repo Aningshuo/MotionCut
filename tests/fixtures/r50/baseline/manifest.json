@@ -1,0 +1,21 @@
+{
+  "generatedAt": "2026-11-10T03:37:55.193Z",
+  "generator": "node scripts/r50-p55.mjs --ensure-fixture（scripts/lib/r50-fixtures.mjs ensureBaseline）",
+  "provenance": {
+    "kind": "re-established",
+    "why": "R37 的原始 PRE 产物随 .local-runs 丢失；这里用当前代码 + 同一份夹具重建同口径基线",
+    "proves": "从现在起 P53-A1/A4 与 P54-A4 的「改动前后逐字节相同」比对有了稳定参照物（不再漂移）",
+    "doesNotProve": "与 R37 当时的产物逐字节相同——那一层只有 R37 冻结证据里的 sha 能说明",
+    "frozenR37": {
+      "P53-A1.plain": "495784f1ca1d…（1168630B）",
+      "P53-A4.subbed": "e1548555ed98…",
+      "P54-A4.subbed": "bede7847eb75…（13766B）",
+      "note": "旧夹具已丢，新夹具的底板/文本与 R37 不同，sha 必然不同；这几个值只作「原始基线存在过」的索引，不作为判据"
+    }
+  },
+  "files": {
+    "m48-720p.mp4": "ad7002ddf19a2c9add5ae7c2fe16a8602f3ebbef4632b0d6ce6ff3c5f030943a",
+    "720-lh18-single-subbed.mp4": "6c2c40640af005f6b08957575ea45a280b8a941eb815419da07276443feb9802",
+    "720-lh125-subbed.mp4": "b6d801efb8688436dd5223e4b9be88836cb71a80430865a0d789589c103c14b9"
+  }
+}

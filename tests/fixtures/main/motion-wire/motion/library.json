@@ -1,0 +1,52 @@
+{
+  "version": 1,
+  "entries": [
+    {
+      "id": "motion_pop",
+      "name": "弹入卡片",
+      "kind": "animation",
+      "sourcePath": "scenes/motion-pop.html",
+      "sourceHash": "7445f907000798d9f1b9c5992fadcf9d462084788d7a51136ae88bbeaf2bdcc5",
+      "assets": [],
+      "params": {
+        "speed": {
+          "type": "number",
+          "min": 0.5,
+          "max": 3,
+          "step": 0.1,
+          "default": 1,
+          "label": "速度"
+        },
+        "accent": {
+          "type": "color",
+          "default": "#3b82f6",
+          "label": "强调色"
+        },
+        "title": {
+          "type": "string",
+          "default": "动效标题",
+          "label": "标题文本",
+          "apply": {
+            "kind": "text",
+            "selector": "h1"
+          }
+        }
+      },
+      "version": 3,
+      "createdAt": "2026-11-01T00:00:00.000Z",
+      "history": []
+    },
+    {
+      "id": "motion_gone",
+      "name": "源已删除的模板",
+      "kind": "component",
+      "sourcePath": "motion/templates/gone.html",
+      "sourceHash": "0000000000000000000000000000000000000000000000000000000000000000",
+      "assets": [],
+      "params": {},
+      "version": 1,
+      "createdAt": "2026-11-01T00:00:00.000Z",
+      "history": []
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>M33 模板：只由 --motion-t（毫秒）驱动的循环动效</title>
+<!--
+  这条模板**没有自己的时钟**：动画是 paused + 负延迟，相位只由 --motion-t 决定
+  （与 packages/motion/templates/badge 同一套约定）。
+
+  为什么是无限循环：A1 要抽 t=0.5 / 1.4 / 2.9 三帧互不相同。入场类动画在 2.9s 早就
+  停在终态了，三帧里后两帧会一模一样——那样「三帧不同」证明不了「相位真的在动」。
+  周期 1000ms，三帧落在一个周期的 500 / 400 / 900 处，颜色与位置都不同。
+
+  没设 --motion-t 时取 100000ms（落在某个相位上），与 badge 的兜底一致。
+-->
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #0b1020; }
+  .stage {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .orb {
+    width: 360px; height: 360px; border-radius: 50%;
+    background: #22d3ee;
+    box-shadow: 0 0 120px rgba(34, 211, 238, 0.45);
+    animation: drift 1000ms linear infinite both;
+    /* 顺序要紧：animation 简写会重置 delay / play-state，这两行必须在它之后。 */
+    animation-play-state: paused;
+    animation-delay: calc(-1 * var(--motion-t, 100000) * 1ms);
+  }
+  @keyframes drift {
+    0%   { transform: translateX(-340px) scale(0.7); opacity: 0.35; background: #22d3ee; }
+    50%  { transform: translateX(0) scale(1);        opacity: 1;    background: #a78bfa; }
+    100% { transform: translateX(340px) scale(0.7);  opacity: 0.35; background: #22d3ee; }
+  }
+</style>
+</head>
+<body>
+<div class="stage"><div class="orb" id="orb" data-role="root"></div></div>
+</body>
+</html>

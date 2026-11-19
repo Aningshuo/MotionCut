@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>反例 · 参数没标注</title>
+<!--
+  反面素材：CSS 里读了 --accent 与 --size，但页面上一个 data-motion-param 都没有，
+  也没有 motion-clock meta —— 面板里根本改不到这两个值。
+-->
+<link rel="stylesheet" href="./unannotated.css">
+</head>
+<body>
+<div class="card" data-role="root">
+  <span class="title">没有标注的参数</span>
+</div>
+</body>
+</html>

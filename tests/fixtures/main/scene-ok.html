@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<style>
+  html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: #0f1b22; }
+  .chart { position: absolute; left: 80px; bottom: 80px; display: flex; align-items: flex-end; gap: 24px; height: 240px; }
+  .bar { width: 90px; background: #43d0a0; border-radius: 8px 8px 0 0; height: 0; }
+  h1 { position: absolute; left: 80px; top: 60px; margin: 0; font: 700 36px/1.2 "PingFang SC", sans-serif; color: #d8f5ea; }
+</style>
+</head>
+<body>
+<h1 id="ok-title">同帧的另一个场景</h1>
+<div class="chart"><div class="bar" id="ok-bar-one"></div><div class="bar" id="ok-bar-two"></div></div>
+<script>
+  // M13-A3 的对照组：正常同步 frame()，用来证明「一块炸了别的照画」。
+  var bars = [document.getElementById('ok-bar-one'), document.getElementById('ok-bar-two')];
+  window.film = {
+    duration: 4,
+    frame(t) {
+      var q = Math.max(0, Math.min(1, t / 1.4));
+      bars.forEach(function (el, i) { el.style.height = (70 + i * 60) * q + 'px'; });
+    }
+  };
+</script>
+</body>
+</html>

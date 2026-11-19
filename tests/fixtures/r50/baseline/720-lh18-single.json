@@ -1,0 +1,358 @@
+{
+  "ok": true,
+  "project": "/var/folders/q9/ftyr821n0r7dnbcg347g4lb40000gn/T/opencut-r50/p55-portrait-nine-20261110-113740/output/projects/pline",
+  "path": "/var/folders/q9/ftyr821n0r7dnbcg347g4lb40000gn/T/opencut-r50/p55-portrait-nine-20261110-113740/output/baseline-gen/720-lh18-single-master.mp4",
+  "bytes": 3382,
+  "sha256": "862d422303576d42e01188c45097d7b0cdfecefd64b08da2330733dcf379df08",
+  "frames": 30,
+  "durationSec": 1,
+  "audio": null,
+  "picture": "ffmpeg",
+  "codec": {
+    "name": "h264",
+    "container": "mp4",
+    "encoder": "libx264",
+    "audio": "aac",
+    "extension": ".mp4"
+  },
+  "pixelFormat": {
+    "mode": "auto",
+    "pixFmt": "yuv444p",
+    "profile": "High 4:4:4 Predictive"
+  },
+  "quality": {
+    "name": "standard",
+    "crf": 8,
+    "preset": "medium",
+    "pixFmt": "yuv444p"
+  },
+  "subtitles": {
+    "path": "/var/folders/q9/ftyr821n0r7dnbcg347g4lb40000gn/T/opencut-r50/p55-portrait-nine-20261110-113740/output/baseline-gen/720-lh18-single-subbed.mp4",
+    "bytes": 7848,
+    "sha256": "6c2c40640af005f6b08957575ea45a280b8a941eb815419da07276443feb9802",
+    "frames": 30,
+    "durationSec": 1,
+    "video": {
+      "bytes": 7848,
+      "sha256": "6c2c40640af005f6b08957575ea45a280b8a941eb815419da07276443feb9802"
+    },
+    "probe": {
+      "video": {
+        "codec": "h264",
+        "width": 1280,
+        "height": 720,
+        "fps": "30/1",
+        "pixFmt": "yuv444p",
+        "profile": "High 4:4:4 Predictive",
+        "codecTag": "avc1",
+        "durationSec": 1,
+        "frames": 30
+      },
+      "audio": null,
+      "format": {
+        "durationSec": 1,
+        "sizeBytes": 7848,
+        "formatName": "mov,mp4,m4a,3gp,3g2,mj2"
+      }
+    },
+    "decode": {
+      "ok": true,
+      "exitCode": 0,
+      "stderr": "",
+      "timedOut": false,
+      "errorLines": []
+    },
+    "master": {
+      "path": "/var/folders/q9/ftyr821n0r7dnbcg347g4lb40000gn/T/opencut-r50/p55-portrait-nine-20261110-113740/output/baseline-gen/720-lh18-single-master.mp4",
+      "bytes": 3382,
+      "sha256": "862d422303576d42e01188c45097d7b0cdfecefd64b08da2330733dcf379df08"
+    },
+    "subbed": {
+      "path": "/var/folders/q9/ftyr821n0r7dnbcg347g4lb40000gn/T/opencut-r50/p55-portrait-nine-20261110-113740/output/baseline-gen/720-lh18-single-subbed.mp4",
+      "bytes": 7848,
+      "sha256": "6c2c40640af005f6b08957575ea45a280b8a941eb815419da07276443feb9802"
+    },
+    "vtt": {
+      "path": "/var/folders/q9/ftyr821n0r7dnbcg347g4lb40000gn/T/opencut-r50/p55-portrait-nine-20261110-113740/output/baseline-gen/720-lh18-single.vtt",
+      "bytes": 60,
+      "sha256": "d46e5bb4d6713f014c166b100758a6e8b345c98f9167ae7a6e3dac081fbdf652"
+    },
+    "cues": 1,
+    "splitCount": 0,
+    "skippedCount": 0,
+    "overlapClamped": 0,
+    "overlapDropped": 0,
+    "style": {
+      "fontSizeRatio": 0.045,
+      "bottomSafeRatio": 0.08,
+      "strokeWidthRatio": 0.12,
+      "outlineRatio": null,
+      "shadowRatio": 0.0015,
+      "fontFamily": "Heiti SC",
+      "lineHeight": 1.25,
+      "fontScale": 1,
+      "bold": false,
+      "cpsWarn": 17
+    },
+    "subtitleStyleAudit": {
+      "shape": "explicit",
+      "ignoredFields": [],
+      "shadowedFields": [],
+      "warnings": []
+    },
+    "styleSource": {
+      "origin": "explicit",
+      "file": null,
+      "exists": false,
+      "issues": [],
+      "sha256": null,
+      "shape": "explicit",
+      "warnings": [],
+      "ignoredFields": []
+    },
+    "subtitleStyle": {
+      "fontFamily": "\"Heiti SC\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif",
+      "assFontName": "Heiti SC",
+      "fontSizeRatio": 0.045,
+      "color": "#ffffff",
+      "outlineColor": "#000000",
+      "outlineRatio": 0.12,
+      "shadowColor": "rgba(0,0,0,0.608)",
+      "shadowRatio": 0.0015,
+      "background": "transparent",
+      "align": "center",
+      "lineHeight": 1.8,
+      "maxLines": 2,
+      "bottomSafeRatio": 0.08,
+      "fontScale": 1,
+      "bold": false,
+      "cpsWarn": 17
+    },
+    "assStyle": {
+      "fontName": "Heiti SC",
+      "fontSizePx": 32,
+      "outlinePx": 2,
+      "shadowPx": 1,
+      "marginV": 71,
+      "marginH": 64,
+      "primaryColour": "&H00FFFFFF",
+      "outlineColour": "&H00000000",
+      "backColour": "&H64000000",
+      "alignment": 2,
+      "lineHeight": 1.8,
+      "weight": 0,
+      "scale": 1,
+      "offsetX": 0,
+      "offsetY": 0,
+      "fit": "letterbox",
+      "playRes": {
+        "w": 1280,
+        "h": 720
+      },
+      "stage": {
+        "w": 1280,
+        "h": 720
+      },
+      "styleIssues": [],
+      "style": {
+        "fontFamily": "\"Heiti SC\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif",
+        "assFontName": "Heiti SC",
+        "fontSizeRatio": 0.045,
+        "color": "#ffffff",
+        "outlineColor": "#000000",
+        "outlineRatio": 0.12,
+        "shadowColor": "rgba(0,0,0,0.608)",
+        "shadowRatio": 0.0015,
+        "background": "transparent",
+        "align": "center",
+        "lineHeight": 1.8,
+        "maxLines": 2,
+        "bottomSafeRatio": 0.08,
+        "fontScale": 1,
+        "bold": false,
+        "cpsWarn": 17
+      }
+    },
+    "sources": [
+      {
+        "clipId": "v1",
+        "path": "/private/var/folders/q9/ftyr821n0r7dnbcg347g4lb40000gn/T/opencut-r50/p55-portrait-nine-20261110-113740/output/projects/pline/assets/base.vtt",
+        "format": "vtt",
+        "cues": 1
+      }
+    ],
+    "warnings": [],
+    "glyph": {
+      "status": "ok",
+      "checked": 6,
+      "missing": [],
+      "reason": null
+    },
+    "support": {
+      "ok": true,
+      "detail": "ffmpeg has the 'subtitles' filter (libass); ffmpeg version 8.0 Copyright (c) 2000-2025 the FFmpeg developers; source=explicit",
+      "version": "ffmpeg version 8.0 Copyright (c) 2000-2025 the FFmpeg developers"
+    },
+    "ass": {
+      "path": "/var/folders/q9/ftyr821n0r7dnbcg347g4lb40000gn/T/opencut-subs-xsAwnP/subtitles.ass",
+      "sha256": "758679d142d5dd444591af2569c7c6f9710604b0364921181ae73de523aff969"
+    },
+    "layout": null,
+    "report": {
+      "style": {
+        "fontSizeRatio": 0.045,
+        "bottomSafeRatio": 0.08,
+        "strokeWidthRatio": 0.12,
+        "outlineRatio": null,
+        "shadowRatio": 0.0015,
+        "fontFamily": "Heiti SC",
+        "lineHeight": 1.25,
+        "fontScale": 1,
+        "bold": false,
+        "cpsWarn": 17
+      },
+      "subtitleStyle": {
+        "fontFamily": "\"Heiti SC\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif",
+        "assFontName": "Heiti SC",
+        "fontSizeRatio": 0.045,
+        "color": "#ffffff",
+        "outlineColor": "#000000",
+        "outlineRatio": 0.12,
+        "shadowColor": "rgba(0,0,0,0.608)",
+        "shadowRatio": 0.0015,
+        "background": "transparent",
+        "align": "center",
+        "lineHeight": 1.8,
+        "maxLines": 2,
+        "bottomSafeRatio": 0.08,
+        "fontScale": 1,
+        "bold": false,
+        "cpsWarn": 17
+      },
+      "assStyle": {
+        "fontName": "Heiti SC",
+        "fontSizePx": 32,
+        "outlinePx": 2,
+        "shadowPx": 1,
+        "marginV": 71,
+        "marginH": 64,
+        "primaryColour": "&H00FFFFFF",
+        "outlineColour": "&H00000000",
+        "backColour": "&H64000000",
+        "alignment": 2,
+        "weight": 0,
+        "scale": 1,
+        "offsetY": 0,
+        "fit": "letterbox"
+      },
+      "linePlan": {
+        "module": "film-core/subtitle-layout",
+        "stage": {
+          "w": 1280,
+          "h": 720
+        },
+        "maxLines": 2,
+        "visibleWidth": null,
+        "truncatedCues": 0,
+        "multiLineCues": 0,
+        "cues": [
+          {
+            "index": 1,
+            "lines": [
+              "单行字幕不动"
+            ],
+            "truncated": false,
+            "widthsEm": [
+              6.12
+            ],
+            "capacityEm": 35.619,
+            "visibleWidth": 1280,
+            "issues": []
+          }
+        ]
+      },
+      "lineStep": {
+        "lineHeight": 1.8,
+        "defaultLineHeight": 1.25,
+        "em": 1.44,
+        "isDefault": false
+      },
+      "splitCount": 0,
+      "skippedCount": 0,
+      "overlapClamped": 0,
+      "overlapDropped": 0,
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "sources": [
+        {
+          "clipId": "v1",
+          "path": "/private/var/folders/q9/ftyr821n0r7dnbcg347g4lb40000gn/T/opencut-r50/p55-portrait-nine-20261110-113740/output/projects/pline/assets/base.vtt",
+          "format": "vtt",
+          "cues": 1
+        }
+      ],
+      "cueCount": 1,
+      "firstCueSec": 0.2,
+      "lastCueSec": 1,
+      "warnings": [],
+      "glyph": {
+        "status": "ok",
+        "checked": 6,
+        "missing": [],
+        "reason": null
+      },
+      "styleAudit": {
+        "origin": "explicit",
+        "file": null,
+        "exists": false,
+        "issues": [],
+        "sha256": null,
+        "shape": "explicit",
+        "warnings": [],
+        "ignoredFields": []
+      },
+      "ass": {
+        "path": "/var/folders/q9/ftyr821n0r7dnbcg347g4lb40000gn/T/opencut-subs-xsAwnP/subtitles.ass",
+        "sha256": "758679d142d5dd444591af2569c7c6f9710604b0364921181ae73de523aff969",
+        "bytes": 679
+      }
+    }
+  },
+  "plan": {
+    "durationSec": 2,
+    "frames": 30,
+    "fps": 30,
+    "fpsRational": {
+      "num": 30,
+      "den": 1
+    },
+    "fpsArg": "30",
+    "range": [
+      0,
+      1
+    ],
+    "visualClips": 1,
+    "sceneClips": 0,
+    "audioClips": 0,
+    "output": {
+      "w": 1280,
+      "h": 720
+    },
+    "fit": "none",
+    "codec": {
+      "name": "h264",
+      "container": "mp4",
+      "encoder": "libx264",
+      "audio": "aac",
+      "extension": ".mp4"
+    },
+    "pixFmt": "yuv444p",
+    "pixFmtMode": "auto",
+    "profile": "High 4:4:4 Predictive",
+    "warnings": [
+      "film has no audible clips: audioMix is null (no silent track invented)"
+    ]
+  }
+}

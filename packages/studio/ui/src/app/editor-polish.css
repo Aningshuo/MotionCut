@@ -1,0 +1,652 @@
+/*
+ * R3 · 编辑器界面收尾。
+ * 仅作用于已有工作台：不改变列宽、停靠、轨道时间坐标、播放器画幅或业务状态。
+ * 工具常态为线性图标，悬停、键盘焦点与选中态才出现承托面。
+ */
+
+.app[data-ui-polish='r3'] {
+  --ep-hover: rgb(255 255 255 / 6%);
+  --ep-pressed: rgb(255 255 255 / 10%);
+  --ep-divider: rgb(255 255 255 / 7%);
+  --ep-quiet: #8d8d93;
+  --ep-control-radius: 6px;
+}
+
+/* Routine acknowledgements stay available to assistive technology without moving the editor. */
+.app[data-ui-polish='r3'] .editor-passive-status {
+  position: fixed;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.app[data-ui-polish='r3'] .editor-action-notice {
+  position: fixed;
+  top: 48px;
+  right: 12px;
+  z-index: 80;
+  width: min(360px, calc(100vw - 24px));
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px solid rgb(255 255 255 / 12%);
+  border-radius: 8px;
+  background: #242424;
+  color: #dedee3;
+  box-shadow: 0 6px 24px rgb(0 0 0 / 25%);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.app[data-ui-polish='r3'] .editor-icon,
+.project-home .editor-icon {
+  display: inline-block;
+  flex: 0 0 auto;
+  vertical-align: middle;
+  background-color: currentColor;
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  -webkit-mask-size: contain;
+  pointer-events: none;
+}
+
+.app[data-ui-polish='r3'] .rail-tab .rail-ico {
+  width: 17px;
+  height: 17px;
+}
+.app[data-ui-polish='r3'] [data-rail-tab='assets'] .rail-ico { mask-image: url('../assets/editor-icons/photo.svg'); }
+.app[data-ui-polish='r3'] [data-rail-tab='audio'] .rail-ico { mask-image: url('../assets/editor-icons/music.svg'); }
+.app[data-ui-polish='r3'] [data-rail-tab='text'] .rail-ico { mask-image: url('../assets/editor-icons/typography.svg'); }
+.app[data-ui-polish='r3'] [data-rail-tab='subtitle'] .rail-ico { mask-image: url('../assets/editor-icons/subtitles.svg'); }
+.app[data-ui-polish='r3'] [data-rail-tab='transition'] .rail-ico { mask-image: url('../assets/editor-icons/transition-right.svg'); }
+.app[data-ui-polish='r3'] [data-rail-tab='layers'] .rail-ico { mask-image: url('../assets/editor-icons/layers-intersect.svg'); }
+
+/* Layer type is an icon; exact HTML tag and selector remain in the row tooltip. */
+.app[data-ui-polish='r3'] .layer-row .thumb {
+  width: 14px;
+  height: 14px;
+  min-width: 14px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: var(--text-mute);
+  mask: url('../assets/editor-icons/layers-intersect.svg') center / contain no-repeat;
+}
+.app[data-ui-polish='r3'] .layer-row:is([data-tag='h1'],[data-tag='h2'],[data-tag='h3'],[data-tag='p'],[data-tag='span']) .thumb {
+  mask-image: url('../assets/editor-icons/typography.svg');
+}
+.app[data-ui-polish='r3'] .layer-row:is([data-tag='video'],[data-tag='img']) .thumb {
+  mask-image: url('../assets/editor-icons/photo.svg');
+}
+.app[data-ui-polish='r3'] .layer-row[data-tag='audio'] .thumb {
+  mask-image: url('../assets/editor-icons/music.svg');
+}
+.app[data-ui-polish='r3'] .layer-row[data-tag='iframe'] .thumb {
+  mask-image: url('../assets/editor-icons/aspect-ratio.svg');
+}
+
+.app[data-ui-polish='r3'] .topbar-document-controls {
+  display: grid;
+  gap: 6px;
+  padding: 6px 8px 10px;
+  border-bottom: 1px solid var(--ep-divider);
+}
+
+.app[data-ui-polish='r3'] .topbar-alert {
+  display: inline-flex;
+  align-items: center;
+  padding-inline: 4px;
+  color: var(--warning, #dab37a);
+}
+
+.app[data-ui-polish='r3'] .inspector-document-details {
+  margin-top: 8px;
+  color: var(--text-mute);
+  font-size: 11px;
+}
+.app[data-ui-polish='r3'] .inspector-document-details > summary {
+  padding: 6px 0;
+  cursor: pointer;
+  list-style: none;
+}
+.app[data-ui-polish='r3'] .inspector-document-details > summary:hover {
+  color: var(--text);
+}
+.app[data-ui-polish='r3'] .inspector-document-details > summary:focus-visible {
+  outline: 1px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* 顶栏仍占原来的 40px，不让视觉整理改变下面的工作区坐标。 */
+.app[data-ui-polish='r3'] .topbar {
+  display: flex;
+  flex-wrap: nowrap;
+  min-height: 40px;
+  padding-inline: 6px;
+  gap: 6px;
+  background: var(--surface-0, #171717);
+  border-bottom-color: var(--ep-divider);
+}
+
+.app[data-ui-polish='r3'] .topbar .brand-logo {
+  width: 28px;
+  height: 28px;
+}
+
+.app[data-ui-polish='r3'] .topbar .topbar-project {
+  gap: 4px;
+  flex: 1 1 auto;
+}
+
+.app[data-ui-polish='r3'] .topbar .project-tab:not([data-redundant='true']) {
+  height: 30px;
+  padding-inline: 10px 14px;
+  border-color: transparent;
+  border-radius: 3px 3px 0 0;
+  background: rgb(255 255 255 / 3%);
+  box-shadow: inset 0 -2px 0 var(--accent);
+}
+
+.app[data-ui-polish='r3'] .topbar .project-tab strong {
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+.app[data-ui-polish='r3'] .topbar .tabbar {
+  height: 32px;
+  gap: 0;
+  border: 0;
+  background: transparent;
+}
+
+.app[data-ui-polish='r3'] .topbar .tab {
+  height: 32px;
+  gap: 8px;
+  padding-inline: 12px 6px;
+  border-radius: 3px 3px 0 0;
+  border-right: 1px solid var(--ep-divider);
+  background: transparent;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--text-dim);
+}
+
+.app[data-ui-polish='r3'] .topbar .tab:hover {
+  background: var(--ep-hover);
+  color: var(--text);
+}
+
+.app[data-ui-polish='r3'] .topbar .tab[data-active='true'] {
+  background: rgb(255 255 255 / 4%);
+  color: var(--text);
+  box-shadow: inset 0 -2px 0 var(--accent);
+}
+
+.app[data-ui-polish='r3'] .topbar .tab-close {
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--ep-quiet);
+  opacity: 0;
+}
+
+.app[data-ui-polish='r3'] .topbar .tab:hover .tab-close,
+.app[data-ui-polish='r3'] .topbar .tab:focus-within .tab-close {
+  opacity: 1;
+}
+
+.app[data-ui-polish='r3'] .topbar .tab-close:hover {
+  background: var(--ep-pressed);
+  color: var(--text);
+}
+
+.app[data-ui-polish='r3'] .topbar .topbar-actions,
+.app[data-ui-polish='r3'] .topbar .topbar-globals {
+  gap: 4px;
+}
+
+.app[data-ui-polish='r3'] .topbar .topbar-actions {
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: nowrap;
+  margin-left: auto;
+  justify-content: flex-end;
+}
+.app[data-ui-polish='r3'] .topbar .btn.icon:is(.topbar-agent-action,.editor-export-action) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  min-width: 0;
+  padding-inline: 8px;
+  gap: 6px;
+  white-space: nowrap;
+}
+.app[data-ui-polish='r3'] .topbar .editor-action-label {
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.app[data-ui-polish='r3'] .topbar .btn.icon {
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  min-width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: var(--ep-control-radius);
+  background: transparent;
+  color: var(--text);
+  box-shadow: none;
+}
+
+.app[data-ui-polish='r3'] .topbar .btn.icon:hover:not(:disabled) {
+  border-color: transparent;
+  background: var(--ep-hover);
+  color: var(--text);
+}
+
+.app[data-ui-polish='r3'] .topbar .btn.icon:active:not(:disabled) {
+  background: var(--ep-pressed);
+}
+
+.app[data-ui-polish='r3'] .topbar .btn.icon.active,
+.app[data-ui-polish='r3'] .topbar .btn.icon[aria-expanded='true'] {
+  border-color: transparent;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.app[data-ui-polish='r3'] .topbar .btn.icon:disabled {
+  background: transparent;
+  color: var(--ep-quiet);
+  opacity: 0.38;
+}
+
+.app[data-ui-polish='r3'] .topbar .btn.icon.primary {
+  background: var(--accent);
+  border-color: transparent;
+  color: #07383b;
+}
+
+.app[data-ui-polish='r3'] .topbar .btn.icon.primary:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--accent), white 12%);
+  color: #07383b;
+}
+
+.app[data-ui-polish='r3'] .topbar-more-panel,
+.app[data-ui-polish='r3'] .topbar-menu,
+.app[data-ui-polish='r3'] .tp-pop,
+.app[data-ui-polish='r3'] .ratio-more-panel {
+  border-color: rgb(255 255 255 / 11%);
+  border-radius: 10px;
+  box-shadow: 0 12px 32px rgb(0 0 0 / 32%);
+}
+
+.app[data-ui-polish='r3'] .topbar .topbar-mi {
+  height: 30px;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+/* 同步与序列的节点由原组件移入更多；入口与回读仍然存在。 */
+.app[data-ui-polish='r3'] .topbar-more-panel .save-state {
+  min-height: 28px;
+  padding-inline: 8px;
+  color: var(--text-mute);
+  font-size: 12px;
+}
+
+.app[data-ui-polish='r3'] .topbar-more-panel .seq-bar {
+  padding-inline: 6px;
+  align-self: stretch;
+}
+
+.app[data-ui-polish='r3'] .topbar-more-panel .seq-pick {
+  width: 100%;
+  max-width: none;
+  min-height: 28px;
+  background: transparent;
+  border-color: transparent;
+  font-size: 12px;
+}
+
+/* 播放器只整理内层控件；保留原三列及既有 40px 控制条占位。 */
+.app[data-ui-polish='r3'] .transport {
+  column-gap: 6px;
+  border-top-color: transparent;
+  background: transparent;
+}
+
+.app[data-ui-polish='r3'] .transport .tp-left,
+.app[data-ui-polish='r3'] .transport .tp-center,
+.app[data-ui-polish='r3'] .transport .tp-right {
+  gap: 4px;
+}
+
+.app[data-ui-polish='r3'] .transport .tp-right {
+  justify-content: flex-end;
+}
+
+.app[data-ui-polish='r3'] .transport .tc {
+  min-width: 64px;
+  font-family: var(--font-ui, inherit);
+  font-size: 11px;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  color: var(--text);
+}
+
+.app[data-ui-polish='r3'] .transport .btn,
+.app[data-ui-polish='r3'] .transport .btn.icon,
+.app[data-ui-polish='r3'] .transport .tp-center .btn {
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  min-width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text);
+  box-shadow: none;
+}
+
+.app[data-ui-polish='r3'] .transport .btn:hover:not(:disabled) {
+  border-color: transparent;
+  background: var(--ep-hover);
+  color: var(--text);
+}
+
+.app[data-ui-polish='r3'] .transport .btn:active:not(:disabled) {
+  background: var(--ep-pressed);
+}
+
+.app[data-ui-polish='r3'] .transport .btn[aria-expanded='true'] {
+  border-color: transparent;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.app[data-ui-polish='r3'] .transport .btn[data-testid='transport-play'] {
+  color: var(--text);
+}
+
+.app[data-ui-polish='r3'] .transport .btn:disabled {
+  background: transparent;
+  color: var(--ep-quiet);
+  opacity: 0.4;
+}
+
+.app[data-ui-polish='r3'] .transport .ratio-more-toggle {
+  width: auto;
+  min-width: 40px;
+  gap: 4px;
+  padding-inline: 5px;
+  color: var(--text);
+  font-size: 11px;
+}
+
+.app[data-ui-polish='r3'] .transport .ratio-more-label,
+.app[data-ui-polish='r3'] .transport .ratio-more-caret {
+  font-size: 11px;
+}
+
+.app[data-ui-polish='r3'] .transport .tp-pop-item {
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+/* 左侧导航与属性面板消除重复卡片边界，字段和内容完全保留。 */
+.app[data-ui-polish='r3'] .rail-tab {
+  border-bottom-color: transparent;
+  color: var(--text-mute);
+}
+
+.app[data-ui-polish='r3'] .rail-tab[aria-selected='true'] {
+  background: transparent;
+  color: var(--accent);
+  border-bottom-color: transparent;
+}
+
+.app[data-ui-polish='r3'] .rail-tab:hover {
+  background: var(--ep-hover);
+  color: var(--text);
+}
+
+.app[data-ui-polish='r3'] .dock-head h2 {
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+.app[data-ui-polish='r3'] .inspector {
+  border-left-color: var(--ep-divider);
+}
+
+.app[data-ui-polish='r3'] .inspector .film-inspector .inspector-group,
+.app[data-ui-polish='r3'] .inspector .ig-group {
+  border-color: transparent;
+  border-bottom-color: var(--ep-divider);
+  border-radius: 0;
+  background: transparent;
+}
+
+.app[data-ui-polish='r3'] .inspector .inspector-group-label,
+.app[data-ui-polish='r3'] .inspector .ig-title {
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--text);
+}
+
+/* Property names identify the editable controls. Keep units and field notes subdued. */
+.app[data-ui-polish='r3'] .inspector :is(.inspector-field-label, .ig-label),
+.app[data-ui-polish='r3'] .inspector .film-inspector .inspector-group > summary,
+.app[data-ui-polish='r3'] .inspector .insp-object-name,
+.app[data-ui-polish='r3'] .inspector :is(.insp-objtab, .insp-tab, .inspector-tab):not(.active, :disabled, [aria-selected='true']) {
+  color: var(--text);
+}
+
+.app[data-ui-polish='r3'] .inspector .ig-count {
+  display: none;
+  background: transparent;
+  color: var(--ep-quiet);
+}
+
+.app[data-ui-polish='r3'] .inspector .insp-group-count {
+  display: none;
+}
+
+/* Keep property names readable instead of reducing them to one character plus an ellipsis. */
+.app[data-ui-polish='r3'] .inspector .inspector-field {
+  grid-template-columns: 64px minmax(0, 1fr) 24px;
+  column-gap: 6px;
+}
+.app[data-ui-polish='r3'] .inspector .inspector-field-label-cell {
+  min-width: 0;
+}
+
+.app[data-ui-polish='r3'] .inspector :is(.inspector-input, .ig-input, .field-input) {
+  background: rgb(255 255 255 / 6%);
+  border-color: transparent;
+}
+
+.app[data-ui-polish='r3'] .inspector :is(.inspector-input, .ig-input, .field-input):hover:not(:disabled) {
+  border-color: rgb(255 255 255 / 10%);
+}
+
+.app[data-ui-polish='r3'] :is(.asset-card, .rail-media-card) {
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+}
+
+.app[data-ui-polish='r3'] :is(.asset-card, .rail-media-card):hover {
+  border-color: transparent;
+  background: var(--ep-hover);
+}
+
+.app[data-ui-polish='r3'] .rail-media-name {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--text);
+}
+
+/* 保留全部滚动功能；仅隐藏纵向 scrollbar 的绘制与占位。 */
+.app[data-ui-polish='r3'] :is(.inspector, .dock-body, .rail-panel, .sidebar, .layer-tree, .tabbar, .topbar-menu) {
+  scrollbar-width: none;
+}
+
+.app[data-ui-polish='r3'] :is(.inspector, .dock-body, .rail-panel, .sidebar, .layer-tree, .tabbar, .topbar-menu)::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+/* 时间线横向仍有 5px 的可拖 thumb；竖向在 Chromium 中不绘制。 */
+.app[data-ui-polish='r3'] .timeline {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+
+.app[data-ui-polish='r3'] .timeline::-webkit-scrollbar {
+  width: 0;
+  height: 5px;
+}
+
+.app[data-ui-polish='r3'] .timeline::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.app[data-ui-polish='r3'] .timeline::-webkit-scrollbar-thumb {
+  background: transparent;
+  border: 0;
+  border-radius: 5px;
+}
+
+.app[data-ui-polish='r3'] .timeline:hover,
+.app[data-ui-polish='r3'] .timeline:focus-within {
+  scrollbar-color: rgb(255 255 255 / 25%) transparent;
+}
+
+.app[data-ui-polish='r3'] .timeline:hover::-webkit-scrollbar-thumb,
+.app[data-ui-polish='r3'] .timeline:focus-within::-webkit-scrollbar-thumb {
+  background: rgb(255 255 255 / 25%);
+}
+
+/* 去常态框不会去掉键盘焦点。弹层、权限、错误文本不在本次隐藏范围内。 */
+.app[data-ui-polish='r3'] :is(.topbar, .transport, .rail) :is(button, summary, [role='tab']):focus-visible {
+  outline: 1.5px solid var(--accent);
+  outline-offset: 1px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .app[data-ui-polish='r3'] :is(.topbar, .transport, .rail) button {
+    transition: background-color 100ms ease, color 100ms ease, opacity 100ms ease;
+  }
+}
+
+@container (max-width: 420px) {
+  .app[data-ui-polish='r3'] .transport .btn,
+  .app[data-ui-polish='r3'] .transport .btn.icon,
+  .app[data-ui-polish='r3'] .transport .tp-center .btn {
+    width: 24px;
+    min-width: 24px;
+  }
+
+  .app[data-ui-polish='r3'] .transport .ratio-more-toggle {
+    width: auto;
+    min-width: 28px;
+  }
+}
+
+/* R3 收尾：去掉画布卡、信息按钮和走带之间的重复描边。
+   只改绘制颜色/阴影，不改变 97px 卡底、边框占位或画面 contain 几何。 */
+.app[data-ui-polish='r3'] .stage-card {
+  box-shadow: none;
+}
+
+.app[data-ui-polish='r3'] .sc-screen .preview-frame {
+  box-shadow: none;
+}
+
+.app[data-ui-polish='r3'] .sc-foot {
+  border-top-color: transparent;
+}
+
+.app[data-ui-polish='r3'] .sc-info {
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+}
+
+.app[data-ui-polish='r3'] .sc-info[data-open='false'] .sc-info-panel[hidden] {
+  display: none;
+}
+
+.app[data-ui-polish='r3'] .sc-info-btn {
+  background: transparent;
+  box-shadow: none;
+  color: var(--text-mute);
+}
+
+.app[data-ui-polish='r3'] .sc-info-btn:hover,
+.app[data-ui-polish='r3'] .sc-info[data-open='true'] .sc-info-btn {
+  background: var(--ep-hover);
+  color: var(--text);
+}
+
+/* 检查器由留白和分组标题组织内容，不再每个分组套一圈边框。 */
+.app[data-ui-polish='r3'] .inspector .film-inspector .inspector-group,
+.app[data-ui-polish='r3'] .inspector .ig-group {
+  border-color: transparent;
+}
+
+.app[data-ui-polish='r3'] .inspector :is(.insp-tab, .inspector-tab) {
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+}
+
+.app[data-ui-polish='r3'] .inspector :is(.insp-tab, .inspector-tab):hover {
+  border-color: transparent;
+  background: var(--ep-hover);
+}
+
+.app[data-ui-polish='r3'] .inspector :is(.insp-tab, .inspector-tab).active {
+  border-color: transparent;
+  background: transparent;
+  color: var(--accent);
+  box-shadow: inset 0 -1.5px 0 var(--accent);
+}
+
+/* 图层列表不逐行画分隔线；已有选中底色/活动边标及锁定状态原样保留。 */
+.app[data-ui-polish='r3'] :is(.dock-head, .dock-layers, .layer-row, .layer-tree, .layer-row .thumb) {
+  border-color: transparent;
+}
+
+.app[data-ui-polish='r3'] .layer-tree {
+  background: transparent;
+}
+
+.app[data-ui-polish='r3'] .layer-tree-row:not([data-locked='true']) .layer-tree-name {
+  color: var(--text);
+}
+
+.app[data-ui-polish='r3'] .layer-tree:focus-visible {
+  border-color: var(--accent);
+}

@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: #141026; font-family: -apple-system, "PingFang SC", Arial, sans-serif; }
+  .stage { position: relative; width: 100%; height: 100%; }
+  .panel { position: absolute; left: 90px; top: 80px; width: 1100px; height: 560px; padding: 54px; background: #ecebfa; border-radius: 26px; box-shadow: 0 12px 50px rgba(0,0,0,0.5); }
+  .tag { display: inline-block; font-size: 20px; letter-spacing: 0.12em; color: #fff; background: #4b3d9e; border-radius: 999px; padding: 8px 18px; }
+  h1 { margin: 20px 0 6px; font-size: 72px; color: #241a52; }
+  p { margin: 0 0 26px; font-size: 26px; color: #5a5474; }
+  .chart { display: flex; align-items: flex-end; gap: 34px; height: 210px; }
+  .bar { width: 170px; background: linear-gradient(180deg, #7a6de0, #4b3d9e); border-radius: 12px 12px 0 0; }
+  .bar.two { opacity: 0.72; }
+  .bar.three { opacity: 0.46; }
+  .clock { position: absolute; right: 60px; top: 54px; font: 26px/1 ui-monospace, Menlo, monospace; color: #6f6890; }
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="panel" id="panel">
+    <span class="tag" id="tag">SCENE B</span>
+    <h1 id="title">第二段网页</h1>
+    <p id="subtitle">颜色与 A 不同，便于截图区分</p>
+    <div class="chart" id="chart">
+      <div class="bar one" id="bar-one"></div>
+      <div class="bar two" id="bar-two"></div>
+      <div class="bar three" id="bar-three"></div>
+    </div>
+    <div class="clock" id="clock"></div>
+  </div>
+</div>
+<script type="module">
+  const bars = [document.querySelector('#bar-one'), document.querySelector('#bar-two'), document.querySelector('#bar-three')];
+  const clock = document.querySelector('#clock');
+  let calls = 0;
+  window.film = {
+    duration: 4,
+    ready() { return Promise.resolve(); },
+    frame(t) {
+      calls += 1;
+      const q = Math.max(0, Math.min(1, Number(t) / 4));
+      bars.forEach((el, i) => { el.style.height = (120 + (2 - i) * 30 - 70 * q) + 'px'; });
+      clock.textContent = 't=' + Number(t).toFixed(2);
+      return Promise.resolve();
+    },
+    get calls() { return calls; }
+  };
+</script>
+</body>
+</html>

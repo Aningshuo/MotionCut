@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>P33 夹具：满幅噪点（用来量 4K PNG 序列的真实体积）</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: transparent; }
+  canvas { display: block; width: 1280px; height: 720px; }
+</style>
+</head>
+<body>
+<canvas id="c" width="1280" height="720"></canvas>
+<script>
+  // 确定性伪随机（同一帧在任何时刻都画出同样的像素，同帧对照才有意义）
+  const BLOCK = Number(new URLSearchParams(location.search).get('block') || 2);
+  const c = document.getElementById('c');
+  const ctx = c.getContext('2d');
+  const img = ctx.createImageData(1280, 720);
+  let seed = 0x2f6e2b1;
+  const rand = () => {
+    seed ^= seed << 13; seed >>>= 0;
+    seed ^= seed >> 17;
+    seed ^= seed << 5; seed >>>= 0;
+    return seed & 0xff;
+  };
+  // 先铺一层 block×block 的噪点：block 越小越难压，PNG 体积越接近原始像素量
+  for (let y = 0; y < 720; y += BLOCK) {
+    for (let x = 0; x < 1280; x += BLOCK) {
+      const r = rand(), g = rand(), b = rand();
+      for (let dy = 0; dy < BLOCK && y + dy < 720; dy += 1) {
+        for (let dx = 0; dx < BLOCK && x + dx < 1280; dx += 1) {
+          const at = ((y + dy) * 1280 + (x + dx)) * 4;
+          img.data[at] = r; img.data[at + 1] = g; img.data[at + 2] = b; img.data[at + 3] = 255;
+        }
+      }
+    }
+  }
+  window.film = {
+    duration: Number(new URLSearchParams(location.search).get('duration') || 8),
+    ready() { return Promise.resolve(); },
+    frame(t) {
+      // 每帧换一条扫过的高亮带：帧与帧不同，但噪点底子一样（体积稳定，便于预算比对）
+      ctx.putImageData(img, 0, 0);
+      const y = Math.round((Number(t) % 8) / 8 * 700);
+      ctx.fillStyle = 'rgba(255,255,255,0.85)';
+      ctx.fillRect(0, y, 1280, 18);
+      return Promise.resolve();
+    },
+  };
+</script>
+</body>
+</html>

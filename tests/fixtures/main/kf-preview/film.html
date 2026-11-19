@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1280, height=720">
+<title>R15 夹具：预览侧关键帧（两段不同起点）</title>
+<!--
+  R15 · R30-073 · A 的夹具。与 `kf-export` 那份的区别：这里有**两段起点不同的片段**，
+  用来证明 `--motion-t` 是「片段内局部毫秒」而不是全局毫秒——
+
+    page-a  at=0  关键帧 span 1s：局部时间 = t
+    page-b  at=2  关键帧 span 2s：局部时间 = t − 2
+
+  同一时刻两段的 `--motion-t` 必须不同（差一个 at），而且预览与导出写进去的
+  字符串必须**逐字节相同**。
+
+  `#box` 只是选择器，两段各自在自己的 iframe 文档里命中唯一一个。
+-->
+<style>
+  html, body { margin: 0; height: 100%; background: #000; }
+  section { position: relative; }
+  iframe { position: absolute; border: 0; display: block; }
+</style>
+</head>
+<body>
+<section id="pages">
+  <iframe id="page-a" src="scenes/a.html#t=0,3" at="0" size="1280x720"
+    style="left: 0px; top: 0px; width: 1280px; height: 720px"
+    overrides='[{"at":"#box","kf":[{"t":0,"style":{"opacity":"0"}},{"t":1,"style":{"opacity":"1"}}]}]'></iframe>
+  <iframe id="page-b" src="scenes/b.html#t=0,3" at="2" size="1280x720"
+    style="left: 640px; top: 360px; width: 640px; height: 360px"
+    overrides='[{"at":"#box","kf":[{"t":0,"style":{"opacity":"0.1"}},{"t":2,"style":{"opacity":"0.9"}}]}]'></iframe>
+</section>
+</body>
+</html>

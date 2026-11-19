@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "entries": [
+    {
+      "id": "motion_enter",
+      "name": "循环漂移（只由 --motion-t 驱动）",
+      "kind": "animation",
+      "sourcePath": "motion/enter.html",
+      "sourceHash": "11178a43f10e8c573bf8e4d685ee0c6a41f5135a0a7a3e886eb61c113994148e",
+      "assets": [],
+      "params": {},
+      "version": 1,
+      "createdAt": "2026-11-08T00:00:00.000Z",
+      "deterministic": true,
+      "expectedDurationMs": 1000,
+      "history": []
+    },
+    {
+      "id": "motion_wall_clock",
+      "name": "墙钟旋转（不受帧驱动）",
+      "kind": "animation",
+      "sourcePath": "motion/wall-clock.html",
+      "sourceHash": "f88e5812761b76bce28cd9f75cf0aec338424f8f1ae181e814a66deede67d050",
+      "assets": [],
+      "params": {},
+      "version": 1,
+      "createdAt": "2026-11-08T00:00:00.000Z",
+      "deterministic": false,
+      "history": []
+    }
+  ]
+}

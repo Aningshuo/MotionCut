@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1280, height=720">
+<title>S37 夹具：场景片段（横屏/竖屏）+ 视频 + 静帧 + 声音</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #05070a; }
+</style>
+</head>
+<body>
+<section id="scenes">
+  <iframe id="scene-a" src="scenes/scene-frame-a.html#t=0,8" at="0" size="1280x720"
+          style="left: 80px; top: 60px; width: 560px; height: 315px"></iframe>
+</section>
+<section id="scenes-portrait">
+  <iframe id="scene-p" src="scenes/scene-frame-portrait.html#t=0,8" at="0" size="1080x1920"
+          style="left: 700px; top: 40px; width: 300px; height: 480px"></iframe>
+</section>
+<section id="footage">
+  <video id="clip-video" src="media/tone440-light-3s-720p30.mp4#t=0,3" at="0" muted
+         style="left: 120px; top: 420px; width: 320px; height: 180px"></video>
+</section>
+<section id="stills">
+  <img id="clip-still" src="media/still-green-640x360.png" at="0"
+       style="left: 520px; top: 470px; width: 240px; height: 135px">
+</section>
+<section id="sound">
+  <audio id="clip-sound" src="media/tone440-light-3s-720p30.mp4#t=0,3" at="0" volume="0.4"></audio>
+</section>
+</body>
+</html>

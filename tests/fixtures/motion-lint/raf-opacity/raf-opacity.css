@@ -1,0 +1,9 @@
+.toast { display: inline-flex; align-items: center; gap: 8px; padding: 10px 14px; border-radius: 8px; background: #0f172a; }
+.pulse {
+  width: 10px; height: 10px; border-radius: 50%; background: #38bdf8; display: inline-block;
+  animation: breathe calc(var(--period, 900) * 1ms) ease-in-out infinite;
+  animation-play-state: paused;
+  animation-delay: calc(-1 * var(--motion-t, 0) * 1ms);
+}
+@keyframes breathe { from { transform: scale(.7); } to { transform: scale(1); } }
+.label { color: #e2e8f0; font: 13px system-ui, sans-serif; }

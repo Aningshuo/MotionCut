@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1280, height=720">
+<title>M28 夹具：余量夹紧（后段太短 / 只剩一帧）</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #000; }
+  section { position: relative; }
+  video { position: absolute; }
+</style>
+</head>
+<body>
+<!--
+  A3 的两档：
+    k-a [0,1)     → k-b [1,1.2)   后段只有 0.2s：0.5s 的请求会被夹到 5 帧（0.1667s）
+    k-c [3,3.5)   → k-d [3.5,3.52)  后段只有 0.02s（不到一帧）：放不下重叠（不出按钮、0 op）
+-->
+<section id="v1">
+  <video id="k-a" src="assets/a-light.mp4#t=0,1" at="0" muted style="left: 0px; top: 0px; width: 1280px; height: 720px"></video>
+  <video id="k-b" src="assets/b-dark.mp4#t=0,0.2" at="1" muted style="left: 0px; top: 0px; width: 1280px; height: 720px"></video>
+  <video id="k-c" src="assets/a-light.mp4#t=0,0.5" at="3" muted style="left: 0px; top: 0px; width: 1280px; height: 720px"></video>
+  <video id="k-d" src="assets/b-dark.mp4#t=0,0.02" at="3.5" muted style="left: 0px; top: 0px; width: 1280px; height: 720px"></video>
+</section>
+</body>
+</html>

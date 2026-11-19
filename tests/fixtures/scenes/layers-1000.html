@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>1000 节点压力页</title>
+<style>
+  html, body { margin: 0; width: 1000px; height: 700px; background: #0e1524; color: #e8eefc;
+    font-family: system-ui, sans-serif; }
+  #grid { position: absolute; left: 8px; top: 8px; display: grid;
+    grid-template-columns: repeat(25, 36px); gap: 2px; }
+  .cell { width: 36px; height: 22px; background: #1b2740; border-radius: 3px;
+    font-size: 9px; line-height: 22px; text-align: center; color: #8fa3c8; }
+</style>
+</head>
+<body>
+  <div id="grid"></div>
+<script>
+(() => {
+  'use strict';
+  const grid = document.getElementById('grid');
+  const frag = document.createDocumentFragment();
+  // 25 × 40 = 1000 个可见节点（每个 cell 内有 1 个文本节点）
+  for (let r = 0; r < 40; r++) {
+    for (let c = 0; c < 25; c++) {
+      const d = document.createElement('div');
+      d.className = 'cell';
+      d.textContent = String(r * 25 + c);
+      frag.appendChild(d);
+    }
+  }
+  grid.appendChild(frag);
+  document.body.dataset.nodeCount = String(document.querySelectorAll('*').length);
+})();
+</script>
+</body>
+</html>

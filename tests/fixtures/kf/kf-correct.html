@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="motion-clock" content="--motion-t;unit=ms">
+<title>K 系列夹具 · 正确的 kf 编译结果（暂停 + 负延迟）</title>
+<!--
+  （历史夹具）原本给 R18 的 `--subject=fixture` 用；该档已被取代，现无脚本引用。
+  内容是「正确 CSS」：画面只是 --motion-t 的函数。
+  与 pulse 模板同一套写法（暂停 + animation-delay: -t），但动画跑在 .kf-target 上，
+  用来验证 K02/K03 的元素级比对。
+
+  .noise 是**故意留下的墙钟元素**：它按真实时间旋转，整页截图每帧都不一样，
+  而 .kf-target 的元素截图应当稳定。K02 同时记 pageSha 与 elementSha，
+  用 pageSha 的 mismatch 证明「整页比对会被无关元素污染」。
+-->
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #070b14; }
+  .stage { position: relative; width: 100%; height: 100%; background: #070b14; }
+  .kf-target {
+    position: absolute; left: 50%; top: 50%; width: 120px; height: 120px;
+    margin: -60px 0 0 -60px; border-radius: 18px; background: #3b82f6;
+    animation: kf-demo 1200ms linear infinite;
+    animation-play-state: paused;
+    animation-delay: calc(-1 * var(--motion-t, 0) * 1ms);
+  }
+  @keyframes kf-demo {
+    0% { transform: scale(0.62) translateX(-44px); opacity: 0.55; }
+    50% { transform: scale(1) translateX(0); opacity: 1; }
+    100% { transform: scale(0.62) translateX(44px); opacity: 0.55; }
+  }
+  .noise {
+    position: absolute; left: 10px; top: 10px; width: 12px; height: 12px;
+    background: #f59e0b; border-radius: 2px;
+    animation: noise-spin 700ms linear infinite;
+  }
+  @keyframes noise-spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+<div class="stage" data-role="root">
+  <div class="kf-target" data-kf="fixture"></div>
+  <div class="noise" data-role="noise"></div>
+</div>
+</body>
+</html>

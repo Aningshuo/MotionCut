@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="motion-clock" content="--motion-t;unit=ms">
+<title>反例 · 缺资产</title>
+<!-- 反面素材：引用了两个不存在的文件（一个是 img，一个是 CSS 里的 url()） -->
+<link rel="stylesheet" href="./missing-asset.css">
+</head>
+<body>
+<div class="card" data-role="root">
+  <img class="logo" src="./logo-not-there.svg" alt="" width="32" height="32">
+  <span class="title">缺资产的模板</span>
+</div>
+</body>
+</html>

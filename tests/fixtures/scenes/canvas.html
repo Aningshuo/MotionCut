@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>sub1 canvas scene</title>
+<style>
+  html, body { margin: 0; padding: 0; width: 640px; height: 360px; overflow: hidden; background: #0d1117; }
+  #cv { display: block; width: 640px; height: 360px; }
+</style>
+</head>
+<body>
+<canvas id="cv" width="640" height="360"></canvas>
+<script>
+(() => {
+  'use strict';
+  const canvas = document.getElementById('cv');
+  const ctx = canvas.getContext('2d', { alpha: false, desynchronized: false });
+
+  function hue(t) { return (200 + t * 35) % 360; }
+
+  window.film = {
+    meta: { width: 640, height: 360, duration: 2 },
+    async ready() {
+      // 只等真实资源；纯绘制场景没有外链资源。
+      document.body.dataset.filmReady = '1';
+    },
+    async frame(t) {
+      const tt = Math.max(0, Math.min(t, 2));
+      const p = tt / 2;
+
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.fillStyle = '#0d1117';
+      ctx.fillRect(0, 0, 640, 360);
+
+      // 背景条带：位置/明度随 t 变化
+      for (let i = 0; i < 6; i++) {
+        const y = 30 + i * 26;
+        const w = 120 + Math.round(p * 360) + i * 18;
+        ctx.fillStyle = 'hsl(' + hue(tt + i * 0.2) + ', 45%, ' + (18 + i * 4) + '%)';
+        ctx.fillRect(320 - w / 2, y, w, 10);
+      }
+
+      // 圆环进度
+      ctx.beginPath();
+      ctx.arc(320, 180, 92, 0, Math.PI * 2);
+      ctx.strokeStyle = '#1c2740';
+      ctx.lineWidth = 18;
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.arc(320, 180, 92, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * p);
+      ctx.strokeStyle = 'hsl(' + hue(tt) + ', 72%, 55%)';
+      ctx.lineWidth = 18;
+      ctx.lineCap = 'round';
+      ctx.stroke();
+
+      // 移动方块（整数坐标 + 轴对称边缘，减少抗锯齿差异）
+      const bx = 40 + Math.round(p * 480);
+      ctx.fillStyle = '#e8552d';
+      ctx.fillRect(bx, 300, 40, 32);
+
+      // 中央小圆
+      ctx.beginPath();
+      ctx.arc(320, 180, 26, 0, Math.PI * 2);
+      ctx.fillStyle = 'hsl(' + ((hue(tt) + 140) % 360) + ', 68%, 62%)';
+      ctx.fill();
+
+      document.body.dataset.filmFrame = String(t);
+    }
+  };
+})();
+</script>
+</body>
+</html>

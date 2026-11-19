@@ -1,0 +1,8 @@
+.card { width: 80px; height: 80px; background: #0f172a; position: relative; }
+.dot {
+  position: absolute; left: 0; top: 0; width: 12px; height: 12px; border-radius: 50%; background: #38bdf8;
+  animation: slide 1000ms linear infinite;
+  animation-play-state: paused;
+  animation-delay: calc(-1 * var(--t, 0) * 1ms);
+}
+@keyframes slide { from { left: 0; } to { left: 60px; } }

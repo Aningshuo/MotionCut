@@ -1,0 +1,14 @@
+{
+  "turn": {
+    "id": "t-3",
+    "sessionId": "sm48a1b2c3d4e5",
+    "prompt": "把底色换成深蓝",
+    "draftId": "d-3",
+    "state": "applied",
+    "at": "2026-11-13T02:03:00.000Z",
+    "steps": [
+      { "op": "overrides", "text": "覆盖 bg 的 1 处（底色）" },
+      { "op": "set", "text": "设置 bg 的 color" }
+    ]
+  }
+}

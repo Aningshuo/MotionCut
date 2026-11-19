@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>检查器裁切/背景图/内阴影验收夹具 · S54</title>
+<style>
+  html, body { margin: 0; padding: 0; background: #00ff00; }
+  /* 舞台：坐标原点在左上角，卡片位置写死，像素判据才好算 */
+  #stage { position: relative; width: 1280px; height: 720px; overflow: hidden; background: #00ff00; }
+  #card-a {
+    position: absolute; left: 240px; top: 200px; width: 600px; height: 300px;
+    background: #ff6600; border-radius: 0;
+  }
+  #card-b {
+    position: absolute; left: 240px; top: 640px; width: 300px; height: 60px;
+    background: #3366ff;
+  }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="card-a" data-at="#card-a"></div>
+  <div id="card-b" data-at="#card-b"></div>
+</div>
+<script>
+  /*
+   * 帧接口的最小桩（A5 的「导出帧」那一步）：`host.frame()` 走
+   * `__filmHost.time(t)` → `film.frame(t)` → `settle(t)`；这里只需要它**不碰内联样式**，
+   * 于是「帧之后再应用同一份覆盖」的截图与预览截图的差别，只可能来自覆盖被擦掉。
+   */
+  window.__filmHost = { time(t) { window.__t = t; }, settle() { return true; } };
+  window.film = { frame(t) { window.__frameAt = t; return true; } };
+</script>
+</body>
+</html>

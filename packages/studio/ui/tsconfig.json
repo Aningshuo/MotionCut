@@ -1,0 +1,10 @@
+{
+  // 仅用于 UI 包自身的编辑器/独立类型检查；仓库根的 `tsc -p tsconfig.base.json` 也会扫到
+  // src/app/*.tsx（那份配置没有 jsx 开关，所以 App.tsx 用 createElement 写，不带 JSX 语法）。
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "types": ["vite/client"]
+  },
+  "include": ["src/app/**/*.ts", "src/app/**/*.tsx", "src/timeline/**/*.mjs", "src/player/**/*.mjs"]
+}

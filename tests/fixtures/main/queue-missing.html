@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1280, height=720">
+<title>M29 夹具：素材被移走（导出必须以 MEDIA_MISSING 失败，不产出缺画面的片子）</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #000; }
+  section { position: relative; }
+  video { position: absolute; }
+</style>
+</head>
+<body>
+<!--
+  A1 的「第 2 个任务故意失败」与 A4 的「MEDIA_MISSING 能跳到素材·缺失」都用它：
+  src 指向一个**不存在**的文件；脚本不会去补它。
+-->
+<section id="v1">
+  <video id="m-gone" src="assets/gone.mp4#t=0,2" at="0" muted style="left: 0px; top: 0px; width: 1280px; height: 720px"></video>
+</section>
+</body>
+</html>

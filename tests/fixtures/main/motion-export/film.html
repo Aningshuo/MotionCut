@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1280, height=720">
+<title>M33 夹具：两段动效片段（at 0 / 0.4），总长 8s</title>
+<!--
+  M33（导出动效相位）的夹具工程。
+
+  - m-a：at=0，源区间 0–8s，铺满舞台（底层）
+  - m-b：at=0.4，源区间 0–3s，铺满舞台（上层），同一条模板 → 相位天然差 400ms
+
+  两个片段都指向 scenes/enter.html，场景里再嵌 motion/enter.html 这个**只由 --motion-t
+  驱动**的模板（暂停 + 负延迟）。动效相位由舞台每帧写进模板文档的 documentElement。
+
+  工程里还有 motion/library.json（两条：一条 deterministic=true、一条 false），
+  给 A6 的面板警示用。
+-->
+<style>
+  html, body { margin: 0; height: 100%; background: #000; }
+  section { position: relative; }
+  iframe { position: absolute; border: 0; display: block; background: #0b1020; }
+</style>
+</head>
+<body>
+<section id="low">
+  <iframe id="m-a" src="scenes/enter.html#t=0,8" at="0" size="1280x720" style="left: 0px; top: 0px; width: 1280px; height: 720px"></iframe>
+</section>
+<section id="high">
+  <iframe id="m-b" src="scenes/enter.html#t=0,3" at="0.4" size="1280x720" style="left: 0px; top: 0px; width: 1280px; height: 720px"></iframe>
+</section>
+</body>
+</html>

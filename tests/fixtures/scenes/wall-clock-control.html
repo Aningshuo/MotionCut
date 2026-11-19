@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>墙钟对照组 · 反面教材（不是模板，别装进库）</title>
+<!--
+  S31 的**负向对照**：这里故意保留 R15 之前 pulse.css 的写法
+  （`animation: ... infinite` 且没有 animation-play-state: paused）。
+
+  用途：证明 frame-t.test.mjs 的判据有牙齿——
+  同一份「同一 t 截两次 / 停留 2 秒再截」的测法，用在这个页面上必须红。
+  如果它也是绿的，说明判据根本没测到墙钟推进。
+-->
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #070b14; }
+  .core {
+    position: absolute; left: 50%; top: 50%; width: 72px; height: 72px; margin: -36px 0 0 -36px;
+    border-radius: 50%; background: #3b82f6;
+    animation: ring 1200ms ease-out infinite;
+  }
+  @keyframes ring {
+    0% { transform: scale(0.62); opacity: 0.55; }
+    50% { transform: scale(1); opacity: 1; }
+    100% { transform: scale(0.62); opacity: 0.55; }
+  }
+</style>
+</head>
+<body>
+<div class="core" data-role="root" data-wall-clock="true"></div>
+</body>
+</html>

@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><title>大场景 200 层（S28 性能验收）</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #0b1020; font-family: system-ui, -apple-system, "PingFang SC", Arial, sans-serif; }
+  #stage { position: relative; width: 1280px; height: 720px; margin: 20px; overflow: hidden; border-radius: 10px; background: linear-gradient(135deg, #111a2e, #0a0f1c); }
+  .layer { position: absolute; box-sizing: border-box; }
+  .container { border: 1px solid rgba(148,163,184,.18); border-radius: 4px; }
+  .text { color: #e2e8f0; font: 10px/1.2 "PingFang SC", Arial; overflow: hidden; white-space: nowrap; }
+  .image { object-fit: cover; border-radius: 3px; opacity: .92; }
+  .shape { border-radius: 3px; opacity: .8; }
+  #title { position: absolute; left: 24px; top: 12px; color: #f8fafc; font: 600 16px/1.4 "PingFang SC", Arial; z-index: 5; }
+  #hud { position: absolute; right: 16px; top: 12px; color: #94a3b8; font: 12px/1.4 ui-monospace, Menlo, monospace; z-index: 5; }
+</style></head><body>
+<div id="stage"><div id="title">大场景 · 200 层 / 5 层嵌套 / 混合文字·图片·容器</div><div id="hud"></div>
+<div class="layer container" id="root-0" data-at data-kind="container" data-name="分区 1" style="left:0.0px;top:0;width:256.0px;height:720px">
+<div class="layer container" id="c-0-0-d2" data-at data-kind="container" data-name="容器 0-0-2" style="left:0.0px;top:0.0px;width:128.0px;height:360.0px">
+<div class="layer container" id="c-0-0-d3" data-at data-kind="container" data-name="容器 0-0-3" style="left:3.0px;top:3.0px;width:122.0px;height:354.0px">
+<div class="layer container" id="c-0-0-d4" data-at data-kind="container" data-name="容器 0-0-4" style="left:3.0px;top:3.0px;width:116.0px;height:348.0px">
+<div class="layer text" id="leaf-0-0-n0" data-at data-kind="text" data-name="第 1 层" style="left:4.0px;top:4.0px;width:51.5px;height:82.8px">第 1 层</div>
+<img class="layer image" id="leaf-0-0-n1" data-at data-kind="image" data-name="图片 2" src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect width='40' height='40' fill='%2334d399'/%3E%3Ccircle cx='20' cy='20' r='12' fill='%23065f46'/%3E%3C/svg%3E" style="left:57.5px;top:4.0px;width:51.5px;height:82.8px">
+<div class="layer shape" id="leaf-0-0-n2" data-at data-kind="shape" data-name="图形 3" style="left:4.0px;top:88.8px;width:51.5px;height:82.8px;background:#f59e0b"></div>
+<div class="layer text" id="leaf-0-0-n3" data-at data-kind="text" data-name="第 4 层" style="left:57.5px;top:88.8px;width:51.5px;height:82.8px">第 4 层</div>
+<img class="layer image" id="leaf-0-0-n4" data-at data-kind="image" data-name="图片 5" src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect width='40' height='40' fill='%2334d399'/%3E%3Ccircle cx='20' cy='20' r='12' fill='%23065f46'/%3E%3C/svg%3E" style="left:4.0px;top:173.5px;width:51.5px;height:82.8px">
+<div class="layer shape" id="leaf-0-0-n5" data-at data-kind="shape" data-name="图形 6" style="left:57.5px;top:173.5px;width:51.5px;height:82.8px;background:#06b6d4"></div>
+<div class="layer text" id="leaf-0-0-n6" data-at data-kind="text" data-name="第 7 层" style="left:4.0px;top:258.3px;width:51.5px;height:82.8px">第 7 层</div>
+</div></div></div>
+<div class="layer container" id="c-0-1-d2" data-at data-kind="container" data-name="容器 0-1-2" style="left:128.0px;top:0.0px;width:128.0px;height:360.0px">
+<div class="layer container" id="c-0-1-d3" data-at data-kind="container" data-name="容器 0-1-3" style="left:3.0px;top:3.0px;width:122.0px;height:354.0px">
+<div class="layer container" id="c-0-1-d4" data-at data-kind="container" data-name="容器 0-1-4" style="left:3.0px;top:3.0px;width:116.0px;height:348.0px">
+<img class="layer image" id="leaf-0-1-n0" data-at data-kind="image" data-name="图片 8" src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect width='40' height='40' fill='%2334d399'/%3E%3Ccircle cx='20' cy='20' r='12' fill='%23065f46'/%3E%3C/svg%3E" style="left:4.0px;top:4.0px;width:51.5px;height:82.8px">
+<div class="layer shape" id="leaf-0-1-n1" data-at data-kind="shape" data-name="图形 9" style="left:57.5px;top:4.0px;width:51.5px;height:82.8px;background:#3b82f6"></div>
+<div class="layer text" id="leaf-0-1-n2" data-at data-kind="text" data-name="第 10 层" style="left:4.0px;top:88.8px;width:51.5px;height:82.8px">第 10 层</div>
+<img class="layer image" id="leaf-0-1-n3" data-at data-kind="image" data-name="图片 11" src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect width='40' height='40' fill='%2334d399'/%3E%3Ccircle cx='20' cy='20' r='12' fill='%23065f46'/%3E%3C/svg%3E" style="left:57.5px;top:88.8px;width:51.5px;height:82.8px">
+<div class="layer shape" id="leaf-0-1-n4" data-at data-kind="shape" data-name="图形 12" style="left:4.0px;top:173.5px;width:51.5px;height:82.8px;background:#ef4444"></div>
+<div class="layer text" id="leaf-0-1-n5" data-at data-kind="text" data-name="第 13 层" style="left:57.5px;top:173.5px;width:51.5px;height:82.8px">第 13 层</div>
+<img class="layer image" id="leaf-0-1-n6" data-at data-kind="image" data-name="图片 14" src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect width='40' height='40' fill='%2334d399'/%3E%3Ccircle cx='20' cy='20' r='12' fill='%23065f46'/%3E%3C/svg%3E" style="left:4.0px;top:258.3px;width:51.5px;height:82.8px">
+</div></div></div>
+<div class="layer container" id="c-0-2-d2" data-at data-kind="container" data-name="容器 0-2-2" style="left:0.0px;top:360.0px;width:128.0px;height:360.0px">
+<div class="layer container" id="c-0-2-d3" data-at data-kind="container" data-name="容器 0-2-3" style="left:3.0px;top:3.0px;width:122.0px;height:354.0px">
+<div class="layer container" id="c-0-2-d4" data-at data-kind="container" data-name="容器 0-2-4" style="left:3.0px;top:3.0px;width:116.0px;height:348.0px">
+<div class="layer shape" id="leaf-0-2-n0" data-at data-kind="shape" data-name="图形 15" style="left:4.0px;top:4.0px;width:51.5px;height:82.8px;background:#ec4899"></div>
+<div class="layer text" id="leaf-0-2-n1" data-at data-kind="text" data-name="第 16 层" style="left:57.5px;top:4.0px;width:51.5px;height:82.8px">第 16 层</div>
+<img class="layer image" id="leaf-0-2-n2" data-at data-kind="image" data-name="图片 17" src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect width='40' height='40' fill='%2334d399'/%3E%3Ccircle cx='20' cy='20' r='12' fill='%23065f46'/%3E%3C/svg%3E" style="left:4.0px;top:88.8px;width:51.5px;height:82.8px">
+<div class="layer shape" id="leaf-0-2-n3" data-at data-kind="shape" data-name="图形 18" style="left:57.5px;top:88.8px;width:51.5px;height:82.8px;background:#8b5cf6"></div>
+<div class="layer text" id="leaf-0-2-n4" data-at data-kind="text" data-name="第 19 层" style="left:4.0px;top:173.5px;width:51.5px;height:82.8px">第 19 层</div>
+<img class="layer image" id="leaf-0-2-n5" data-at data-kind="image" data-name="图片 20" src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect width='40' height='40' fill='%2334d399'/%3E%3Ccircle cx='20' cy='20' r='12' fill='%23065f46'/%3E%3C/svg%3E" style="left:57.5px;top:173.5px;width:51.5px;height:82.8px">
+<div class="layer shape" id="leaf-0-2-n6" data-at data-kind="shape" data-name="图形 21" style="left:4.0px;top:258.3px;width:51.5px;height:82.8px;background:#10b981"></div>
+</div></div></div>
+<div class="layer container" id="c-0-3-d2" data-at data-kind="container" data-name="容器 0-3-2" style="left:128.0px;top:360.0px;width:128.0px;height:360.0px">
+<div class="layer container" id="c-0-3-d3" data-at data-kind="container" data-name="容器 0-3-3" style="left:3.0px;top:3.0px;width:122.0px;height:354.0px">
+<div class="layer container" id="c-0-3-d4" data-at data-kind="container" data-name="容器 0-3-4" style="left:3.0px;top:3.0px;width:116.0px;height:348.0px">
+<div class="layer text" id="leaf-0-3-n0" data-at data-kind="text" data-name="第 22 层" style="left:4.0px;top:4.0px;width:51.5px;height:82.8px">第 22 层</div>
+<img class="layer image" id="leaf-0-3-n1" data-at data-kind="image" data-name="图片 23" src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect width='40' height='40' fill='%2334d399'/%3E%3Ccircle cx='20' cy='20' r='12' fill='%23065f46'/%3E%3C/svg%3E" style="left:57.5px;top:4.0px;width:51.5px;height:82.8px">
+<div class="layer shape" id="leaf-0-3-n2" data-at data-kind="shape" data-name="图形 24" style="left:4.0px;top:88.8px;width:51.5px;height:82.8px;background:#84cc16"></div>
+<div class="layer text" id="leaf-0-3-n3" data-at data-kind="text" data-name="第 25 层" style="left:57.5px;top:88.8px;width:51.5px;height:82.8px">第 25 层</div>
+<img class="layer image" id="leaf-0-3-n4" data-at data-kind="image" data-name="图片 26" src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect width='40' height='40' fill='%2334d399'/%3E%3Ccircle cx='20' cy='20' r='12' fill='%23065f46'/%3E%3C/svg%3E" style="left:4.0px;top:173.5px;width:51.5px;height:82.8px">
+<div class="layer shape" id="leaf-0-3-n5" data-at data-kind="shape" data-name="图形 27" style="left:57.5px;top:173.5px;width:51.5px;height:82.8px;background:#f59e0b"></div>
+<div class="layer text" id="leaf-0-3-n6" data-at data-kind="text" data-name="第 28 层" style="left:4.0px;top:258.3px;width:51.5px;height:82.8px">第 28 层</div>
+</div></div></div>
+</div>
+<div class="layer container" id="root-1" data-at data-kind="container" data-name="分区 2" style="left:256.0px;top:0;width:256.0px;height:720px">
+<div class="layer container" id="c-1-0-d2" data-at data-kind="container" data-name="容器 1-0-2" style="left:0.0px;top:0.0px;width:128.0px;height:360.0px">
+<div class="layer container" id="c-1-0-d3" data-at data-kind="container" data-name="容器 1-0-3" style="left:3.0px;top:3.0px;width:122.0px;height:354.0px">
+<div class="layer container" id="c-1-0-d4" data-at data-kind="container" data-name="容器 1-0-4" style="left:3.0px;top:3.0px;width:116.0px;height:348.0px">
+<img class="layer image" id="leaf-1-0-n0" data-at data-kind="image" data-name="图片 29" src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect width='40' height='40' fill='%2334d399'/%3E%3Ccircle cx='20' cy='20' r='12' fill='%23065f46'/%3E%3C/svg%3E" style="left:4.0px;top:4.0px;width:51.5px;height:82.8px">
+<div class="layer shape" id="leaf-1-0-n1" data-at data-kind="shape" data-name="图形 30" style="left:57.5px;top:4.0px;width:51.5px;height:82.8px;background:#06b6d4"></div>
+<div class="layer text" id="leaf-1-0-n2" data-at data-kind="text" data-name="第 31 层" style="left:4.0px;top:88.8px;width:51.5px;height:82.8px">第 31 层</div>
+<img class="layer image" id="leaf-1-0-n3" data-at data-kind="image" data-name="图片 32" src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect width='40' height='40' fill='%2334d399'/%3E%3Ccircle cx='20' cy='20' r='12' fill='%23065f46'/%3E%3C/svg%3E" style="left:57.5px;top:88.8px;width:51.5px;height:82.8px">
+<div class="layer shape" id="leaf-1-0-n4" data-at data-kind="shape" data-name="图形 33" style="left:4.0px;top:173.5px;width:51.5px;height:82.8px;background:#3b82f6"></div>
+<div class="layer text" id="leaf-1-0-n5" data-at data-kind="text" data-name="第 34 层" style="left:57.5px;top:173.5px;width:51.5px;height:82.8px">第 34 层</div>
+<img class="layer image" id="leaf-1-0-n6" data-at data-kind="image" data-name="图片 35" src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect width='40' height='40' fill='%2334d399'/%3E%3Ccircle cx='20' cy='20' r='12' fill='%23065f46'/%3E%3C/svg%3E" style="left:4.0px;top:258.3px;width:51.5px;height:82.8px">
+</div></div></div>
+<div class="layer container" id="c-1-1-d2" data-at data-kind="container" data-name="容器 1-1-2" style="left:128.0px;top:0.0px;width:128.0px;height:360.0px">
+<div class="layer container" id="c-1-1-d3" data-at data-kind="container" data-name="容器 1-1-3" style="left:3.0px;top:3.0px;width:122.0px;height:354.0px">
+<div class="layer container" id="c-1-1-d4" data-at data-kind="container" data-name="容器 1-1-4" style="left:3.0px;top:3.0px;width:116.0px;height:348.0px">
+<div class="layer shape" id="leaf-1-1-n0" data-at data-kind="shape" data-name="图形 36" style="left:4.0px;top:4.0px;width:51.5px;height:82.8px;background:#ef4444"></div>
+<div class="layer text" id="leaf-1-1-n1" data-at data-kind="text" data-name="第 37 层" style="left:57.5px;top:4.0px;width:51.5px;height:82.8px">第 37 层</div>
+<img class="layer image" id="leaf-1-1-n2" data-at data-kind="image" data-name="图片 38" src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect width='40' height='40' fill='%2334d399'/%3E%3Ccircle cx='20' cy='20' r='12' fill='%23065f46'/%3E%3C/svg%3E" style="left:4.0px;top:88.8px;width:51.5px;height:82.8px">
+<div class="layer shape" id="leaf-1-1-n3" data-at data-kind="shape" data-name="图形 39" style="left:57.5px;top:88.8px;width:51.5px;height:82.8px;background:#ec4899"></div>
+<div class="layer text" id="leaf-1-1-n4" data-at data-kind="text" data-name="第 40 层" style="left:4.0px;top:173.5px;width:51.5px;height:82.8px">第 40 层</div>
+<img class="layer image" id="leaf-1-1-n5" data-at data-kind="image" data-name="图片 41" src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect width='40' height='40' fill='%2334d399'/%3E%3Ccircle cx='20' cy='20' r='12' fill='%23065f46'/%3E%3C/svg%3E" style="left:57.5px;top:173.5px;width:51.5px;height:82.8px">
+<div class="layer shape" id="leaf-1-1-n6" data-at data-kind="shape" data-name="图形 42" style="left:4.0px;top:258.3px;width:51.5px;height:82.8px;background:#8b5cf6"></div>
+</div></div></div>
+<div class="layer container" id="c-1-2-d2" data-at data-kind="container" data-name="容器 1-2-2" style="left:0.0px;top:360.0px;width:128.0px;height:360.0px">
+<div class="layer container" id="c-1-2-d3" data-at data-kind="container" data-name="容器 1-2-3" style="left:3.0px;top:3.0px;width:122.0px;height:354.0px">
+<div class="layer container" id="c-1-2-d4" data-at data-kind="container" data-name="容器 1-2-4" style="left:3.0px;top:3.0px;width:116.0px;height:348.0px">
+<div class="layer text" id="leaf-1-2-n0" data-at data-kind="text" data-name="第 43 层" style="left:4.0px;top:4.0px;width:51.5px;height:82.8px">第 43 层</div>
+<img class="layer image" id="leaf-1-2-n1" data-at data-kind="image" data-name="图片 44" src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect width='40' height='40' fill='%2334d399'/%3E%3Ccircle cx='20' cy='20' r='12' fill='%23065f46'/%3E%3C/svg%3E" style="left:57.5px;top:4.0px;width:51.5px;height:82.8px">
+<div class="layer shape" id="leaf-1-2-n2" data-at data-kind="shape" data-name="图形 45" style="left:4.0px;top:88.8px;width:51.5px;height:82.8px;background:#10b981"></div>
+<div class="layer text" id="leaf-1-2-n3" data-at data-kind="text" data-name="第 46 层" style="left:57.5px;top:88.8px;width:51.5px;height:82.8px">第 46 层</div>
+<img class="layer image" id="leaf-1-2-n4" data-at data-kind="image" data-name="图片 47" src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect width='40' height='40' fill='%2334d399'/%3E%3Ccircle cx='20' cy='20' r='12' fill='%23065f46'/%3E%3C/svg%3E" style="left:4.0px;top:173.5px;width:51.5px;height:82.8px">
+<div class="layer shape" id="leaf-1-2-n5" data-at data-kind="shape" data-name="图形 48" style="left:57.5px;top:173.5px;width:51.5px;height:82.8px;background:#84cc16"></div>
+<div class="layer text" id="leaf-1-2-n6" data-at data-kind="text" data-name="第 49 层" style="left:4.0px;top:258.3px;width:51.5px;height:82.8px">第 49 层</div>
+</div></div></div>
+<div class="layer container" id="c-1-3-d2" data-at data-kind="container" data-name="容器 1-3-2" style="left:128.0px;top:360.0px;width:128.0px;height:360.0px">
+<div class="layer container" id="c-1-3-d3" data-at data-kind="container" data-name="容器 1-3-3" style="left:3.0px;top:3.0px;width:122.0px;height:354.0px">
+<div class="layer container" id="c-1-3-d4" data-at data-kind="container" data-name="容器 1-3-4" style="left:3.0px;top:3.0px;width:116.0px;height:348.0px">
+<img class="layer image" id="leaf-1-3-n0" data-at data-kind="image" data-name="图片 50" src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect width='40' height='40' fill='%2334d399'/%3E%3Ccircle cx='20' cy='20' r='12' fill='%23065f46'/%3E%3C/svg%3E" style="left:4.0px;top:4.0px;width:51.5px;height:82.8px">
+<div class="layer shape" id="leaf-1-3-n1" data-at data-kind="shape" data-name="图形 51" style="left:57.5px;top:4.0px;width:51.5px;height:82.8px;background:#f59e0b"></div>
+<div class="layer text" id="leaf-1-3-n2" data-at data-kind="text" data-name="第 52 层" style="left:4.0px;top:88.8px;width:51.5px;height:82.8px">第 52 层</div>
+<img class="layer image" id="leaf-1-3-n3" data-at data-kind="image" data-name="图片 53" src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect width='40' height='40' fill='%2334d399'/%3E%3Ccircle cx='20' cy='20' r='12' fill='%23065f46'/%3E%3C/svg%3E" style="left:57.5px;top:88.8px;width:51.5px;height:82.8px">
+<div class="layer shape" id="leaf-1-3-n4" data-at data-kind="shape" data-name="图形 54" style="left:4.0px;top:173.5px;width:51.5px;height:82.8px;background:#06b6d4"></div>
+<div class="layer text" id="leaf-1-3-n5" data-at data-kind="text" data-name="第 55 层" style="left:57.5px;top:173.5px;width:51.5px;height:82.8px">第 55 层</div>
+<img class="layer image" id="leaf-1-3-n6" data-at data-kind="image" data-name="图片 56" src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect width='40' height='40' fill='%2334d399'/%3E%3Ccircle cx='20' cy='20' r='12' fill='%23065f46'/%3E%3C/svg%3E" style="left:4.0px;top:258.3px;width:51.5px;height:82.8px">
+</div></div></div>
+</div>
+<div class="layer container" id="root-2" data-at data-kind="container" data-name="分区 3" style="left:512.0px;top:0;width:256.0px;height:720px">
+<div class="layer container" id="c-2-0-d2" data-at data-kind="container" data-name="容器 2-0-2" style="left:0.0px;top:0.0px;width:128.0px;height:360.0px">
+<div class="layer container" id="c-2-0-d3" data-at data-kind="container" data-name="容器 2-0-3" style="left:3.0px;top:3.0px;width:122.0px;height:354.0px">
+<div class="layer container" id="c-2-0-d4" data-at data-kind="container" data-name="容器 2-0-4" style="left:3.0px;top:3.0px;width:116.0px;height:348.0px">
+<div class="layer shape" id="leaf-2-0-n0" data-at data-kind="shape" data-name="图形 57" style="left:4.0px;top:4.0px;width:51.5px;height:82.8px;background:#3b82f6"></div>
+<div class="layer text" id="leaf-2-0-n1" data-at data-kind="text" data-name="第 58 层" style="left:57.5px;top:4.0px;width:51.5px;height:82.8px">第 58 层</div>
+<img class="layer image" id="leaf-2-0-n2" data-at data-kind="image" data-name="图片 59" src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect width='40' height='40' fill='%2334d399'/%3E%3Ccircle cx='20' cy='20' r='12' fill='%23065f46'/%3E%3C/svg%3E" style="left:4.0px;top:88.8px;width:51.5px;height:82.8px">
+<div class="layer shape" id="leaf-2-0-n3" data-at data-kind="shape" data-name="图形 60" style="left:57.5px;top:88.8px;width:51.5px;height:82.8px;background:#ef4444"></div>
+<div class="layer text" id="leaf-2-0-n4" data-at data-kind="text" data-name="第 61 层" style="left:4.0px;top:173.5px;width:51.5px;height:82.8px">第 61 层</div>
+<img class="layer image" id="leaf-2-0-n5" data-at data-kind="image" data-name="图片 62" src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect width='40' height='40' fill='%2334d399'/%3E%3Ccircle cx='20' cy='20' r='12' fill='%23065f46'/%3E%3C/svg%3E" style="left:57.5px;top:173.5px;width:51.5px;height:82.8px">
+<div class="layer shape" id="leaf-2-0-n6" data-at data-kind="shape" data-name="图形 63" style="left:4.0px;top:258.3px;width:51.5px;height:82.8px;background:#ec4899"></div>
+</div></div></div>
+<div class="layer container" id="c-2-1-d2" data-at data-kind="container" data-name="容器 2-1-2" style="left:128.0px;top:0.0px;width:128.0px;height:360.0px">
+<div class="layer container" id="c-2-1-d3" data-at data-kind="container" data-name="容器 2-1-3" style="left:3.0px;top:3.0px;width:122.0px;height:354.0px">
+<div class="layer container" id="c-2-1-d4" data-at data-kind="container" data-name="容器 2-1-4" style="left:3.0px;top:3.0px;width:116.0px;height:348.0px">
+<div class="layer text" id="leaf-2-1-n0" data-at data-kind="text" data-name="第 64 层" style="left:4.0px;top:4.0px;width:51.5px;height:82.8px">第 64 层</div>
+<img class="layer image" id="leaf-2-1-n1" data-at data-kind="image" data-name="图片 65" src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect width='40' height='40' fill='%2334d399'/%3E%3Ccircle cx='20' cy='20' r='12' fill='%23065f46'/%3E%3C/svg%3E" style="left:57.5px;top:4.0px;width:51.5px;height:82.8px">
+<div class="layer shape" id="leaf-2-1-n2" data-at data-kind="shape" data-name="图形 66" style="left:4.0px;top:88.8px;width:51.5px;height:82.8px;background:#8b5cf6"></div>
+<div class="layer text" id="leaf-2-1-n3" data-at data-kind="text" data-name="第 67 层" style="left:57.5px;top:88.8px;width:51.5px;height:82.8px">第 67 层</div>
+<img class="layer image" id="leaf-2-1-n4" data-at data-kind="image" data-name="图片 68" src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect width='40' height='40' fill='%2334d399'/%3E%3Ccircle cx='20' cy='20' r='12' fill='%23065f46'/%3E%3C/svg%3E" style="left:4.0px;top:173.5px;width:51.5px;height:82.8px">
+<div class="layer shape" id="leaf-2-1-n5" data-at data-kind="shape" data-name="图形 69" style="left:57.5px;top:173.5px;width:51.5px;height:82.8px;background:#10b981"></div>
+<div class="layer text" id="leaf-2-1-n6" data-at data-kind="text" data-name="第 70 层" style="left:4.0px;top:258.3px;width:51.5px;height:82.8px">第 70 层</div>
+</div></div></div>
+<div class="layer container" id="c-2-2-d2" data-at data-kind="container" data-name="容器 2-2-2" style="left:0.0px;top:360.0px;width:128.0px;height:360.0px">
+<div class="layer container" id="c-2-2-d3" data-at data-kind="container" data-name="容器 2-2-3" style="left:3.0px;top:3.0px;width:122.0px;height:354.0px">
+<div class="layer container" id="c-2-2-d4" data-at data-kind="container" data-name="容器 2-2-4" style="left:3.0px;top:3.0px;width:116.0px;height:348.0px">
+<img class="layer image" id="leaf-2-2-n0" data-at data-kind="image" data-name="图片 71" src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect width='40' height='40' fill='%2334d399'/%3E%3Ccircle cx='20' cy='20' r='12' fill='%23065f46'/%3E%3C/svg%3E" style="left:4.0px;top:4.0px;width:51.5px;height:82.8px">
+<div class="layer shape" id="leaf-2-2-n1" data-at data-kind="shape" data-name="图形 72" style="left:57.5px;top:4.0px;width:51.5px;height:82.8px;background:#84cc16"></div>
+<div class="layer text" id="leaf-2-2-n2" data-at data-kind="text" data-name="第 73 层" style="left:4.0px;top:88.8px;width:51.5px;height:82.8px">第 73 层</div>
+<img class="layer image" id="leaf-2-2-n3" data-at data-kind="image" data-name="图片 74" src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect width='40' height='40' fill='%2334d399'/%3E%3Ccircle cx='20' cy='20' r='12' fill='%23065f46'/%3E%3C/svg%3E" style="left:57.5px;top:88.8px;width:51.5px;height:82.8px">
+<div class="layer shape" id="leaf-2-2-n4" data-at data-kind="shape" data-name="图形 75" style="left:4.0px;top:173.5px;width:51.5px;height:82.8px;background:#f59e0b"></div>
+<div class="layer text" id="leaf-2-2-n5" data-at data-kind="text" data-name="第 76 层" style="left:57.5px;top:173.5px;width:51.5px;height:82.8px">第 76 层</div>
+<img class="layer image" id="leaf-2-2-n6" data-at data-kind="image" data-name="图片 77" src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect width='40' height='40' fill='%2334d399'/%3E%3Ccircle cx='20' cy='20' r='12' fill='%23065f46'/%3E%3C/svg%3E" style="left:4.0px;top:258.3px;width:51.5px;height:82.8px">
+</div></div></div>
+<div class="layer container" id="c-2-3-d2" data-at data-kind="container" data-name="容器 2-3-2" style="left:128.0px;top:360.0px;width:128.0px;height:360.0px">
+<div class="layer container" id="c-2-3-d3" data-at data-kind="container" data-name="容器 2-3-3" style="left:3.0px;top:3.0px;width:122.0px;height:354.0px">
+<div class="layer container" id="c-2-3-d4" data-at data-kind="container" data-name="容器 2-3-4" style="left:3.0px;top:3.0px;width:116.0px;height:348.0px">
+<div class="layer shape" id="leaf-2-3-n0" data-at data-kind="shape" data-name="图形 78" style="left:4.0px;top:4.0px;width:51.5px;height:82.8px;background:#06b6d4"></div>
+<div class="layer text" id="leaf-2-3-n1" data-at data-kind="text" data-name="第 79 层" style="left:57.5px;top:4.0px;width:51.5px;height:82.8px">第 79 层</div>
+<img class="layer image" id="leaf-2-3-n2" data-at data-kind="image" data-name="图片 80" src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect width='40' height='40' fill='%2334d399'/%3E%3Ccircle cx='20' cy='20' r='12' fill='%23065f46'/%3E%3C/svg%3E" style="left:4.0px;top:88.8px;width:51.5px;height:82.8px">
+<div class="layer shape" id="leaf-2-3-n3" data-at data-kind="shape" data-name="图形 81" style="left:57.5px;top:88.8px;width:51.5px;height:82.8px;background:#3b82f6"></div>
+<div class="layer text" id="leaf-2-3-n4" data-at data-kind="text" data-name="第 82 层" style="left:4.0px;top:173.5px;width:51.5px;height:82.8px">第 82 层</div>
+<img class="layer image" id="leaf-2-3-n5" data-at data-kind="image" data-name="图片 83" src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect width='40' height='40' fill='%2334d399'/%3E%3Ccircle cx='20' cy='20' r='12' fill='%23065f46'/%3E%3C/svg%3E" style="left:57.5px;top:173.5px;width:51.5px;height:82.8px">
+<div class="layer shape" id="leaf-2-3-n6" data-at data-kind="shape" data-name="图形 84" style="left:4.0px;top:258.3px;width:51.5px;height:82.8px;background:#ef4444"></div>
+</div></div></div>
+</div>
+<div class="layer container" id="root-3" data-at data-kind="container" data-name="分区 4" style="left:768.0px;top:0;width:256.0px;height:720px">
+<div class="layer container" id="c-3-0-d2" data-at data-kind="container" data-name="容器 3-0-2" style="left:0.0px;top:0.0px;width:128.0px;height:360.0px">
+<div class="layer container" id="c-3-0-d3" data-at data-kind="container" data-name="容器 3-0-3" style="left:3.0px;top:3.0px;width:122.0px;height:354.0px">
+<div class="layer container" id="c-3-0-d4" data-at data-kind="container" data-name="容器 3-0-4" style="left:3.0px;top:3.0px;width:116.0px;height:348.0px">
+<div class="layer text" id="leaf-3-0-n0" data-at data-kind="text" data-name="第 85 层" style="left:4.0px;top:4.0px;width:51.5px;height:82.8px">第 85 层</div>
+<img class="layer image" id="leaf-3-0-n1" data-at data-kind="image" data-name="图片 86" src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect width='40' height='40' fill='%2334d399'/%3E%3Ccircle cx='20' cy='20' r='12' fill='%23065f46'/%3E%3C/svg%3E" style="left:57.5px;top:4.0px;width:51.5px;height:82.8px">
+<div class="layer shape" id="leaf-3-0-n2" data-at data-kind="shape" data-name="图形 87" style="left:4.0px;top:88.8px;width:51.5px;height:82.8px;background:#ec4899"></div>
+<div class="layer text" id="leaf-3-0-n3" data-at data-kind="text" data-name="第 88 层" style="left:57.5px;top:88.8px;width:51.5px;height:82.8px">第 88 层</div>
+<img class="layer image" id="leaf-3-0-n4" data-at data-kind="image" data-name="图片 89" src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect width='40' height='40' fill='%2334d399'/%3E%3Ccircle cx='20' cy='20' r='12' fill='%23065f46'/%3E%3C/svg%3E" style="left:4.0px;top:173.5px;width:51.5px;height:82.8px">
+<div class="layer shape" id="leaf-3-0-n5" data-at data-kind="shape" data-name="图形 90" style="left:57.5px;top:173.5px;width:51.5px;height:82.8px;background:#8b5cf6"></div>
+<div class="layer text" id="leaf-3-0-n6" data-at data-kind="text" data-name="第 91 层" style="left:4.0px;top:258.3px;width:51.5px;height:82.8px">第 91 层</div>
+</div></div></div>
+<div class="layer container" id="c-3-1-d2" data-at data-kind="container" data-name="容器 3-1-2" style="left:128.0px;top:0.0px;width:128.0px;height:360.0px">
+<div class="layer container" id="c-3-1-d3" data-at data-kind="container" data-name="容器 3-1-3" style="left:3.0px;top:3.0px;width:122.0px;height:354.0px">
+<div class="layer container" id="c-3-1-d4" data-at data-kind="container" data-name="容器 3-1-4" style="left:3.0px;top:3.0px;width:116.0px;height:348.0px">
+<img class="layer image" id="leaf-3-1-n0" data-at data-kind="image" data-name="图片 92" src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect width='40' height='40' fill='%2334d399'/%3E%3Ccircle cx='20' cy='20' r='12' fill='%23065f46'/%3E%3C/svg%3E" style="left:4.0px;top:4.0px;width:51.5px;height:82.8px">
+<div class="layer shape" id="leaf-3-1-n1" data-at data-kind="shape" data-name="图形 93" style="left:57.5px;top:4.0px;width:51.5px;height:82.8px;background:#10b981"></div>
+<div class="layer text" id="leaf-3-1-n2" data-at data-kind="text" data-name="第 94 层" style="left:4.0px;top:88.8px;width:51.5px;height:82.8px">第 94 层</div>
+<img class="layer image" id="leaf-3-1-n3" data-at data-kind="image" data-name="图片 95" src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect width='40' height='40' fill='%2334d399'/%3E%3Ccircle cx='20' cy='20' r='12' fill='%23065f46'/%3E%3C/svg%3E" style="left:57.5px;top:88.8px;width:51.5px;height:82.8px">
+<div class="layer shape" id="leaf-3-1-n4" data-at data-kind="shape" data-name="图形 96" style="left:4.0px;top:173.5px;width:51.5px;height:82.8px;background:#84cc16"></div>
+<div class="layer text" id="leaf-3-1-n5" data-at data-kind="text" data-name="第 97 层" style="left:57.5px;top:173.5px;width:51.5px;height:82.8px">第 97 层</div>
+<img class="layer image" id="leaf-3-1-n6" data-at data-kind="image" data-name="图片 98" src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect width='40' height='40' fill='%2334d399'/%3E%3Ccircle cx='20' cy='20' r='12' fill='%23065f46'/%3E%3C/svg%3E" style="left:4.0px;top:258.3px;width:51.5px;height:82.8px">
+</div></div></div>
+<div class="layer container" id="c-3-2-d2" data-at data-kind="container" data-name="容器 3-2-2" style="left:0.0px;top:360.0px;width:128.0px;height:360.0px">
+<div class="layer container" id="c-3-2-d3" data-at data-kind="container" data-name="容器 3-2-3" style="left:3.0px;top:3.0px;width:122.0px;height:354.0px">
+<div class="layer container" id="c-3-2-d4" data-at data-kind="container" data-name="容器 3-2-4" style="left:3.0px;top:3.0px;width:116.0px;height:348.0px">
+<div class="layer shape" id="leaf-3-2-n0" data-at data-kind="shape" data-name="图形 99" style="left:4.0px;top:4.0px;width:51.5px;height:82.8px;background:#f59e0b"></div>
+<div class="layer text" id="leaf-3-2-n1" data-at data-kind="text" data-name="第 100 层" style="left:57.5px;top:4.0px;width:51.5px;height:82.8px">第 100 层</div>
+<img class="layer image" id="leaf-3-2-n2" data-at data-kind="image" data-name="图片 101" src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect width='40' height='40' fill='%2334d399'/%3E%3Ccircle cx='20' cy='20' r='12' fill='%23065f46'/%3E%3C/svg%3E" style="left:4.0px;top:88.8px;width:51.5px;height:82.8px">
+<div class="layer shape" id="leaf-3-2-n3" data-at data-kind="shape" data-name="图形 102" style="left:57.5px;top:88.8px;width:51.5px;height:82.8px;background:#06b6d4"></div>
+<div class="layer text" id="leaf-3-2-n4" data-at data-kind="text" data-name="第 103 层" style="left:4.0px;top:173.5px;width:51.5px;height:82.8px">第 103 层</div>
+<img class="layer image" id="leaf-3-2-n5" data-at data-kind="image" data-name="图片 104" src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect width='40' height='40' fill='%2334d399'/%3E%3Ccircle cx='20' cy='20' r='12' fill='%23065f46'/%3E%3C/svg%3E" style="left:57.5px;top:173.5px;width:51.5px;height:82.8px">
+<div class="layer shape" id="leaf-3-2-n6" data-at data-kind="shape" data-name="图形 105" style="left:4.0px;top:258.3px;width:51.5px;height:82.8px;background:#3b82f6"></div>
+</div></div></div>
+<div class="layer container" id="c-3-3-d2" data-at data-kind="container" data-name="容器 3-3-2" style="left:128.0px;top:360.0px;width:128.0px;height:360.0px">
+<div class="layer container" id="c-3-3-d3" data-at data-kind="container" data-name="容器 3-3-3" style="left:3.0px;top:3.0px;width:122.0px;height:354.0px">
+<div class="layer container" id="c-3-3-d4" data-at data-kind="container" data-name="容器 3-3-4" style="left:3.0px;top:3.0px;width:116.0px;height:348.0px">
+<div class="layer text" id="leaf-3-3-n0" data-at data-kind="text" data-name="第 106 层" style="left:4.0px;top:4.0px;width:51.5px;height:111.0px">第 106 层</div>
+<img class="layer image" id="leaf-3-3-n1" data-at data-kind="image" data-name="图片 107" src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect width='40' height='40' fill='%2334d399'/%3E%3Ccircle cx='20' cy='20' r='12' fill='%23065f46'/%3E%3C/svg%3E" style="left:57.5px;top:4.0px;width:51.5px;height:111.0px">
+<div class="layer shape" id="leaf-3-3-n2" data-at data-kind="shape" data-name="图形 108" style="left:4.0px;top:117.0px;width:51.5px;height:111.0px;background:#ef4444"></div>
+<div class="layer text" id="leaf-3-3-n3" data-at data-kind="text" data-name="第 109 层" style="left:57.5px;top:117.0px;width:51.5px;height:111.0px">第 109 层</div>
+<img class="layer image" id="leaf-3-3-n4" data-at data-kind="image" data-name="图片 110" src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect width='40' height='40' fill='%2334d399'/%3E%3Ccircle cx='20' cy='20' r='12' fill='%23065f46'/%3E%3C/svg%3E" style="left:4.0px;top:230.0px;width:51.5px;height:111.0px">
+<div class="layer shape" id="leaf-3-3-n5" data-at data-kind="shape" data-name="图形 111" style="left:57.5px;top:230.0px;width:51.5px;height:111.0px;background:#ec4899"></div>
+</div></div></div>
+</div>
+<div class="layer container" id="root-4" data-at data-kind="container" data-name="分区 5" style="left:1024.0px;top:0;width:256.0px;height:720px">
+<div class="layer container" id="c-4-0-d2" data-at data-kind="container" data-name="容器 4-0-2" style="left:0.0px;top:0.0px;width:128.0px;height:360.0px">
+<div class="layer container" id="c-4-0-d3" data-at data-kind="container" data-name="容器 4-0-3" style="left:3.0px;top:3.0px;width:122.0px;height:354.0px">
+<div class="layer container" id="c-4-0-d4" data-at data-kind="container" data-name="容器 4-0-4" style="left:3.0px;top:3.0px;width:116.0px;height:348.0px">
+<div class="layer text" id="leaf-4-0-n0" data-at data-kind="text" data-name="第 112 层" style="left:4.0px;top:4.0px;width:51.5px;height:111.0px">第 112 层</div>
+<img class="layer image" id="leaf-4-0-n1" data-at data-kind="image" data-name="图片 113" src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect width='40' height='40' fill='%2334d399'/%3E%3Ccircle cx='20' cy='20' r='12' fill='%23065f46'/%3E%3C/svg%3E" style="left:57.5px;top:4.0px;width:51.5px;height:111.0px">
+<div class="layer shape" id="leaf-4-0-n2" data-at data-kind="shape" data-name="图形 114" style="left:4.0px;top:117.0px;width:51.5px;height:111.0px;background:#8b5cf6"></div>
+<div class="layer text" id="leaf-4-0-n3" data-at data-kind="text" data-name="第 115 层" style="left:57.5px;top:117.0px;width:51.5px;height:111.0px">第 115 层</div>
+<img class="layer image" id="leaf-4-0-n4" data-at data-kind="image" data-name="图片 116" src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect width='40' height='40' fill='%2334d399'/%3E%3Ccircle cx='20' cy='20' r='12' fill='%23065f46'/%3E%3C/svg%3E" style="left:4.0px;top:230.0px;width:51.5px;height:111.0px">
+<div class="layer shape" id="leaf-4-0-n5" data-at data-kind="shape" data-name="图形 117" style="left:57.5px;top:230.0px;width:51.5px;height:111.0px;background:#10b981"></div>
+</div></div></div>
+<div class="layer container" id="c-4-1-d2" data-at data-kind="container" data-name="容器 4-1-2" style="left:128.0px;top:0.0px;width:128.0px;height:360.0px">
+<div class="layer container" id="c-4-1-d3" data-at data-kind="container" data-name="容器 4-1-3" style="left:3.0px;top:3.0px;width:122.0px;height:354.0px">
+<div class="layer container" id="c-4-1-d4" data-at data-kind="container" data-name="容器 4-1-4" style="left:3.0px;top:3.0px;width:116.0px;height:348.0px">
+<div class="layer text" id="leaf-4-1-n0" data-at data-kind="text" data-name="第 118 层" style="left:4.0px;top:4.0px;width:51.5px;height:111.0px">第 118 层</div>
+<img class="layer image" id="leaf-4-1-n1" data-at data-kind="image" data-name="图片 119" src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect width='40' height='40' fill='%2334d399'/%3E%3Ccircle cx='20' cy='20' r='12' fill='%23065f46'/%3E%3C/svg%3E" style="left:57.5px;top:4.0px;width:51.5px;height:111.0px">
+<div class="layer shape" id="leaf-4-1-n2" data-at data-kind="shape" data-name="图形 120" style="left:4.0px;top:117.0px;width:51.5px;height:111.0px;background:#84cc16"></div>
+<div class="layer text" id="leaf-4-1-n3" data-at data-kind="text" data-name="第 121 层" style="left:57.5px;top:117.0px;width:51.5px;height:111.0px">第 121 层</div>
+<img class="layer image" id="leaf-4-1-n4" data-at data-kind="image" data-name="图片 122" src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect width='40' height='40' fill='%2334d399'/%3E%3Ccircle cx='20' cy='20' r='12' fill='%23065f46'/%3E%3C/svg%3E" style="left:4.0px;top:230.0px;width:51.5px;height:111.0px">
+<div class="layer shape" id="leaf-4-1-n5" data-at data-kind="shape" data-name="图形 123" style="left:57.5px;top:230.0px;width:51.5px;height:111.0px;background:#f59e0b"></div>
+</div></div></div>
+<div class="layer container" id="c-4-2-d2" data-at data-kind="container" data-name="容器 4-2-2" style="left:0.0px;top:360.0px;width:128.0px;height:360.0px">
+<div class="layer container" id="c-4-2-d3" data-at data-kind="container" data-name="容器 4-2-3" style="left:3.0px;top:3.0px;width:122.0px;height:354.0px">
+<div class="layer container" id="c-4-2-d4" data-at data-kind="container" data-name="容器 4-2-4" style="left:3.0px;top:3.0px;width:116.0px;height:348.0px">
+<div class="layer text" id="leaf-4-2-n0" data-at data-kind="text" data-name="第 124 层" style="left:4.0px;top:4.0px;width:51.5px;height:111.0px">第 124 层</div>
+<img class="layer image" id="leaf-4-2-n1" data-at data-kind="image" data-name="图片 125" src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect width='40' height='40' fill='%2334d399'/%3E%3Ccircle cx='20' cy='20' r='12' fill='%23065f46'/%3E%3C/svg%3E" style="left:57.5px;top:4.0px;width:51.5px;height:111.0px">
+<div class="layer shape" id="leaf-4-2-n2" data-at data-kind="shape" data-name="图形 126" style="left:4.0px;top:117.0px;width:51.5px;height:111.0px;background:#06b6d4"></div>
+<div class="layer text" id="leaf-4-2-n3" data-at data-kind="text" data-name="第 127 层" style="left:57.5px;top:117.0px;width:51.5px;height:111.0px">第 127 层</div>
+<img class="layer image" id="leaf-4-2-n4" data-at data-kind="image" data-name="图片 128" src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect width='40' height='40' fill='%2334d399'/%3E%3Ccircle cx='20' cy='20' r='12' fill='%23065f46'/%3E%3C/svg%3E" style="left:4.0px;top:230.0px;width:51.5px;height:111.0px">
+<div class="layer shape" id="leaf-4-2-n5" data-at data-kind="shape" data-name="图形 129" style="left:57.5px;top:230.0px;width:51.5px;height:111.0px;background:#3b82f6"></div>
+</div></div></div>
+<div class="layer container" id="c-4-3-d2" data-at data-kind="container" data-name="容器 4-3-2" style="left:128.0px;top:360.0px;width:128.0px;height:360.0px">
+<div class="layer container" id="c-4-3-d3" data-at data-kind="container" data-name="容器 4-3-3" style="left:3.0px;top:3.0px;width:122.0px;height:354.0px">
+<div class="layer container" id="c-4-3-d4" data-at data-kind="container" data-name="容器 4-3-4" style="left:3.0px;top:3.0px;width:116.0px;height:348.0px">
+<div class="layer text" id="leaf-4-3-n0" data-at data-kind="text" data-name="第 130 层" style="left:4.0px;top:4.0px;width:51.5px;height:111.0px">第 130 层</div>
+<img class="layer image" id="leaf-4-3-n1" data-at data-kind="image" data-name="图片 131" src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect width='40' height='40' fill='%2334d399'/%3E%3Ccircle cx='20' cy='20' r='12' fill='%23065f46'/%3E%3C/svg%3E" style="left:57.5px;top:4.0px;width:51.5px;height:111.0px">
+<div class="layer shape" id="leaf-4-3-n2" data-at data-kind="shape" data-name="图形 132" style="left:4.0px;top:117.0px;width:51.5px;height:111.0px;background:#ef4444"></div>
+<div class="layer text" id="leaf-4-3-n3" data-at data-kind="text" data-name="第 133 层" style="left:57.5px;top:117.0px;width:51.5px;height:111.0px">第 133 层</div>
+<img class="layer image" id="leaf-4-3-n4" data-at data-kind="image" data-name="图片 134" src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect width='40' height='40' fill='%2334d399'/%3E%3Ccircle cx='20' cy='20' r='12' fill='%23065f46'/%3E%3C/svg%3E" style="left:4.0px;top:230.0px;width:51.5px;height:111.0px">
+<div class="layer shape" id="leaf-4-3-n5" data-at data-kind="shape" data-name="图形 135" style="left:57.5px;top:230.0px;width:51.5px;height:111.0px;background:#ec4899"></div>
+</div></div></div>
+</div>
+</div>
+<div id="bench" style="position:fixed;right:0;top:0;width:360px;height:100%;box-sizing:border-box;padding:12px;background:#0a0f1c;border-left:1px solid rgba(255,255,255,.1);overflow:hidden;display:flex;flex-direction:column;gap:8px"></div>
+<script>
+(function () {
+  var stage = document.getElementById('stage');
+  var layers = stage.querySelectorAll('[data-at]');
+  var depth = 0;
+  layers.forEach(function (el) {
+    var d = 1, p = el.parentElement;
+    while (p) { if (p.hasAttribute && p.hasAttribute('data-at')) d += 1; p = p.parentElement; }
+    if (d > depth) depth = d;
+  });
+  var kinds = {};
+  layers.forEach(function (el) { var k = el.getAttribute('data-kind'); kinds[k] = (kinds[k] || 0) + 1; });
+  document.getElementById('hud').textContent = layers.length + ' 层 · 最深 ' + depth + ' 层';
+  stage.setAttribute('data-layer-count', String(layers.length));
+  stage.setAttribute('data-max-depth', String(depth));
+  stage.setAttribute('data-kinds', JSON.stringify(kinds));
+})();
+</script>
+</body></html>

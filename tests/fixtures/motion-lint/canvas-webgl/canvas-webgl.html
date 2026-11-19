@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="motion-clock" content="--motion-t;unit=ms">
+<title>反例 · canvas 自绘</title>
+<!-- 反面素材：画面完全在 WebGL 里，DOM 侧没有可被 --motion-t 定格的动画 -->
+</head>
+<body>
+<canvas id="gl" width="320" height="180" data-role="root"></canvas>
+<script>
+  const canvas = document.getElementById('gl');
+  const gl = canvas.getContext('webgl');
+  function frame() { gl.clearColor(0.1, 0.2, 0.3, 1); gl.clear(gl.COLOR_BUFFER_BIT); requestAnimationFrame(frame); }
+  frame();
+</script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="motion-clock" content="--motion-t;unit=ms">
+<title>反例 · 墙钟</title>
+<!-- 反面素材：Framer 时代最常见的写法 —— infinite 但没 paused，也没读 --motion-t -->
+<link rel="stylesheet" href="./wall-clock.css">
+</head>
+<body>
+<div class="card" data-role="root" data-motion-param="size" data-motion-type="number" data-motion-min="10" data-motion-max="40" data-motion-default="20" data-motion-label="尺寸">
+  <span class="dot"></span>
+</div>
+</body>
+</html>

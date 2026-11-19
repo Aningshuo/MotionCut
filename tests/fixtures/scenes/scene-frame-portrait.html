@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1080, height=1920">
+<title>S37 夹具：竖屏场景（1080×1920 自有尺寸，放进横屏舞台）</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #1b1030; }
+  .bg { position: absolute; inset: 0; background: linear-gradient(180deg, #2a1b4d 0%, #120a22 100%); }
+  .card { position: absolute; left: 60px; top: 220px; width: 960px; height: 640px; padding: 40px; box-sizing: border-box;
+          background: #fff7e8; border-radius: 28px; font-family: -apple-system, "PingFang SC", Arial, sans-serif; }
+  .tag { display: inline-block; font-size: 26px; letter-spacing: .16em; color: #fff; background: #7c3aed;
+         border-radius: 999px; padding: 8px 22px; }
+  h1 { margin: 26px 0 12px; font-size: 76px; color: #2a1b4d; }
+  p { margin: 0; font-size: 30px; color: #6b6480; }
+  .rail { position: absolute; left: 60px; right: 60px; bottom: 180px; height: 12px; border-radius: 999px;
+          background: linear-gradient(90deg, #7c3aed, #22d3ee); }
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<div class="card" id="panel-p">
+  <span class="tag">SCENE P</span>
+  <h1>竖屏场景</h1>
+  <p>1080×1920：框 = 声明 style，画面按 contain 居中</p>
+</div>
+<div class="rail"></div>
+<script>
+  window.film = { frame: function () { return Promise.resolve(); }, duration: 8 };
+</script>
+</body>
+</html>

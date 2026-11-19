@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>中文标题 · 四层嵌套</title>
+<style>
+  html, body { margin: 0; width: 800px; height: 450px; background: #0f1420; color: #eef2ff;
+    font-family: system-ui, "PingFang SC", "Microsoft YaHei", sans-serif; }
+  #root { position: absolute; inset: 0; padding: 24px; box-sizing: border-box; }
+  .hero { width: 720px; padding: 18px; background: #151c2c; border: 1px solid #25304a; border-radius: 12px; }
+  .panel { margin-top: 12px; padding: 16px; background: #1a2336; border-radius: 10px; }
+  .card { margin-top: 10px; padding: 20px; background: #202b42; border-radius: 8px; }
+  .title { margin: 0; font-size: 34px; letter-spacing: 1px; }
+  .subtitle { margin: 10px 0 0; font-size: 16px; color: #9fb0d0; }
+  .footer { position: absolute; left: 24px; bottom: 20px; font-size: 14px; color: #7c8ba8; }
+</style>
+</head>
+<body>
+  <main id="root">
+    <section class="hero">
+      <div class="panel">
+        <div class="card">
+          <h1 class="title">中文标题：山间清晨</h1>
+          <p class="subtitle">四层嵌套里的说明文字</p>
+        </div>
+      </div>
+    </section>
+    <div class="footer">页脚 · 副线1 图层夹具</div>
+  </main>
+</body>
+</html>

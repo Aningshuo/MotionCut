@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1280, height=720">
+<title>M36 夹具：轨道高度与波形可辨认度</title>
+<!--
+  M34 的时间线波形夹具。素材（脚本复制进 assets/）：
+    m36-dyn.wav  4s 动态：前 2s 振幅 0.02（−37dBFS），后 2s 0.9（−3.9dBFS）
+                 —— 比 M34 的 dyn.wav 差距更大：波形柱高按 **RMS** 画（0.5 振幅在 12px 画布上
+                    只有 4px），0.9 才有 7px，才能稳定量出「中位幅度差 ≥3px」
+    hot.wav  3s 高电平：峰值 −4.1dBFS（volume=2 时会超满幅 → 警示色帽带）
+
+  五个声音片段各覆盖一种情况：
+    w-normal  整段（前弱后强）        —— 基线，也是「形状」参照
+    w-muted   muted，画平线           —— 与 volume=0 一样是「这段还在」
+    w-hot     volume=2 → 超满幅       —— overflowColumns > 0
+    w-trim    #t=2,4 → 只取响的那半   —— 裁剪后波形要对得上
+    w-speed   speed=2 → 时间线一半宽  —— 变速只改宽度，不改源区间
+-->
+<style>
+  html, body { margin: 0; height: 100%; background: #000; }
+</style>
+</head>
+<body>
+<section id="picture">
+  <video id="pic" src="assets/pic.mp4#t=0,4" at="0" muted></video>
+</section>
+<section id="sound">
+  <audio id="w-normal" src="assets/m36-dyn.wav#t=0,4" at="0"></audio>
+  <audio id="w-muted" src="assets/m36-dyn.wav#t=0,2" at="4.6" muted volume="0.6"></audio>
+  <audio id="w-hot" src="assets/hot.wav#t=0,3" at="7" volume="2"></audio>
+  <audio id="w-trim" src="assets/m36-dyn.wav#t=2,4" at="10.4"></audio>
+  <audio id="w-speed" src="assets/m36-dyn.wav#t=0,4" at="13" speed="2"></audio>
+</section>
+</body>
+</html>

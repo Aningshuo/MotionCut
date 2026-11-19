@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1280, height=720">
+<title>S37 夹具：网页场景（16:9 自有尺寸 1280×720）</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #0b0f14; }
+  .bg { position: absolute; inset: 0; background: linear-gradient(135deg, #123 0%, #0b0f14 60%); }
+  .panel { position: absolute; left: 32px; top: 28px; width: 560px; height: 240px; padding: 24px; box-sizing: border-box;
+           background: #f6f4ec; border-radius: 16px; font-family: -apple-system, "PingFang SC", Arial, sans-serif; }
+  .tag { display: inline-block; font-size: 12px; letter-spacing: .14em; color: #fff; background: #2d6f8f;
+         border-radius: 999px; padding: 4px 10px; }
+  h1 { margin: 10px 0 6px; font-size: 34px; color: #16303d; }
+  p { margin: 0; font-size: 15px; color: #5a666e; }
+  .grid { position: absolute; inset: 0;
+          background-image: linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px),
+                            linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px);
+          background-size: 80px 80px; }
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<div class="grid"></div>
+<div class="panel" id="panel-a">
+  <span class="tag">SCENE A</span>
+  <h1>横屏场景</h1>
+  <p>1280×720 自有尺寸：框与画面同比例</p>
+</div>
+<script>
+  window.film = { frame: function () { return Promise.resolve(); }, duration: 8 };
+</script>
+</body>
+</html>

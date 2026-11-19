@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1280, height=720">
+<title>E05-P2 夹具：关键帧导出</title>
+<!--
+  E05-P2 的导出夹具。
+
+  - 片段 `page-main`：at=1，源区间 0–8s，铺满舞台；
+  - 层覆盖 `#box` 带 2 条关键帧：t=0（不透明、原位）→ t=2（0.2 透明、下移 240px）。
+    所以 **t=1 是首帧、t=3 是末帧**，中间任意 t 都该落在两者之间。
+
+  片段起点刻意不是 0：这样「--motion-t 用全局还是局部」一眼能看出错
+  （用全局口径时 t=1 会停在"已播 1s"的位置，而不是首帧）。
+
+  场景里**没有** `data-instance`（不是动效模板），所以舞台的 writeMotionTime
+  会退到 documentElement —— 这条路径与 motion-export 那份夹具互补。
+-->
+<style>
+  html, body { margin: 0; height: 100%; background: #000; }
+  section { position: relative; }
+  iframe { position: absolute; border: 0; display: block; }
+</style>
+</head>
+<body>
+<section id="pages">
+  <iframe id="page-main" src="scenes/box.html#t=0,8" at="1" size="1280x720"
+    style="left: 0px; top: 0px; width: 1280px; height: 720px"
+    overrides='[{"at":"#box","kf":[{"t":0,"style":{"opacity":"1","translate":"0 0"}},{"t":2,"style":{"opacity":"0.2","translate":"0 240px"}}]}]'></iframe>
+</section>
+</body>
+</html>

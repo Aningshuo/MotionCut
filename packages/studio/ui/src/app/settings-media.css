@@ -1,0 +1,33 @@
+.settings-media-services { font: 12px/1.5 Inter, -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif; color: #ccc; }
+.settings-media-services button, .settings-media-services input, .settings-media-services select { font: inherit; }
+.settings-media-services :is(button, input, select):focus-visible { outline: 2px solid #27c0c4; outline-offset: 2px; }
+.settings-media-services .sm-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin-bottom: 8px; }
+.settings-media-services .sm-heading h2 { margin: 0 0 5px; font-size: 14px; font-weight: 500; color: #ddd; }
+.settings-media-services .sm-heading p { margin: 0; font-size: 11px; color: #888; }
+.settings-media-services .sm-refresh { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 28px; height: 28px; border: 0; border-radius: 5px; color: #999; background: transparent; cursor: pointer; }
+.settings-media-services .sm-refresh:not(:disabled):hover { background: #333; }
+.settings-media-services .sm-service-card { margin: 0; padding: 15px 0 12px; border: 0; border-bottom: 1px solid #333; }
+.settings-media-services .sm-service-card > header { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 12px; }
+.settings-media-services .sm-service-card h3 { display: flex; align-items: center; gap: 7px; margin: 0; font-size: 13px; font-weight: 500; color: #d0d0d0; }
+.settings-media-services .sm-service-state { max-width: 65%; color: #938775; font-size: 11px; text-align: right; overflow-wrap: anywhere; }
+.settings-media-services .sm-service-state.is-ready { color: #78b5ae; }
+.settings-media-services .sm-field { display: flex; align-items: center; gap: 14px; min-width: 0; margin-bottom: 8px; }
+.settings-media-services .sm-field > span { flex: 0 0 78px; color: #909090; font-size: 12px; }
+.settings-media-services .sm-field :is(input, select) { flex: 1 1 auto; width: 0; min-width: 0; min-height: 30px; border: 1px solid #3a3a3a; border-radius: 5px; background: #2b2b2b; color: #d0d0d0; padding: 4px 8px; box-shadow: none; }
+.settings-media-services .sm-field input::placeholder { color: #707070; }
+.settings-media-services .sm-service-hint { margin: 4px 0 0 92px; color: #777; font-size: 11px; line-height: 1.6; }
+.settings-media-services .sm-save-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 15px 0 10px; }
+.settings-media-services .sm-save-note { color: #8e9997; font-size: 11px; }
+.settings-media-services .sm-save { flex: 0 0 auto; min-height: 30px; border: 0; border-radius: 5px; background: #235052; color: #8cdbde; padding: 5px 14px; cursor: pointer; }
+.settings-media-services .sm-save:not(:disabled):hover { background: #2b6265; }
+.settings-media-services :disabled { opacity: .45; cursor: default; }
+.settings-media-services .sm-notice { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 7px 10px; background: #2d3937; border-radius: 5px; color: #b0c4bd; font-size: 12px; }
+.settings-media-services .sm-notice.is-error { color: #dcaba0; background: #3d2926; }
+.settings-media-services .sm-notice button { border: 0; border-radius: 4px; background: #4a3632; color: #ddd; padding: 4px 8px; cursor: pointer; }
+.settings-media-services .sm-loading { color: #999; padding: 16px 0; }
+.settings-media-services .sm-other-services { margin-top: 10px; color: #888; }
+.settings-media-services .sm-other-services summary { font-size: 11px; padding: 5px 0; cursor: pointer; }
+.settings-media-services .sm-other-services .sm-service-hint { margin-left: 0; }
+.settings-media-services .sm-unavailable { display: flex; justify-content: space-between; gap: 12px; padding: 6px 0; font-size: 11px; }
+.settings-media-services .sm-unavailable small { color: #727272; font-size: 11px; }
+.settings-media-services .sm-other-services code { display: block; margin-top: 5px; font-size: 10px; overflow-wrap: anywhere; }

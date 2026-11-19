@@ -1,0 +1,115 @@
+{
+  "format": "opencut-contract-fixtures/1",
+  "contractVersion": "1.2.0",
+  "packageRevision": 5,
+  "cases": [
+    {
+      "id": "FILM-OK-01",
+      "contract": "film-doc",
+      "kind": "normal",
+      "file": "film-v12.html",
+      "expect": {
+        "diagnostics": [],
+        "tracks": 4,
+        "clips": ["card-a", "card-b", "take-01", "take-02", "voice", "bgm", "sfx"],
+        "stage": "1280x720",
+        "fps": "not in file; injected by caller (default 30)",
+        "fade": { "clip": "bgm", "value": [1, 2], "from": "own override entry (no at)" },
+        "roundTrip": "parse→write(no edits)→byte-identical"
+      }
+    },
+    {
+      "id": "FILM-ERR-01",
+      "contract": "film-doc",
+      "kind": "failure",
+      "input": "<section><video id=\"v1\" src=\"a.mp4#t=0,99\" data-native=\"2.166667\"></video></section>",
+      "expect": { "code": "TIME_PAST_END", "tolerance": "0.001+1e-6" }
+    },
+    {
+      "id": "FILM-ERR-02",
+      "contract": "film-doc",
+      "kind": "failure",
+      "input": "<section><video id=\"v1\" src=\"a.mp4\" bogus=\"1\"></video></section>",
+      "expect": { "code": "UNKNOWN_ATTRIBUTE", "mustNot": "silently drop" }
+    },
+    {
+      "id": "FILM-ERR-03",
+      "contract": "film-doc",
+      "kind": "failure",
+      "input": "<div data-stage=\"1280x720\"><section data-track=\"0\"><video data-clip=\"v1\" data-src=\"a.mp4\"></video></section></div>",
+      "expect": { "code": "LEGACY_DIALECT", "hint": "message must name the correct spelling: <video id=\"v1\" src=\"a.mp4\" at=\"0\">" }
+    },
+    {
+      "id": "FILM-OK-02",
+      "contract": "film-doc",
+      "kind": "normal",
+      "input": "native=2.166667, time=[0,2.167]",
+      "expect": { "accepted": true, "reason": "millisecond trim tolerance" }
+    },
+    {
+      "id": "OPS-01",
+      "contract": "edit-ops",
+      "kind": "normal",
+      "env": { "projectId": "proj-a", "batchId": "B-MAIN-001", "owner": "MAIN", "expectedHash": "<hash>", "opId": "01J0-ops-1" },
+      "ops": [{ "op": "props", "edits": [{ "clip": "v1", "prop": "volume", "value": 0 }, { "clip": "v1", "prop": "link", "value": "l1" }] }],
+      "expect": { "ok": true, "touched": ["v1"] }
+    },
+    {
+      "id": "OPS-ERR-01",
+      "contract": "edit-ops",
+      "kind": "failure",
+      "env": { "expectedHash": "stale" },
+      "expect": { "code": "CONFLICT", "mustReturn": "currentHash" }
+    },
+    {
+      "id": "FRAME-01",
+      "contract": "frame",
+      "kind": "normal",
+      "request": { "t": 2 },
+      "expect": { "sequence": ["arm listeners", "time(t)", "frame(t)", "settle(t)", "predicate", "double-rAF"], "noWaitWhenAlreadyReady": true }
+    },
+    {
+      "id": "FRAME-ERR-01",
+      "contract": "frame",
+      "kind": "failure",
+      "request": { "t": 2, "signal": "aborted" },
+      "expect": { "code": "CANCELLED", "noZombie": true }
+    },
+    {
+      "id": "LAYER-01",
+      "contract": "layers",
+      "kind": "normal",
+      "ref": { "clipId": "p1", "at": "div#card > h1", "kind": "text" },
+      "patch": { "t": "新标题", "s": [0.9, 0.9] },
+      "expect": { "writtenTo": "clip.overrides", "sourceUnchanged": true }
+    },
+    {
+      "id": "LAYER-ERR-01",
+      "contract": "layers",
+      "kind": "failure",
+      "ref": { "clipId": "p1", "at": "canvas#gl" },
+      "expect": { "code": "NOT_EDITABLE", "capability": "PIXEL_ONLY" }
+    },
+    {
+      "id": "AGENT-01",
+      "contract": "agent",
+      "kind": "mock",
+      "events": ["text", "tool_start", "permission", "tool_end", "usage", "turn_end"],
+      "expect": { "permissionDefault": "deny", "order": "monotonic" }
+    },
+    {
+      "id": "RENDER-01",
+      "contract": "render",
+      "kind": "normal",
+      "spec": { "kind": "video", "range": [0, 30], "codec": "h264", "fps": 29.97, "audio": true },
+      "expect": { "verify": ["ffprobe", "full-decode"], "noOverwrite": true, "partialRename": true }
+    },
+    {
+      "id": "RENDER-ERR-01",
+      "contract": "render",
+      "kind": "failure",
+      "spec": { "kind": "video", "range": [10, 5] },
+      "expect": { "code": "INVALID_RANGE" }
+    }
+  ]
+}

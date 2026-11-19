@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1280, height=720">
+<title>M33-A7 夹具：场景里嵌了一个跨源 iframe</title>
+<!--
+  A7：跨源页面「不崩、跳过并计数」。
+  做法不是把片段本身设成跨源（那样片段根本画不出来，报的是 NO_FILM，验不到动效这条），
+  而是**场景内部**嵌一个跨源 iframe（现实里更常见：页面里挂第三方组件）。
+  舞台写 --motion-t 时进不去它，只能跳过 + 计数 + 留一行日志。
+
+  __CROSS_ORIGIN__ 由验收脚本替换成「另一个端口上的小服务」的地址（真的跨源）。
+-->
+<style>
+  html, body { margin: 0; height: 100%; background: #000; }
+  section { position: relative; }
+  iframe { position: absolute; border: 0; display: block; background: #0b1020; }
+</style>
+</head>
+<body>
+<section id="low">
+  <iframe id="m-cross" src="scenes/cross.html#t=0,3" at="0" size="1280x720" style="left: 0px; top: 0px; width: 1280px; height: 720px"></iframe>
+</section>
+</body>
+</html>

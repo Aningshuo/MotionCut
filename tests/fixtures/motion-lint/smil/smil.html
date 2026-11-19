@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="motion-clock" content="--motion-t;unit=ms">
+<title>反例 · SMIL</title>
+<!-- 反面素材：SVG 内置动画，自己有时钟 -->
+<style>
+  .wrap { width: 120px; height: 120px; animation: fade 800ms linear infinite; animation-play-state: paused; animation-delay: calc(-1 * var(--motion-t, 0) * 1ms); }
+  @keyframes fade { from { opacity: .2; } to { opacity: 1; } }
+</style>
+</head>
+<body>
+<div class="wrap" data-role="root">
+  <svg width="120" height="120" viewBox="0 0 120 120">
+    <circle cx="60" cy="60" r="40" fill="#38bdf8">
+      <animate attributeName="r" values="10;40;10" dur="2s" repeatCount="indefinite"></animate>
+    </circle>
+  </svg>
+</div>
+</body>
+</html>

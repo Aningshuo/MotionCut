@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1280, height=720">
+<title>M29 夹具：12s 纯视频工程（队列/取消/历史都用它）</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #000; }
+  section { position: relative; }
+  video { position: absolute; }
+</style>
+</head>
+<body>
+<!--
+  A1/A2/A4/A5 的工程：4 段 × 3s = 12s 纯视频 + 一条音轨（有音轨才走 mux 阶段）。
+  12s 是刻意的：短到一次导出只要几秒，长到「排队 → 取消」的窗口足够被 100ms 的轮询看到。
+  素材全部来自 tests/fixtures/media（无损 + bt709/colr，逐字节可复现）。
+-->
+<section id="v1">
+  <video id="q-1" src="assets/bars.mp4#t=0,3" at="0" style="left: 0px; top: 0px; width: 1280px; height: 720px"></video>
+  <video id="q-2" src="assets/light.mp4#t=0,3" at="3" style="left: 0px; top: 0px; width: 1280px; height: 720px"></video>
+  <video id="q-3" src="assets/dark.mp4#t=0,3" at="6" style="left: 0px; top: 0px; width: 1280px; height: 720px"></video>
+  <video id="q-4" src="assets/insert.mp4#t=0,3" at="9" style="left: 0px; top: 0px; width: 1280px; height: 720px"></video>
+</section>
+<section id="a1">
+  <audio id="q-tone" src="assets/tone.wav#t=0,3" at="0" volume="0.35"></audio>
+</section>
+</body>
+</html>

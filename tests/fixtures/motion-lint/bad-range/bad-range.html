@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="motion-clock" content="--motion-t;unit=ms">
+<title>反例 · 值域写错</title>
+<!-- 反面素材：min > max，且默认值 99 落在 [9, 1] 之外（两道都要报） -->
+<style>
+  .card { width: calc(var(--size, 20) * 1px); height: 40px; background: #0f172a; }
+</style>
+</head>
+<body>
+<div class="card" data-role="root" data-motion-param="size" data-motion-type="number" data-motion-min="9" data-motion-max="1" data-motion-default="99" data-motion-label="尺寸"></div>
+</body>
+</html>

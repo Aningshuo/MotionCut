@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>M19 夹具场景 B</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: #1a1420; font-family: -apple-system, "PingFang SC", Arial, sans-serif; }
+  .panel { position: absolute; left: 24px; top: 20px; width: 512px; height: 275px; padding: 24px; background: #f3eef8; border-radius: 18px; }
+  .tag { display: inline-block; font-size: 12px; letter-spacing: 0.12em; color: #fff; background: #6b4b8a; border-radius: 999px; padding: 4px 10px; }
+  h1 { margin: 12px 0 6px; font-size: 40px; color: #2f1d42; }
+  p { margin: 0; font-size: 16px; color: #6b5d78; }
+</style>
+</head>
+<body>
+<div class="panel" id="panel-b">
+  <span class="tag" id="tag-b">CARD B</span>
+  <h1 id="title-b">标题 B</h1>
+  <p id="note-b">在舞台上点我，树应切到 B 的图层</p>
+</div>
+<script type="module">
+  window.film = {
+    duration: 8,
+    ready() { return Promise.resolve(); },
+    frame() { return Promise.resolve(); }
+  };
+</script>
+</body>
+</html>

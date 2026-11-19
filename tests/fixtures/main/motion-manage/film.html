@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1280, height=720">
+<title>M30 夹具：一个网页片段，它直接渲染模板源（所以升级/回退后舞台看得出来）</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #000; }
+  section { position: relative; }
+</style>
+</head>
+<body>
+<!--
+  B1–B5 都用这个工程：
+    - 片段 mm-card 的 src 就是模板源 scenes/card.html（不是副本），升级/回退改了源文件，
+      舞台重建后能直接看到 v1/v2 的差别；
+    - data-props 记着「当前挂在哪个模板、参数是多少」：B4 的回填就从这里读。
+-->
+<section id="v1">
+  <iframe id="mm-card" src="scenes/card.html#t=0,6" at="0" size="1280x720"
+    data-props='{"template":"motion_basecard","version":1,"sourceHash":"5596ed1b4a3a92eea0ff673e952d5c39dc72d1e9d798cf5b5029a9cdf67cc4d6","values":{"speed":1.2,"accent":"#ff8800","title":"实例标题"}}'
+    style="left: 0px; top: 0px; width: 1280px; height: 720px"></iframe>
+</section>
+</body>
+</html>

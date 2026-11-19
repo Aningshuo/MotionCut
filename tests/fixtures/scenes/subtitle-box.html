@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>字幕底色框验收夹具 · S53</title>
+<style>
+  html, body { margin: 0; padding: 0; background: #00ff00; }
+  /* 舞台：与交付尺寸一致（1280×720）。底色框的坐标系原点就是它的左上角。 */
+  #stage {
+    position: relative;
+    width: 1280px;
+    height: 720px;
+    overflow: hidden;
+    background: #00ff00;
+  }
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<script>
+  /*
+   * 受控时钟 + 帧接口的最小桩（S53-A4）。
+   *
+   * `SceneHost.frame()` 走六步：`__filmHost.time(t)` → `film.frame(t)` → `settle(t)` → 谓词 → 双 rAF。
+   * 这里只需要「frame(t) 会重新渲染字幕」这一条：它证明**帧之后覆盖仍然在**（底色框没有被
+   * 一次取帧擦掉）。真实宿主里 `film.frame(t)` 由场景自己实现，字幕覆盖层是订阅方。
+   */
+  window.__frameCalls = [];
+  window.__filmHost = {
+    time(t) {
+      window.__t = t;
+    },
+    settle() {
+      return true;
+    }
+  };
+  window.film = {
+    frame(t) {
+      window.__frameCalls.push(t);
+      if (window.__sub) window.__sub.render(t);
+      return true;
+    }
+  };
+</script>
+</body>
+</html>

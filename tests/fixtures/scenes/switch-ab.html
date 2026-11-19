@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>切片段夹具 · A/B 两个场景片段</title>
+<style>
+  html, body { margin: 0; width: 800px; height: 450px; background: #0f1420; color: #eef2ff;
+    font-family: system-ui, "PingFang SC", "Microsoft YaHei", sans-serif; }
+  #stage { position: absolute; inset: 0; }
+  .scene { position: absolute; inset: 0; }
+  .scene[hidden] { display: none; }
+  .a-title { position: absolute; left: 40px; top: 40px; margin: 0; font-size: 34px; }
+  .a-card { position: absolute; left: 40px; top: 120px; width: 300px; height: 90px; background: #1a2336; }
+  .b-title { position: absolute; left: 60px; top: 60px; margin: 0; font-size: 30px; }
+  .b-note { position: absolute; left: 60px; top: 150px; font-size: 16px; color: #9fb0d0; }
+</style>
+</head>
+<body>
+  <main id="stage">
+    <section id="scene-a" class="scene" data-clip="A">
+      <h1 class="a-title" data-name="A标题">片段A标题</h1>
+      <div class="a-card" data-name="A卡片"></div>
+    </section>
+    <section id="scene-b" class="scene" data-clip="B" hidden>
+      <h1 class="b-title" data-name="B标题">片段B标题</h1>
+      <p class="b-note" data-name="B说明">片段B的说明文字</p>
+    </section>
+  </main>
+  <script>
+    window.showScene = function showScene(which) {
+      const a = document.getElementById('scene-a');
+      const b = document.getElementById('scene-b');
+      if (a) a.hidden = which === 'b';
+      if (b) b.hidden = which !== 'b';
+      return which;
+    };
+    window.currentScene = function currentScene() {
+      const b = document.getElementById('scene-b');
+      return b && !b.hidden ? 'b' : 'a';
+    };
+  </script>
+</body>
+</html>

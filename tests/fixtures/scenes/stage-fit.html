@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>画幅适配夹具 · 16:9 工程放进 9:16 容器</title>
+<style>
+  html, body { margin: 0; width: 540px; height: 960px; background: #000; }
+  #viewport { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    background: #000; overflow: hidden; }
+  /* contain 的 DOM 对照：宽度撑满、按 16:9 定高、在 9:16 容器里垂直居中 */
+  #picture { position: relative; width: 100%; aspect-ratio: 16 / 9; max-height: 100%; background: #12324a; }
+  .layer { position: absolute; }
+  #full { inset: 0; background: rgba(255, 255, 255, 0.04); }
+  #badge { left: 25%; top: 25%; width: 6.25%; height: 5.5556%; background: #ff2d55; }
+</style>
+</head>
+<body>
+  <div id="viewport">
+    <div id="picture" data-stage-w="1920" data-stage-h="1080">
+      <div id="full" class="layer" data-name="整幅"></div>
+      <div id="badge" class="layer" data-name="角标"></div>
+    </div>
+  </div>
+</body>
+</html>

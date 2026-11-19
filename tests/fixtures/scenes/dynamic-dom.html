@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>动态 DOM 夹具 · 每帧重建节点</title>
+<style>
+  html, body { margin: 0; width: 640px; height: 360px; background: #0b1020; color: #eef2ff;
+    font-family: system-ui, "PingFang SC", sans-serif; }
+  .list { position: absolute; left: 24px; top: 24px; }
+  .dyn { padding: 4px 8px; background: #1a2336; border-radius: 6px; margin: 4px 0; }
+</style>
+</head>
+<body>
+  <div id="list" class="list"></div>
+<script>
+(() => {
+  'use strict';
+  const list = document.getElementById('list');
+
+  // 每帧重建全部子节点：结构与顺序不变，文本随 t 变。
+  // 用来证明 at 只依赖结构、不依赖某一帧的内容（t 无关性），
+  // 同时这些节点在静态源里根本不存在 —— 重定位必须拒绝。
+  window.film = {
+    meta: { width: 640, height: 360, duration: 2 },
+    async ready() {
+      document.body.dataset.filmReady = '1';
+      render(0);
+    },
+    async frame(t) {
+      render(t);
+      document.body.dataset.filmFrame = String(t);
+    }
+  };
+
+  function render(t) {
+    const frag = document.createDocumentFragment();
+    for (let i = 0; i < 20; i++) {
+      const d = document.createElement('div');
+      d.className = 'dyn';
+      d.setAttribute('data-i', String(i));
+      d.textContent = 'row ' + i + ' @ ' + t.toFixed(3);
+      frag.appendChild(d);
+    }
+    list.textContent = '';
+    list.appendChild(frag);
+  }
+})();
+</script>
+</body>
+</html>

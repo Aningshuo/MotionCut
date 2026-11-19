@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<title>S64 · Agent 会话证据页</title>
+<style>
+  :root {
+    --bg: #f6f7f9;
+    --panel: #ffffff;
+    --line: #dfe3e8;
+    --text: #1b1f24;
+    --muted: #6b7480;
+    --accent: #1f6feb;
+    --warn: #b45309;
+    --ok: #1a7f37;
+    --chip: #eef2f7;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    height: 100vh;
+    background: var(--bg);
+    color: var(--text);
+    font: 14px/1.55 -apple-system, "PingFang SC", "Segoe UI", Roboto, sans-serif;
+    display: flex;
+    flex-direction: column;
+  }
+  header {
+    padding: 14px 20px 12px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--line);
+  }
+  .title-row { display: flex; align-items: center; gap: 10px; }
+  h1 { font-size: 16px; margin: 0; font-weight: 600; }
+  .badge {
+    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: var(--chip);
+    color: var(--muted);
+    border: 1px solid var(--line);
+  }
+  .badge.fake { background: #fdf6e7; border-color: #f0dcb4; color: var(--warn); }
+  .hint { margin-top: 5px; font-size: 12px; color: var(--muted); }
+  main {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 0;
+    min-height: 0;
+  }
+  aside {
+    border-right: 1px solid var(--line);
+    background: var(--panel);
+    padding: 12px;
+    overflow: hidden;
+  }
+  aside h2, .chat h2 { font-size: 12px; color: var(--muted); font-weight: 600; margin: 0 0 10px; letter-spacing: .04em; text-transform: uppercase; }
+  .session {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 9px 10px;
+    margin-bottom: 8px;
+    background: #fbfcfd;
+  }
+  .session.active { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(31,111,235,.10); }
+  .sid { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; }
+  .meta { font-size: 12px; color: var(--muted); margin-top: 3px; }
+  .chat { display: flex; flex-direction: column; min-height: 0; }
+  .chat-head { padding: 12px 18px; border-bottom: 1px solid var(--line); background: var(--panel); display: flex; align-items: baseline; gap: 10px; }
+  .chat-head .sid { font-size: 13px; font-weight: 600; }
+  .messages { flex: 1; overflow: hidden; padding: 16px 18px; display: flex; flex-direction: column; gap: 10px; }
+  .msg { max-width: 78%; border-radius: 10px; padding: 8px 12px; border: 1px solid var(--line); background: var(--panel); }
+  .msg.assistant { align-self: flex-start; }
+  .msg.user { align-self: flex-end; background: #eef4ff; border-color: #d3e2ff; }
+  .msg .role { font-size: 11px; color: var(--muted); margin-bottom: 3px; }
+  .msg.tool { border-style: dashed; background: #fafbfc; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; }
+  .foot {
+    border-top: 1px solid var(--line);
+    background: var(--panel);
+    padding: 9px 18px;
+    font-size: 12px;
+    color: var(--muted);
+    display: flex;
+    gap: 16px;
+  }
+  .modal-wrap {
+    position: fixed;
+    inset: 0;
+    background: rgba(20, 24, 30, .34);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal {
+    width: 520px;
+    background: var(--panel);
+    border-radius: 12px;
+    border: 1px solid var(--line);
+    box-shadow: 0 18px 50px rgba(15, 23, 42, .22);
+    overflow: hidden;
+  }
+  .modal h3 { margin: 0; padding: 14px 18px; font-size: 15px; border-bottom: 1px solid var(--line); }
+  .modal .body { padding: 16px 18px; }
+  .kv { display: grid; grid-template-columns: 96px 1fr; gap: 6px 12px; font-size: 13px; }
+  .kv dt { color: var(--muted); }
+  .kv dd { margin: 0; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+  .note { margin-top: 12px; font-size: 12px; color: var(--muted); background: #fbfcfd; border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; }
+  .actions { display: flex; justify-content: flex-end; gap: 8px; padding: 12px 18px; border-top: 1px solid var(--line); background: #fbfcfd; }
+  button { font: inherit; padding: 6px 14px; border-radius: 7px; border: 1px solid var(--line); background: #fff; color: var(--text); }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+  <header>
+    <div class="title-row">
+      <h1>OpenCut Studio · Agent 会话</h1>
+      <span class="badge fake" id="badge">证据页 · provider=fake</span>
+      <span class="badge" id="dir">B-SUB1-R31-033 / S64</span>
+    </div>
+    <div class="hint" id="hint">本页渲染真实 ACP 事件；产品当前没有会话面板，这不是产品界面。</div>
+  </header>
+
+  <main>
+    <aside>
+      <h2>会话</h2>
+      <div id="sessions"></div>
+    </aside>
+    <section class="chat">
+      <div class="chat-head">
+        <span class="sid" id="active-sid">—</span>
+        <span class="meta" id="active-meta"></span>
+      </div>
+      <div class="messages" id="messages"></div>
+      <div class="foot" id="foot"></div>
+    </section>
+  </main>
+
+  <div class="modal-wrap hidden" id="perm">
+    <div class="modal">
+      <h3>需要授权</h3>
+      <div class="body">
+        <dl class="kv">
+          <dt>工具</dt><dd id="p-tool">—</dd>
+          <dt>目标</dt><dd id="p-target">—</dd>
+          <dt>默认</dt><dd id="p-default">—</dd>
+          <dt>会话</dt><dd id="p-session">—</dd>
+        </dl>
+        <div class="note" id="p-note"></div>
+      </div>
+      <div class="actions">
+        <button id="p-deny">拒绝</button>
+        <button class="primary" id="p-allow">允许一次</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+  const el = (id) => document.getElementById(id);
+  const esc = (value) => String(value).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+  /**
+   * 会话面板：数据全部来自脚本跑出来的真实 ACP 事件（sessionId / transcript / 事件类型）。
+   * @param {{ sessions: Array<{sessionId: string, events: Array<object>, transcriptText?: string, model?: string, note?: string}>, footer?: string[] }} payload
+   */
+  function renderSession(payload) {
+    const sessions = payload.sessions ?? [];
+    el('sessions').innerHTML = sessions.map((item, index) => `
+      <div class="session${index === 0 ? ' active' : ''}">
+        <div class="sid">${esc(item.sessionId)}</div>
+        <div class="meta">${item.events.length} 个事件${item.model ? ` · ${esc(item.model)}` : ''}</div>
+      </div>
+    `).join('');
+
+    const active = sessions[0];
+    if (!active) return;
+    el('active-sid').textContent = active.sessionId;
+    el('active-meta').textContent = active.note ?? '';
+    const bubbles = [{ role: 'user', text: active.prompt ?? '（来自用例的请求）' }];
+    for (const event of active.events) {
+      if (event.type === 'text') bubbles.push({ role: 'assistant', text: event.text });
+      else if (event.type === 'tool_end') bubbles.push({ role: 'tool', text: `tool_end · ok=${event.ok}` });
+      else bubbles.push({ role: 'tool', text: `${event.type}${event.reason ? ` · ${event.reason}` : ''}` });
+    }
+    /* transcriptText 已经在页脚汇总，这里不再追加一个气泡，免得像是多了一轮回复。 */
+    el('messages').innerHTML = bubbles.map((bubble) => `
+      <div class="msg ${bubble.role}">
+        <div class="role">${bubble.role}</div>
+        <div>${esc(bubble.text)}</div>
+      </div>
+    `).join('');
+    el('foot').innerHTML = (payload.footer ?? []).map((item) => `<span>${esc(item)}</span>`).join('');
+  }
+
+  /**
+   * 授权弹窗：字段来自 B2 真实收到的 permission 请求（工具名、目标、默认决定）。
+   * @param {{tool: string, target: string, defaultDecision: string, sessionId: string, note?: string, footer?: string}} payload
+   */
+  function showPermission(payload) {
+    el('p-tool').textContent = payload.tool;
+    el('p-target').textContent = payload.target;
+    el('p-default').textContent = payload.defaultDecision;
+    el('p-session').textContent = payload.sessionId;
+    el('p-note').textContent = payload.note ?? '';
+    el('perm').classList.remove('hidden');
+  }
+
+  window.__s64 = { renderSession, showPermission };
+</script>
+</body>
+</html>

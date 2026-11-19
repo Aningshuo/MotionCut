@@ -1,0 +1,123 @@
+:root[data-theme='light'] {
+  color-scheme: light;
+  --bg: #f0f1f3;
+  --panel: #fff;
+  --panel-2: #f3f4f5;
+  --surface-0: #fafafa;
+  --well: #f6f7f8;
+  --line: #dfe2e5;
+  --line-soft: #c9ced3;
+  --text: #24282c;
+  --text-dim: #545c65;
+  --text-mute: #626c75;
+  --accent: #007880;
+  --accent-soft: #e3f4f3;
+  --accent-picked: #d9efee;
+  --accent-line: #8fc6c6;
+  --control-bg: #eff1f3;
+  --surface-hover: #e7eaed;
+  --btn-primary-bg: #26373b;
+  --btn-primary-fg: white;
+  --btn-primary-hover-bg: #15272c;
+  --danger: #ac3032;
+  --danger-text: var(--danger);
+  --danger-bg: #fff0ee;
+  --warn: #85590c;
+  --ok: #167143;
+  --tl-lane: #f3f4f5;
+  --tl-row: #e9ecef;
+  --tl-playhead: #24343b;
+  --tl-select: #006e77;
+  --shadow-lg: 0 10px 32px #27323e23, 0 2px 8px #27323e12;
+  --of-bg-app: var(--bg);
+  --of-bg-panel: var(--panel);
+  --of-bg-raised: var(--panel-2);
+  --of-text: var(--text);
+  --of-text-muted: var(--text-dim);
+  --of-text-faint: var(--text-mute);
+  --of-border: var(--line);
+  --of-border-strong: var(--line-soft);
+  --of-accent: var(--accent);
+  --of-accent-soft: var(--accent-soft);
+  --of-picked: var(--accent-picked);
+  --of-field: var(--control-bg);
+  --of-hover: var(--surface-hover);
+  --of-pressed: var(--line-soft);
+}
+
+.theme-options {
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 7px;
+  background: var(--control-bg);
+}
+.theme-options button {
+  padding: 4px 14px;
+  border-radius: 5px;
+  color: var(--text-dim);
+}
+.theme-options button[aria-pressed='true'] { background: var(--panel); color: var(--accent); }
+.theme-options button:focus-visible { outline: 2px solid var(--accent); }
+
+.agent-connection-details { color: var(--text-dim); font-size: 12px; }
+.agent-connection-details summary { cursor: pointer; }
+.agent-connection-details > span { display: block; margin-block-start: 4px; }
+.settings-agent-row { align-items: center; padding-block: 10px; }
+.settings-agent-row .settings-row-label small { display: flex; align-items: center; gap: 6px; }
+.settings-agent-row[data-wired='true'] small::before {
+  content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--ok);
+}
+.agent-visibility { display: flex; align-items: center; padding: 4px; cursor: pointer; }
+.settings-agent-row .agent-visibility input {
+  appearance: none;
+  width: 32px; height: 18px; margin: 0; padding: 2px;
+  border: 1px solid var(--line-soft); border-radius: 12px;
+  background: var(--control-bg); cursor: pointer;
+}
+.agent-visibility input::before {
+  display: block; content: ''; width: 12px; height: 12px; border-radius: 50%;
+  background: var(--text-mute);
+}
+.settings-agent-row .agent-visibility input:checked { background: var(--accent); border-color: var(--accent); }
+.agent-visibility input:checked::before { background: white; transform: translateX(14px); }
+.agent-visibility input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+:root[data-theme='light'] .app[data-ui-polish='r3'] {
+  --ep-hover: var(--surface-hover);
+  --ep-pressed: var(--line-soft);
+  --ep-divider: var(--line);
+  --ep-quiet: var(--text-dim);
+}
+:root[data-theme='light'] .layout { --zone-edge: #cfd4d8; }
+:root[data-theme='light'] .app[data-ui-polish='r3'] .topbar .btn.icon.primary { color: #fff; }
+:root[data-theme='light'] .app[data-ui-polish='r3'] .editor-action-notice {
+  color: var(--text);
+  background: var(--panel);
+  border-color: var(--line);
+  box-shadow: var(--shadow-lg);
+}
+
+/* These surfaces use track-specific colors in the dark editor. Media and clip labels
+   keep their original colors so a change of workspace theme never recolors a frame. */
+:root[data-theme='light'] .app[data-ui-polish='r3'] :is(.tl, .timeline, .tl-ruler, .tl-ruler-head) { background: var(--tl-lane); }
+:root[data-theme='light'] .app[data-ui-polish='r3'] .track-toolbar { background: var(--panel); border-color: var(--line); }
+:root[data-theme='light'] .app[data-ui-polish='r3'] .tl-ruler-track {
+  background-image: repeating-linear-gradient(to right, #b8c0c6 0 1px, transparent 1px var(--tl-major-step)),
+                    repeating-linear-gradient(to right, #c5ccd1 0 1px, transparent 1px var(--tl-minor-step));
+}
+:root[data-theme='light'] .app[data-ui-polish='r3'] .tl-lane { --lane-fill: #f9fafb; }
+:root[data-theme='light'] .app[data-ui-polish='r3'] .tl-lane[data-main-track='true'] { --lane-fill: #eceff1; }
+:root[data-theme='light'] .app[data-ui-polish='r3'] .tl-lane:has(> .tl-lane-clips > .tl-clip.selected) { --lane-row-fill: #e1ecee; }
+:root[data-theme='light'] .app[data-ui-polish='r3'] :is(.tl-tick, .tl-lane-index, .tl-zoom, .grid-size, .tt-timecode, .tt-total, .tt-sep),
+:root[data-theme='light'] .app[data-ui-polish='r3'] .tl-lane-head-track[data-density] :is(.tl-flag, .tl-lane-index),
+:root[data-theme='light'] .app[data-ui-polish='r3'] .track-toolbar .btn.dense.icon { color: var(--text-dim); }
+:root[data-theme='light'] .app[data-ui-polish='r3'] .track-toolbar .btn:hover:not(:disabled) { color: var(--text); background: var(--surface-hover); }
+:root[data-theme='light'] .app[data-ui-polish='r3'] .track-toolbar .btn[aria-pressed='true'],
+:root[data-theme='light'] .app[data-ui-polish='r3'] .tl-lane-head-track[data-density] .tl-flag[data-on='true'] { color: var(--accent); background: var(--accent-picked); }
+:root[data-theme='light'] .app[data-ui-polish='r3'] .tt-gap::before { background: var(--line); }
+:root[data-theme='light'] .app[data-ui-polish='r3'] .tt-zoom-slider::-webkit-slider-runnable-track {
+  background: linear-gradient(to right, var(--accent) var(--zoom-fill), var(--line-soft) var(--zoom-fill));
+}
+:root[data-theme='light'] .app[data-ui-polish='r3'] .tt-zoom-slider::-webkit-slider-thumb { background: var(--accent); }
+.preview-frame iframe, .cl-thumb iframe, .cl-preview-content iframe { color-scheme: dark; }

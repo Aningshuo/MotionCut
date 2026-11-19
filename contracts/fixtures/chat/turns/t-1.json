@@ -1,0 +1,15 @@
+{
+  "turn": {
+    "id": "t-1",
+    "sessionId": "sm48a1b2c3d4e5",
+    "prompt": "做一个开场标题场景",
+    "draftId": "d-1",
+    "state": "applied",
+    "at": "2026-11-13T02:01:00.000Z",
+    "steps": [
+      { "op": "insert", "text": "插入 title 片段（0 – 3.2s）" },
+      { "op": "overrides", "text": "覆盖 title 的 2 处（字号、描边）" },
+      { "op": "set", "text": "设置 title 的 at" }
+    ]
+  }
+}

@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1280, height=720">
+<title>S84 夹具：一个参数可改的场景（主色）</title>
+<style>
+  html, body { margin: 0; width: 1280px; height: 720px; background: #0b0f16; color: #e8edf5; }
+  #root { position: absolute; inset: 0; }
+  #title { position: absolute; left: 96px; top: 72px; margin: 0; font-size: 44px; color: #ffffff; font-weight: 700; }
+  /* 主色参数落在根节点的 CSS 变量上，卡片继承它 —— 应用后画面必须真的变。 */
+  #card { position: absolute; left: 96px; top: 232px; width: 420px; height: 220px; border-radius: 18px; background: var(--accent, #17202c); }
+  #hint { position: absolute; left: 96px; top: 500px; font-size: 16px; color: #6b7c93; }
+</style>
+</head>
+<body>
+<div id="root" data-instance="page-main">
+  <!-- 参数标注：一处一条，discoverControls() 按这些属性生成 params。 -->
+  <div class="motion-decls" data-motion-decls hidden>
+    <i data-motion-param="accent" data-motion-type="color" data-motion-default="#17202c" data-motion-label="主色"></i>
+  </div>
+  <h1 id="title">动效库夹具</h1>
+  <div id="card"></div>
+  <p id="hint">应用模板后：卡片的背景色 = --accent</p>
+</div>
+<script>
+  window.film = {
+    duration: 12,
+    frame(t) {
+      window.__frameAt = t;
+      return true;
+    }
+  };
+</script>
+</body>
+</html>

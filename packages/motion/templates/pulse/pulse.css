@@ -1,0 +1,76 @@
+/*
+ * pulse · 脉冲圆点（S29 种子模板 · S31 改为按时钟 t 定格）
+ *
+ * 参数 → CSS 自定义属性：--duration(ms) / --easing / --color / --badge(1|0)
+ * 数字一律按「裸数字 × 单位」消费（params.mjs 只写裸数字），所以这里用 calc()。
+ *
+ * ## 时间口径（S31）
+ *
+ * 画面是 `--motion-t`（毫秒）的**唯一**函数：
+ * `animation-play-state: paused` 让动画永不自己走，相位只由
+ * `animation-delay: -t` 决定——`t` 与 `t+period` 天然同相，暂停/导出按帧取图都一致。
+ * 没设 `--motion-t` 时按 0 处理（循环类模板显示 0 相位即可，不会空白）。
+ * 墙钟检查：`node packages/motion/wall-clock-check.mjs`。
+ */
+html, body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: #070b14;
+}
+
+.motion-pulse {
+  position: relative;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  background: radial-gradient(circle at 30% 25%, #14213a 0%, #070b14 70%);
+  color: #e5e7eb;
+  font: 600 18px/1.2 system-ui, -apple-system, "PingFang SC", Arial, sans-serif;
+  overflow: hidden;
+}
+
+.pulse-core {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: var(--color, #3b82f6);
+  box-shadow: 0 0 0 6px color-mix(in srgb, var(--color, #3b82f6) 22%, transparent);
+  animation: pulse-ring calc(var(--duration, 1200) * 1ms) var(--easing, ease-out) infinite;
+  /* 顺序要紧：animation 简写会把 delay / play-state 重置成初始值，所以这两行必须在它之后。 */
+  animation-play-state: paused;
+  animation-delay: calc(-1 * var(--motion-t, 0) * 1ms);
+}
+
+@keyframes pulse-ring {
+  0% { transform: scale(0.62); opacity: 0.55; }
+  50% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(0.62); opacity: 0.55; }
+}
+
+.pulse-dot {
+  position: absolute;
+  left: 16px;
+  bottom: 16px;
+  opacity: 0.9;
+}
+
+.pulse-label {
+  letter-spacing: 0.5px;
+}
+
+.pulse-badge {
+  /* 布尔开关：1 显示 / 0 隐藏（params.mjs 把 boolean 写成 1|0） */
+  opacity: var(--badge, 1);
+  padding: 2px 10px;
+  border: 1px solid color-mix(in srgb, var(--color, #3b82f6) 65%, #fff);
+  border-radius: 999px;
+  color: color-mix(in srgb, var(--color, #3b82f6) 70%, #fff);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.6px;
+}

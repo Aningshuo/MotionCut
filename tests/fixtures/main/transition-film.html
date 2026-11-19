@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1280, height=720">
+<title>M25 夹具：V1 两处转场（t-a→t-b 单边 0.5s；t-c→t-d 双边 1.0s）</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #000; }
+  section { position: relative; }
+  video { position: absolute; }
+</style>
+</head>
+<body>
+<!--
+  转场在本方言里没有独立实体：重叠 + 上层片段的 fade 就是交叉溶解。
+  t-a [0,2)   t-b [1.5,4)   → 重叠 0.5s，上层 t-b 淡入（单边，规范写法）
+  t-c [6,8.5) t-d [7.5,10)  → 重叠 1.0s，两侧都淡（双边，兼容写法：中点会压暗）
+  素材：a-light 中灰底 + 白方块（左）；b-dark 深灰底 + 白方块（右）——中性灰把色彩矩阵差异排除掉，
+  「预览 vs 导出」量的才是合成，不是 YUV→RGB 的取整。
+-->
+<section id="v1">
+  <video id="t-a" src="assets/a-light.mp4#t=0,2" at="0" muted style="left: 0px; top: 0px; width: 1280px; height: 720px"></video>
+  <video id="t-b" src="assets/b-dark.mp4#t=0.5,3" at="1.5" muted overrides='[{"fade":[0.5,0]}]' style="left: 0px; top: 0px; width: 1280px; height: 720px"></video>
+  <video id="t-c" src="assets/a-light.mp4#t=0,2.5" at="6" muted overrides='[{"fade":[0,1]}]' style="left: 0px; top: 0px; width: 1280px; height: 720px"></video>
+  <video id="t-d" src="assets/b-dark.mp4#t=0.5,3" at="7.5" muted overrides='[{"fade":[1,0]}]' style="left: 0px; top: 0px; width: 1280px; height: 720px"></video>
+</section>
+</body>
+</html>

@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="motion-clock" content="--motion-t;unit=ms">
+<title>lower-third · 人名条</title>
+<!--
+  S29 种子模板 3/3 · kind=saved
+  参数：headline / subline（两条文本）· width(number→宽度百分比) · tint(color) · weight(enum→font-weight)
+  资产：lower-third.css + stripe.svg（相对路径，无网络）。
+
+  S31：入场（条子上浮 + 装饰条生长）改为按 `--motion-t`（毫秒）定格（暂停 + 负延迟）。
+-->
+<link rel="stylesheet" href="./lower-third.css">
+</head>
+<body>
+<div class="motion-lower-third" data-role="root">
+  <div class="lt-bar" data-role="bar">
+    <img class="lt-stripe" src="./stripe.svg" alt="" width="120" height="8">
+    <span class="lt-headline" data-role="headline" data-motion-param="headline" data-motion-type="string" data-motion-apply="text" data-motion-maxlength="40" data-motion-label="主标题">今晚 8 点直播</span>
+    <span class="lt-subline" data-role="subline" data-motion-param="subline" data-motion-type="string" data-motion-apply="text" data-motion-maxlength="40" data-motion-label="副标题">阿宁说 · 第 12 期</span>
+  </div>
+</div>
+<!-- 参数标注（S32 / SC-010）：css-var 类集中在这个不渲染的声明区；必须与 seed.mjs 手写 schema 逐字段相等。 -->
+<div class="motion-decls" data-motion-decls hidden>
+  <i data-motion-param="width" data-motion-type="number" data-motion-min="20" data-motion-max="90" data-motion-step="5" data-motion-default="55" data-motion-label="宽度（%）"></i>
+  <i data-motion-param="tint" data-motion-type="color" data-motion-default="#f59e0b" data-motion-label="强调色"></i>
+  <i data-motion-param="weight" data-motion-type="enum" data-motion-options="400,600,700" data-motion-default="700" data-motion-label="字重"></i>
+</div>
+</body>
+</html>

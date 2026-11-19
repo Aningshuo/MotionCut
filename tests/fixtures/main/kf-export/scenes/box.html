@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>kf 夹具场景</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #101820; }
+  #box {
+    position: absolute;
+    left: 60px;
+    top: 60px;
+    width: 420px;
+    height: 240px;
+    background: #f6f4ed;
+    color: #101820;
+    font: 700 48px/240px system-ui, sans-serif;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+<div id="box">KF</div>
+<script>
+(() => {
+  'use strict';
+  // 舞台要求每个 page 片段提供 window.film.frame(t)；摆放与相位都不在这里做
+  //（相位由舞台每帧写进来的 --motion-t 决定，关键帧是 CSS 那边的 `paused + 负延迟`）。
+  window.film = {
+    meta: { width: 1280, height: 720, duration: 8 },
+    async ready() { document.body.dataset.filmReady = '1'; },
+    async frame(t) { document.body.dataset.filmFrame = String(t); }
+  };
+})();
+</script>
+</body>
+</html>

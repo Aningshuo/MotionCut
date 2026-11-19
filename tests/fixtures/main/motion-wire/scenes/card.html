@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>M27 场景：动效参数的落点</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: #0b0f14; font-family: -apple-system, "PingFang SC", Arial, sans-serif; }
+  .card {
+    position: absolute; left: 120px; top: 120px; width: 1040px; height: 480px;
+    border-radius: 24px; padding: 40px; background: #101a24;
+    border: 3px solid var(--accent, #3b82f6);
+    box-shadow: 0 0 0 calc(var(--speed, 1) * 4px) rgba(59, 130, 246, 0.28);
+  }
+  h1 { margin: 0 0 14px; font-size: 56px; color: #fff; }
+  p { margin: 0; font-size: 20px; color: #94a3b8; }
+</style>
+</head>
+<body>
+<div class="card" id="card" data-instance="m-card">
+  <h1 id="title">默认标题</h1>
+  <p id="note">参数会落到 --accent / --speed 与标题文本上</p>
+</div>
+<script type="module">
+  window.film = {
+    duration: 6,
+    ready() { return Promise.resolve(); },
+    frame() { return Promise.resolve(); }
+  };
+</script>
+</body>
+</html>

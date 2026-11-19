@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>覆盖帧序夹具 · 先动画后覆盖</title>
+<style>
+  html, body { margin: 0; width: 640px; height: 360px; background: #0b1020; color: #eef2ff;
+    font-family: system-ui, "PingFang SC", sans-serif; overflow: hidden; }
+  #pulse { position: absolute; left: 40px; top: 60px; width: 200px; height: 120px;
+    background: #ff2d55; border-radius: 12px; opacity: 1; }
+  #caption { position: absolute; left: 40px; top: 220px; font-size: 24px; }
+</style>
+</head>
+<body>
+  <div id="pulse"></div>
+  <div id="caption">t=0.000</div>
+<script>
+(() => {
+  'use strict';
+  const pulse = document.getElementById('pulse');
+  const caption = document.getElementById('caption');
+
+  // 只由 t 决定，不读上一帧状态：这样「动画有没有把覆盖擦掉」是可判定的。
+  window.film = {
+    meta: { width: 640, height: 360, duration: 2 },
+    async ready() {
+      document.body.dataset.filmReady = '1';
+    },
+    async frame(t) {
+      pulse.style.opacity = String(0.2 + 0.3 * t);
+      caption.textContent = 't=' + t.toFixed(3);
+      document.body.dataset.filmFrame = String(t);
+    }
+  };
+})();
+</script>
+</body>
+</html>

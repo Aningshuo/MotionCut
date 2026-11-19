@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>sub1 webgl scene</title>
+<style>
+  html, body { margin: 0; padding: 0; width: 640px; height: 360px; overflow: hidden; background: #0a0d14; }
+  #cv { display: block; width: 640px; height: 360px; }
+</style>
+</head>
+<body>
+<canvas id="cv" width="640" height="360"></canvas>
+<script>
+(() => {
+  'use strict';
+  const canvas = document.getElementById('cv');
+  const gl = canvas.getContext('webgl', {
+    alpha: false, antialias: false, depth: false, stencil: false,
+    preserveDrawingBuffer: true, powerPreference: 'low-power'
+  });
+
+  if (!gl) {
+    // 无 WebGL 时显式失败，宿主会映射为 RESOURCE_FAILED，而不是静默白屏。
+    window.film = {
+      meta: { width: 640, height: 360, duration: 2 },
+      async ready() { throw new Error('webgl unavailable'); },
+      async frame() { throw new Error('webgl unavailable'); }
+    };
+    return;
+  }
+
+  const VS = [
+    'attribute vec2 aPos;',
+    'void main() { gl_Position = vec4(aPos, 0.0, 1.0); }'
+  ].join('\n');
+
+  const FS = [
+    'precision highp float;',
+    'uniform float uT;',
+    'uniform vec2 uRes;',
+    'void main() {',
+    '  vec2 uv = gl_FragCoord.xy / uRes;',
+    '  float p = clamp(uT / 2.0, 0.0, 1.0);',
+    '  vec3 bg = vec3(0.035, 0.05, 0.09);',
+    '  vec3 col = bg;',
+    '  vec2 c = vec2(0.25 + 0.5 * p, 0.5);',
+    '  float d = length((uv - c) * vec2(uRes.x / uRes.y, 1.0));',
+    '  float ring = 1.0 - smoothstep(0.010, 0.016, abs(d - 0.22));',
+    '  vec3 ringColor = vec3(0.16 + 0.20 * p, 0.62 - 0.10 * p, 0.58);',
+    '  col = mix(col, ringColor, ring);',
+    '  float haloSel = step(abs(uv.y - (0.15 + 0.55 * p)), 0.05);',
+    '  float haloX = step(abs(uv.x - 0.78), 0.16);',
+    '  col = mix(col, vec3(0.85, 0.32, 0.16), haloSel * haloX);',
+    '  float bar = step(0.86, uv.x) * step(uv.x, 0.94) * step(uv.y, 0.10 + 0.70 * p);',
+    '  col = mix(col, vec3(0.18, 0.55, 0.85), bar);',
+    '  gl_FragColor = vec4(col, 1.0);',
+    '}'
+  ].join('\n');
+
+  function compile(type, src) {
+    const sh = gl.createShader(type);
+    gl.shaderSource(sh, src);
+    gl.compileShader(sh);
+    if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) {
+      throw new Error('shader compile failed: ' + gl.getShaderInfoLog(sh));
+    }
+    return sh;
+  }
+
+  const prog = gl.createProgram();
+  gl.attachShader(prog, compile(gl.VERTEX_SHADER, VS));
+  gl.attachShader(prog, compile(gl.FRAGMENT_SHADER, FS));
+  gl.linkProgram(prog);
+  if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) {
+    throw new Error('program link failed: ' + gl.getProgramInfoLog(prog));
+  }
+  gl.useProgram(prog);
+
+  const buf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+  const loc = gl.getAttribLocation(prog, 'aPos');
+  gl.enableVertexAttribArray(loc);
+  gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+
+  const uT = gl.getUniformLocation(prog, 'uT');
+  const uRes = gl.getUniformLocation(prog, 'uRes');
+
+  window.film = {
+    meta: { width: 640, height: 360, duration: 2 },
+    async ready() {
+      gl.viewport(0, 0, 640, 360);
+      gl.uniform2f(uRes, 640, 360);
+      document.body.dataset.filmReady = '1';
+    },
+    async frame(t) {
+      const tt = Math.max(0, Math.min(t, 2));
+      gl.viewport(0, 0, 640, 360);
+      gl.uniform2f(uRes, 640, 360);
+      gl.uniform1f(uT, tt);
+      gl.drawArrays(gl.TRIANGLES, 0, 3);
+      gl.finish();
+      document.body.dataset.filmFrame = String(t);
+    }
+  };
+})();
+</script>
+</body>
+</html>

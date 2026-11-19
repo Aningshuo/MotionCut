@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>检查器效果夹具 · S51</title>
+<style>
+  /* 纯绿底（0,255,0）：ink = 非绿像素，提取 bbox 时不用猜背景色。
+     舞台就是 1280×720、顶在 (0,0)，client 坐标 == 舞台坐标。 */
+  html, body { margin: 0; width: 1280px; height: 720px; background: #00ff00; overflow: hidden;
+    font-family: system-ui, "PingFang SC", "Microsoft YaHei", sans-serif; }
+  #stage { position: absolute; inset: 0; background: #00ff00; }
+  .card { position: absolute; width: 420px; height: 240px; background: #ff00ff; color: #ffffff;
+    font-size: 44px; line-height: 1.2; display: flex; align-items: center; justify-content: center;
+    font-weight: 700; }
+  #fx-card { left: 180px; top: 140px; }
+  #fx-card-2 { left: 680px; top: 380px; background: #00ffff; }
+</style>
+</head>
+<body>
+  <div id="stage">
+    <div class="card" id="fx-card" data-at data-kind="shape" data-name="效果卡">效果 EFFECT</div>
+    <div class="card" id="fx-card-2" data-at data-kind="shape" data-name="第二张">第二张</div>
+  </div>
+<script>
+(() => {
+  'use strict';
+  /* 场景只按 t 画、**不碰内联样式**：覆盖（filter / border-radius / mix-blend-mode /
+     box-shadow / backdrop-filter）由 apply-overrides 在 frame **之后**写上去，
+     所以「预览截图」与「frame() 后再应用覆盖」读的是同一份 DOM（S51-A5）。 */
+  window.film = {
+    meta: { width: 1280, height: 720, duration: 2 },
+    async ready() {
+      document.body.dataset.filmReady = '1';
+    },
+    async frame(t) {
+      document.body.dataset.filmFrame = Number(t).toFixed(3);
+    }
+  };
+})();
+</script>
+</body>
+</html>

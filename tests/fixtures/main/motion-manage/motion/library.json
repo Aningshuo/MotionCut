@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "entries": [
+    {
+      "id": "motion_basecard",
+      "name": "base-card",
+      "kind": "component",
+      "sourcePath": "scenes/card.html",
+      "sourceHash": "5596ed1b4a3a92eea0ff673e952d5c39dc72d1e9d798cf5b5029a9cdf67cc4d6",
+      "assets": [],
+      "params": {
+        "speed": {
+          "type": "number",
+          "min": 0.5,
+          "max": 3,
+          "step": 0.1,
+          "default": 1,
+          "label": "速度"
+        },
+        "accent": {
+          "type": "color",
+          "default": "#3b82f6",
+          "label": "强调色"
+        },
+        "title": {
+          "type": "string",
+          "default": "模板标题",
+          "label": "标题文本",
+          "apply": {
+            "kind": "text",
+            "selector": "h1"
+          }
+        }
+      },
+      "version": 1,
+      "createdAt": "2026-11-01T00:00:00.000Z",
+      "history": [
+        {
+          "sourceHash": "5596ed1b4a3a92eea0ff673e952d5c39dc72d1e9d798cf5b5029a9cdf67cc4d6",
+          "version": 1,
+          "snapshot": "motion/versions/motion_basecard/5596ed1b4a3a.html"
+        }
+      ]
+    }
+  ]
+}
