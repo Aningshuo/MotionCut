@@ -1,0 +1,3 @@
+scripts/ffmpeg/*.sh text eol=lf
+scripts/ffmpeg/*.tsv text eol=lf
+scripts/ffmpeg/SOURCE_SHA256SUMS text eol=lf

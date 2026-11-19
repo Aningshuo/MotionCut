@@ -1,0 +1,206 @@
+name: Windows x64 release
+
+on:
+  workflow_dispatch:
+    inputs:
+      media_only:
+        description: Validate the portable media tools without packaging the app
+        type: boolean
+        default: false
+      publish:
+        description: Upload verified Windows assets to the existing release
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: windows-release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  RELEASE_TAG: v0.3.2-r2
+  INSTALLER: MotionCut-0.3.2-r2-windows-x64-setup.exe
+  MEDIA_SOURCE: MotionCut-FFmpeg-8.1.3-windows-x64-corresponding-source.zip
+  WINDOWS_CHECKSUMS: SHA256SUMS-windows-x64.txt
+
+jobs:
+  media:
+    name: Build Windows FFmpeg from pinned sources
+    runs-on: windows-2025
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Restore matching FFmpeg build
+        id: media_cache
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: dist/windows-media
+          key: motioncut-ucrt64-v1-${{ hashFiles('scripts/ffmpeg/build-windows.sh', 'scripts/ffmpeg/SOURCE_SHA256SUMS', 'scripts/ffmpeg/SOURCE_URLS.tsv', 'scripts/ffmpeg/windows-source-README.md') }}
+      - name: Set up the native UCRT64 toolchain
+        if: steps.media_cache.outputs.cache-hit != 'true'
+        uses: msys2/setup-msys2@ec48f7c5447b3140e2b088413ae3a55687bccb6e
+        with:
+          msystem: UCRT64
+          update: true
+          install: >-
+            base-devel curl zip
+            mingw-w64-ucrt-x86_64-toolchain
+            mingw-w64-ucrt-x86_64-cmake
+            mingw-w64-ucrt-x86_64-ninja
+            mingw-w64-ucrt-x86_64-meson
+            mingw-w64-ucrt-x86_64-nasm
+            mingw-w64-ucrt-x86_64-pkgconf
+      - name: Compile and collect matching source
+        if: steps.media_cache.outputs.cache-hit != 'true'
+        shell: msys2 {0}
+        run: |
+          set -euo pipefail
+          sources=$(mktemp -d /tmp/motioncut-win-sources.XXXXXX)
+          work=$(mktemp -d /tmp/motioncut-win-build.XXXXXX)
+          mkdir -p dist/windows-media
+          curl --fail --location --retry 3 \
+            "https://github.com/Aningshuo/MotionCut/releases/download/$RELEASE_TAG/MotionCut-FFmpeg-8.1.3-corresponding-source.tar.gz" \
+            -o "$sources/upstream.tar.gz"
+          tar -xf "$sources/upstream.tar.gz" -C "$sources"
+          archives="$sources/MotionCut-FFmpeg-8.1.3/archives"
+          project_root="$PWD"
+          (cd "$archives" && sha256sum -c "$project_root/scripts/ffmpeg/SOURCE_SHA256SUMS")
+          bash scripts/ffmpeg/build-windows.sh "$archives" "$work"
+          cp -r "$work/bin" "$work/notices" dist/windows-media/
+          cp "$work/$MEDIA_SOURCE" dist/windows-media/
+      - name: Check portable tools on Windows
+        shell: pwsh
+        run: |
+          $ffmpeg = Join-Path $PWD 'dist/windows-media/bin/ffmpeg.exe'
+          $ffprobe = Join-Path $PWD 'dist/windows-media/bin/ffprobe.exe'
+          & $ffmpeg -hide_banner -version
+          if ($LASTEXITCODE -ne 0) { throw 'FFmpeg did not start natively' }
+          & $ffprobe -hide_banner -version
+          if ($LASTEXITCODE -ne 0) { throw 'ffprobe did not start natively' }
+          $filters = & $ffmpeg -hide_banner -filters | Out-String
+          if ($filters -notmatch '(?m)\bsubtitles\s+V->V') { throw 'libass subtitles filter is missing' }
+          $decoders = & $ffmpeg -hide_banner -decoders | Out-String
+          if ($decoders -notmatch '(?m)\bpng\s+PNG') { throw 'PNG decoder is missing' }
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: windows-media
+          path: dist/windows-media/
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 7
+
+  installer:
+    name: Install Windows EXE and verify real exports
+    needs: media
+    if: "!inputs.media_only"
+    runs-on: windows-2025
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          architecture: x64
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: windows-media
+          path: ${{ runner.temp }}\motioncut-media
+      - name: Install packaging tools
+        shell: pwsh
+        run: |
+          npm install --global pnpm@9.15.9
+          if ($LASTEXITCODE -ne 0) { throw 'pnpm install failed' }
+          $nsis = Join-Path ${env:ProgramFiles(x86)} 'NSIS/makensis.exe'
+          if (-not (Test-Path $nsis)) {
+            choco install nsis -y --no-progress
+            if ($LASTEXITCODE -ne 0) { throw 'NSIS install failed' }
+          }
+          if (-not (Test-Path $nsis)) { throw 'makensis.exe was not found' }
+          "MOTIONCUT_MAKENSIS=$nsis" >> $env:GITHUB_ENV
+          $playwright = Join-Path $env:RUNNER_TEMP 'motioncut-playwright'
+          "PLAYWRIGHT_BROWSERS_PATH=$playwright" >> $env:GITHUB_ENV
+      - name: Build Electron renderer and install its x64 runtimes
+        shell: pwsh
+        run: |
+          pnpm install --frozen-lockfile
+          if ($LASTEXITCODE -ne 0) { throw 'Workspace install failed' }
+          pnpm exec electron --version
+          if ($LASTEXITCODE -ne 0) { throw 'Electron download failed' }
+          pnpm exec playwright install chromium-headless-shell
+          if ($LASTEXITCODE -ne 0) { throw 'Chromium download failed' }
+          pnpm build:ui
+          if ($LASTEXITCODE -ne 0) { throw 'Renderer build failed' }
+      - name: Build the Windows installer
+        shell: pwsh
+        run: |
+          $media = Join-Path $env:RUNNER_TEMP 'motioncut-media'
+          $env:OPENCUT_FFMPEG = Join-Path $media 'bin/ffmpeg.exe'
+          $env:OPENCUT_FFPROBE = Join-Path $media 'bin/ffprobe.exe'
+          $env:MOTIONCUT_MEDIA_NOTICES = Join-Path $media 'notices'
+          node scripts/windows/package-desktop.mjs
+      - name: Verify native installation and export
+        shell: pwsh
+        run: node scripts/windows/smoke-installed.mjs "dist/$env:INSTALLER"
+      - name: Collect only verified release files
+        shell: pwsh
+        run: |
+          $output = New-Item -ItemType Directory -Force 'dist/windows-release-files'
+          $media = Join-Path $env:RUNNER_TEMP 'motioncut-media'
+          Copy-Item ("dist/" + $env:INSTALLER) $output
+          Copy-Item (Join-Path $media $env:MEDIA_SOURCE) $output
+          $lines = @($env:INSTALLER, $env:MEDIA_SOURCE) | ForEach-Object {
+            $hash = (Get-FileHash (Join-Path $output $_) -Algorithm SHA256).Hash.ToLowerInvariant()
+            "$hash  $_"
+          }
+          [IO.File]::WriteAllText((Join-Path $output $env:WINDOWS_CHECKSUMS), ($lines -join "`n") + "`n")
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: verified-windows-release
+          path: dist/windows-release-files/
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 7
+
+  publish:
+    name: Publish verified Windows assets
+    needs: installer
+    if: inputs.publish && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: verified-windows-release
+          path: payload
+      - name: Verify and upload files to the existing tag
+        shell: bash
+        working-directory: payload
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          sha256sum -c "$WINDOWS_CHECKSUMS"
+          for name in "$MEDIA_SOURCE" "$WINDOWS_CHECKSUMS" "$INSTALLER"; do
+            expected="sha256:$(sha256sum "$name" | cut -d ' ' -f1)"
+            get_asset() {
+              gh api "repos/$GITHUB_REPOSITORY/releases/tags/$RELEASE_TAG" |
+                jq -r --arg name "$name" '.assets[] | select(.name == $name) | .digest'
+            }
+            uploaded=$(get_asset)
+            if [[ -z "$uploaded" ]]; then
+              gh release upload "$RELEASE_TAG" "$name" --repo "$GITHUB_REPOSITORY"
+              uploaded=$(get_asset)
+            fi
+            if [[ "$uploaded" != "$expected" ]]; then
+              echo "Remote digest mismatch for $name" >&2
+              exit 1
+            fi
+          done
