@@ -131,6 +131,12 @@ async function checkTitleBar(page, selector) {
   const dragRegion = header.getByTestId('window-drag-region');
   await dragRegion.waitFor({ state: 'visible', timeout: 15_000 });
   assert.equal(await dragRegion.evaluate((element) => getComputedStyle(element).getPropertyValue('-webkit-app-region')), 'drag');
+  if (process.env.MOTIONCUT_UI_ICON) {
+    const logo = header.locator('img[data-testid="brand-logo"]');
+    await logo.waitFor({ state: 'visible', timeout: 15_000 });
+    const handle = await logo.elementHandle();
+    await page.waitForFunction((image) => image instanceof HTMLImageElement && image.naturalWidth > 0, handle);
+  }
 }
 
 /** @param {number} pid @param {NodeJS.Signals} signal */

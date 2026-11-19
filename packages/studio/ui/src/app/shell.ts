@@ -3,6 +3,7 @@ import type { FormEvent, ReactNode } from 'react';
 
 import { ApiError, createStudioProject, getSettings, listProjectsWithRecent, openProject } from './api';
 import { editorIcon } from './editor-icons';
+import { motionCutMark } from './motioncut-mark';
 import { rememberStudioTheme } from './studio-theme';
 import { TabBar, tabsApi, useTabs } from './tabs';
 import type { RecentProjectItem } from './types';
@@ -147,7 +148,7 @@ export function ElectronShell(): ReactNode {
 
   return h('div', { className: 'app shell-app project-home' },
     h('header', { className: 'project-home-masthead' },
-      h('span', { className: 'project-home-logo', 'aria-hidden': true }, editorIcon('media-library', 23)),
+      motionCutMark('project-home-logo'),
       h('span', null, 'MotionCut'),
       tabBar,
       h('div', { className: 'window-drag-region', 'data-testid': 'window-drag-region', 'aria-hidden': true })),

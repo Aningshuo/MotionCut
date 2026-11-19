@@ -90,10 +90,26 @@ jobs:
             cp "$media/notices/ffmpeg/COPYING.GPLv2" "$media/notices/"
           fi
           grep -F "/$MEDIA_SOURCE" "$media/notices/MEDIA-NOTICE.md"
-          if [[ -f "$resources/MotionCut.icns" ]]; then
-            cp "$resources/MotionCut.icns" "$media/"
-            printf 'MOTIONCUT_MAC_ICON=%s/MotionCut.icns\n' "$media" >> "$GITHUB_ENV"
+          # The official Apple Silicon image carries the approved brand artwork.
+          # Keep it out of the MIT source tree and use the same mark on both installers.
+          if [[ "$ARCH" == x64 ]]; then
+            hdiutil detach "$mount"
+            brand_image="$RUNNER_TEMP/motioncut-brand-image.dmg"
+            curl --fail --location --retry 3 \
+              "https://github.com/$GITHUB_REPOSITORY/releases/download/$RELEASE_TAG/MotionCut-0.3.2-r2-macos-arm64-bundled.dmg" \
+              -o "$brand_image"
+            printf '%s  %s\n' 'ade9cd0220641d54ba54f52737ff3ad6159e1afaeb4c9701259ade7fccfdf4f8' "$brand_image" |
+              shasum -a 256 -c -
+            hdiutil attach "$brand_image" -readonly -nobrowse -noautoopen -mountpoint "$mount"
           fi
+          cp "$resources/MotionCut.icns" "$media/"
+          cp "$resources/app/packages/studio/ui/dist/assets/motioncut-icon-C9-UPY__.png" "$media/MotionCut.png"
+          (
+            cd "$media"
+            printf '%s\n' '152d024173aeb8c552a6a214782eb7070ddf98f1590c83854261e235da514147  MotionCut.icns' \
+              '7a7297dfad01269ab1b7668aa942da52411fe17d227166ab1c40c2cc0c036994  MotionCut.png' | shasum -a 256 -c -
+          )
+          printf 'MOTIONCUT_MAC_ICON=%s/MotionCut.icns\nMOTIONCUT_UI_ICON=%s/MotionCut.png\n' "$media" "$media" >> "$GITHUB_ENV"
           hdiutil detach "$mount"
           trap - EXIT
           for tool in ffmpeg ffprobe; do

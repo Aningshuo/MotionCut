@@ -19,6 +19,7 @@ import { subtitleLineStep } from '../../../../film-core/subtitle-layout.mjs';
 import { planRangeInputs } from '../../../../film-core/export-range.mjs';
 import { parseSizeArg } from '../../../../render/delivery-size.mjs';
 import { estimateDeliveryBytes, formatDeliveryEstimate } from '../../../shared/delivery-bytes.mjs';
+import { motionCutMark } from './motioncut-mark';
 import { getSubtitlePreset, listSubtitlePresets } from '../../../../layers/subtitle-presets.mjs';
 import { parseCssColor } from '../../../../layers/subtitle-style.mjs';
 import { mountTimelineGesture } from '../../../../layers/timeline-gesture.mjs';
@@ -344,11 +345,7 @@ export function TopBar(props: TopBarProps): ReactNode {
         ? { className: 'brand', 'aria-label': 'MotionCut' }
         : { className: 'brand project-home-link', type: 'button', 'aria-label': '项目首页',
             'data-testid': 'project-home-link', 'data-editor-hint': '返回项目首页', onClick: props.onProjectHome },
-      h('span', {
-        className: 'brand-logo',
-        'aria-hidden': true,
-        'data-testid': 'brand-logo',
-      }, editorIcon('media-library', 23)),
+      motionCutMark('brand-logo'),
     ),
     h(
       'div',

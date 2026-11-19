@@ -35,3 +35,9 @@
     top: 40px;
   }
 }
+
+@media (max-width: 520px) {
+  :root.motioncut-mac-shell .app > .topbar .editor-action-label {
+    display: none;
+  }
+}

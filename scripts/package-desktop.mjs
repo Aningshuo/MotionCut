@@ -727,13 +727,22 @@ async function main() {
     requireMachO(releaseTools.ffmpeg, 'FFmpeg', machoArch);
     requireMachO(releaseTools.ffprobe, 'ffprobe', machoArch);
   }
+  const brandedUiIcon = isRelease ? process.env.MOTIONCUT_UI_ICON : undefined;
+  if (brandedUiIcon && (!isAbsolute(brandedUiIcon) || !statSync(brandedUiIcon, { throwIfNoEntry: false })?.isFile())) {
+    throw new Error('MOTIONCUT_UI_ICON 必须指向官方顶栏图标文件的绝对路径。');
+  }
   log('构建 UI（vite build）');
   const ui = spawnSync(
     process.execPath,
     ['node_modules/vite/bin/vite.js', 'build', '--config', 'packages/studio/ui/vite.config.mjs'],
-    { cwd: REPO, stdio: 'inherit' },
+    {
+      cwd: REPO,
+      stdio: 'inherit',
+      env: { ...process.env, VITE_MOTIONCUT_BRAND_URL: brandedUiIcon ? '/assets/motioncut-brand.png' : '' },
+    },
   );
   if (ui.status !== 0) throw new Error(`UI 构建失败 exit=${String(ui.status)}`);
+  if (brandedUiIcon) cpSync(brandedUiIcon, join(REPO, 'packages/studio/ui/dist/assets/motioncut-brand.png'));
 
   ensureDir(outRoot, { label: 'package out' });
   if (isRelease) ensureDir(DIST, { label: 'package dist' });
