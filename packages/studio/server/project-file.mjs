@@ -19,6 +19,8 @@
  * 符号链接逃逸同样拒绝。越界统一 `E_PATH_ESCAPE`。
  */
 
+export { isInside } from '../../cli/paths.mjs';
+
 export const PROJECT_FILE_VERSION = '1.0.0';
 
 /** 只服务「看一眼」的类型：音频/视频/图片/文本。别的类型照样能取，只是 content-type 退成 octet-stream。 */
@@ -93,15 +95,4 @@ export function checkRelPath(raw) {
     }
   }
   return { ok: true, rel };
-}
-
-/**
- * 目标是否在根内（都是绝对路径；纯字符串判定，调用方负责先 realpath）。
- * @param {string} root
- * @param {string} target
- */
-export function isInside(root, target) {
-  if (root === target) return true;
-  const base = root.endsWith('/') ? root : `${root}/`;
-  return target.startsWith(base);
 }
