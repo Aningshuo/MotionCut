@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict';
 import { spawn, spawnSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
-import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, realpath, rm, writeFile } from 'node:fs/promises';
 import { createServer } from 'node:net';
 import { tmpdir } from 'node:os';
 import { isAbsolute, join, relative, resolve, sep } from 'node:path';
@@ -108,12 +108,14 @@ async function exportFilm(base, input) {
  * @param {string} kind
  * @param {string} project
  */
-function artifactPath(job, kind, project) {
+async function artifactPath(job, kind, project) {
   const output = job.artifacts?.find((artifact) => artifact.kind === kind);
   assert.ok(output && output.bytes > 100, `Missing nonempty ${kind} export artifact`);
-  const rel = relative(project, output.path);
+  // The Windows runner may use an 8.3 alias for TEMP while the application reports the long path.
+  const [actualProject, actualOutput] = await Promise.all([realpath(project), realpath(output.path)]);
+  const rel = relative(actualProject, actualOutput);
   assert.ok(rel && rel !== '..' && !rel.startsWith(`..${sep}`) && !isAbsolute(rel));
-  return output.path;
+  return actualOutput;
 }
 
 async function main() {
@@ -216,10 +218,10 @@ async function main() {
       projectId: project.projectId, outPath: join(fixture.dir, '字幕 烧录.mp4'),
       subtitleBurn: true, subtitleSrc: 'assets/take-01.mp4',
     });
-    const plainMp4 = artifactPath(ordinary, 'master', fixture.dir);
-    const masterMp4 = artifactPath(burned, 'master', fixture.dir);
-    const subbedMp4 = artifactPath(burned, 'subbed', fixture.dir);
-    const emittedCaptions = await readFile(artifactPath(burned, 'vtt', fixture.dir), 'utf8');
+    const plainMp4 = await artifactPath(ordinary, 'master', fixture.dir);
+    const masterMp4 = await artifactPath(burned, 'master', fixture.dir);
+    const subbedMp4 = await artifactPath(burned, 'subbed', fixture.dir);
+    const emittedCaptions = await readFile(await artifactPath(burned, 'vtt', fixture.dir), 'utf8');
     assert.ok(emittedCaptions.includes(expectedSubtitle), 'Subtitle sidecar lost the Unicode cue');
     assert.equal(burned.subtitle?.cues, 1);
     assert.equal(typeof burned.assText, 'string');
